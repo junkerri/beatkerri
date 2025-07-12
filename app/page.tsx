@@ -492,9 +492,11 @@ const submitGuess = () => {
               </div>
               <p className="text-yellow-400 font-mono text-lg">⭐ Score: {score}</p>
               <SequencerGrid
-                grid={targetGrid}
-                activeStep={activeStep}
-              />
+  grid={targetGrid}
+  activeStep={activeStep}
+  toggleStep={() => {}}
+/>
+
               <button
                 onClick={resetGame}
                 className="mt-4 px-4 py-2 bg-red-600 text-white rounded"
@@ -510,9 +512,11 @@ const submitGuess = () => {
               </div>
               <p className="text-yellow-400 font-mono text-lg">⭐ Score: {score}</p>
               <SequencerGrid
-                grid={targetGrid}
-                activeStep={activeStep}
-              />
+  grid={targetGrid}
+  activeStep={activeStep}
+  toggleStep={() => {}}
+/>
+
               <button
                 onClick={nextBeat}
                 className="mt-4 px-4 py-2 bg-green-600 text-white rounded animate-bounce"
