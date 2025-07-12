@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import * as Tone from "tone";
 import seedrandom from "seedrandom";
 import { SequencerGrid } from "../components/SequencerGrid";
+import toast from "react-hot-toast";
+
 
 export default function Home() {
   const createEmptyGrid = () =>
@@ -12,38 +14,77 @@ export default function Home() {
       .map(() => Array(16).fill(false));
 
   const createPatternForBeat = (beatNumber: number) => {
-    const grid = createEmptyGrid();
-    const rng = seedrandom(`Beat${beatNumber}`);
+  const grid = createEmptyGrid();
+  const rng = seedrandom(`Beat${beatNumber}`);
 
-    let instrumentsRange = 3;
-    let maxNotes = 8;
-    let allowedCols = [0, 4, 8, 12];
+  if (beatNumber <= 5) {
+    // Beats 1–5: exactly one note per quarter note
+    const allowedCols = [0, 2, 4, 6, 8, 10, 12, 14];
+    allowedCols.forEach((col) => {
+      const row = Math.floor(rng() * 3); // Kick, Snare, Closed HH
+      grid[row][col] = true;
+    });
+    return grid;
+  }
 
-    if (beatNumber >= 6 && beatNumber <= 10) {
-      instrumentsRange = 4;
-      maxNotes = 10;
-    } else if (beatNumber >= 11 && beatNumber <= 15) {
-      instrumentsRange = 5;
-      maxNotes = 12;
-      allowedCols = Array.from({ length: 16 }, (_, i) => i);
-    } else if (beatNumber >= 16) {
-      instrumentsRange = 7;
-      maxNotes = 16;
-      allowedCols = Array.from({ length: 16 }, (_, i) => i);
-    }
+  if (beatNumber <= 10) {
+    // Beats 6–10: 10–12 notes, some empty beats, max 1 stack per column
+    const allowedRows = 4; // Kick, Snare, Closed HH, Open HH
+    const targetNotes = Math.floor(rng() * 3) + 10; // 10–12 notes
 
+    const columnCounts = Array(16).fill(0);
     let totalNotes = 0;
-    while (totalNotes < maxNotes) {
-      const row = Math.floor(rng() * instrumentsRange);
-      const col = allowedCols[Math.floor(rng() * allowedCols.length)];
-      if (!grid[row][col]) {
+
+    while (totalNotes < targetNotes) {
+      const row = Math.floor(rng() * allowedRows);
+      const col = Math.floor(rng() * 16);
+
+      if (!grid[row][col] && columnCounts[col] < 1) {
         grid[row][col] = true;
+        columnCounts[col]++;
         totalNotes++;
       }
     }
-
     return grid;
-  };
+  }
+
+  if (beatNumber <= 15) {
+    // Beats 11–15: 14–16 notes, max 2 stacks per column, adds Clap
+    const allowedRows = 5; // + Clap
+    const targetNotes = Math.floor(rng() * 3) + 14; // 14–16 notes
+
+    const columnCounts = Array(16).fill(0);
+    let totalNotes = 0;
+
+    while (totalNotes < targetNotes) {
+      const row = Math.floor(rng() * allowedRows);
+      const col = Math.floor(rng() * 16);
+
+      if (!grid[row][col] && columnCounts[col] < 2) {
+        grid[row][col] = true;
+        columnCounts[col]++;
+        totalNotes++;
+      }
+    }
+    return grid;
+  }
+
+  // Beat 16+: fully random, 16 notes, all instruments, unlimited stacks
+  const allowedRows = 7;
+  let totalNotes = 0;
+
+  while (totalNotes < 16) {
+    const row = Math.floor(rng() * allowedRows);
+    const col = Math.floor(rng() * 16);
+    if (!grid[row][col]) {
+      grid[row][col] = true;
+      totalNotes++;
+    }
+  }
+
+  return grid;
+};
+
 
   const [grid, setGrid] = useState(createEmptyGrid());
   const [beatNumber, setBeatNumber] = useState(1);
@@ -107,14 +148,14 @@ export default function Home() {
   }, []);
 
   const instruments = [
-    "kick",
-    "snare",
-    "closed_hihat",
-    "open_hihat",
-    "clap",
-    "low_tom",
-    "high_tom",
-  ];
+  "kick",
+  "snare",
+  "closed_hihat",
+  "open_hihat",
+  "low_tom",
+  "high_tom",
+  "clap",
+];
 
   const toggleStep = async (row: number, col: number) => {
     if (mode === "recreate" && !gameOver && !gameWon) {
@@ -175,88 +216,127 @@ export default function Home() {
       playTargetGrid();
     }
   }, [gameOver, gameWon]);
-
-  const submitGuess = () => {
-    const newFeedback = grid.map((row, rowIndex) =>
-      row.map((step, colIndex) => {
-        if (step) {
-          if (targetGrid[rowIndex][colIndex]) {
-            return "correct";
-          } else {
-            return "incorrect";
-          }
+const submitGuess = () => {
+  const newFeedback = grid.map((row, rowIndex) =>
+    row.map((step, colIndex) => {
+      if (step) {
+        if (targetGrid[rowIndex][colIndex]) {
+          return "correct";
         } else {
-          return null;
+          return "incorrect";
         }
-      })
-    );
-    setFeedbackGrid(newFeedback);
-
-    let newlyCorrect = 0;
-    const updatedClaimed = claimedCorrectSteps.map((row, rowIndex) =>
-      row.map((claimed, colIndex) => {
-        if (
-          !claimed &&
-          grid[rowIndex][colIndex] &&
-          targetGrid[rowIndex][colIndex]
-        ) {
-          newlyCorrect++;
-          return true;
-        }
-        return claimed;
-      })
-    );
-
-    let pointsPerCorrect = 0;
-    if (attemptsLeft === 3) pointsPerCorrect = 5;
-    else if (attemptsLeft === 2) pointsPerCorrect = 3;
-    else pointsPerCorrect = 1;
-
-    let totalScore = score + newlyCorrect * pointsPerCorrect;
-    const targetNoteCount = targetGrid.flat().filter(Boolean).length;
-    const correctCount = grid.flat().filter((val, i) => {
-      const row = Math.floor(i / 16);
-      const col = i % 16;
-      return val && targetGrid[row][col];
-    }).length;
-    const remainingNotes = targetNoteCount - correctCount;
-
-    let allCorrect = true;
-    for (let row = 0; row < 7; row++) {
-      for (let col = 0; col < 16; col++) {
-        if (grid[row][col] !== targetGrid[row][col]) {
-          allCorrect = false;
-          break;
-        }
+      } else {
+        return null;
       }
-      if (!allCorrect) break;
+    })
+  );
+  setFeedbackGrid(newFeedback);
+
+  let newlyCorrect = 0;
+  const updatedClaimed = claimedCorrectSteps.map((row, rowIndex) =>
+    row.map((claimed, colIndex) => {
+      if (
+        !claimed &&
+        grid[rowIndex][colIndex] &&
+        targetGrid[rowIndex][colIndex]
+      ) {
+        newlyCorrect++;
+        return true;
+      }
+      return claimed;
+    })
+  );
+
+  let pointsPerCorrect = 0;
+  if (attemptsLeft === 3) pointsPerCorrect = 5;
+  else if (attemptsLeft === 2) pointsPerCorrect = 3;
+  else pointsPerCorrect = 1;
+
+  let totalScore = score + newlyCorrect * pointsPerCorrect;
+  const targetNoteCount = targetGrid.flat().filter(Boolean).length;
+  const correctCount = grid.flat().filter((val, i) => {
+    const row = Math.floor(i / 16);
+    const col = i % 16;
+    return val && targetGrid[row][col];
+  }).length;
+  const remainingNotes = targetNoteCount - correctCount;
+
+  let allCorrect = true;
+  for (let row = 0; row < 7; row++) {
+    for (let col = 0; col < 16; col++) {
+      if (grid[row][col] !== targetGrid[row][col]) {
+        allCorrect = false;
+        break;
+      }
     }
+    if (!allCorrect) break;
+  }
 
-    const newTotalAttempts = totalAttempts + 1;
+  const newTotalAttempts = totalAttempts + 1;
 
-    if (allCorrect) {
-      totalScore += 10;
-      const updatedHighest = Math.max(highestScore, totalScore);
-setHighestScore(updatedHighest);
+  if (allCorrect) {
+    totalScore += 10;
+    const updatedHighest = Math.max(highestScore, totalScore);
+    setHighestScore(updatedHighest);
 
-      setGameWon(true);
-      setBeatsCompleted(beatsCompleted + 1);
-      if (attemptsLeft === 3) {
-        setPerfectSolves(perfectSolves + 1);
-      }
-     saveProgress(
-  beatNumber,
-  totalScore,
-  beatsCompleted + 1,
-  newTotalAttempts,
-  perfectSolves + (attemptsLeft === 3 ? 1 : 0),
-  updatedHighest
-);
+    setGameWon(true);
+    setBeatsCompleted(beatsCompleted + 1);
+    if (attemptsLeft === 3) {
+      setPerfectSolves(perfectSolves + 1);
+    }
+    saveProgress(
+      beatNumber,
+      totalScore,
+      beatsCompleted + 1,
+      newTotalAttempts,
+      perfectSolves + (attemptsLeft === 3 ? 1 : 0),
+      updatedHighest
+    );
 
+    stopPlayback();
+
+    // ✅ Toast for perfect solve
+    toast.success(`🎉 Perfect! You recreated the beat and earned ${newlyCorrect * pointsPerCorrect + 10} total points!`, {
+      style: {
+        background: "#22c55e",
+        color: "#fff",
+      },
+      duration: 4000,
+    });
+  } else {
+    const remaining = attemptsLeft - 1;
+    setTotalAttempts(newTotalAttempts);
+    saveProgress(
+      beatNumber,
+      totalScore,
+      beatsCompleted,
+      newTotalAttempts,
+      perfectSolves,
+      highestScore
+    );
+
+    if (remaining <= 0) {
+      setGameOver(true);
       stopPlayback();
+      saveProgress(
+        beatNumber,
+        0, // reset score
+        beatsCompleted,
+        newTotalAttempts,
+        perfectSolves,
+        highestScore
+      );
+
+      // ✅ Toast for Game Over
+      toast.error("👻 Game Over! Try again.", {
+        style: {
+          background: "#b91c1c",
+          color: "#fff",
+        },
+        duration: 4000,
+      });
     } else {
-      const remaining = attemptsLeft - 1;
-      setTotalAttempts(newTotalAttempts);
+      setAttemptsLeft(remaining);
       saveProgress(
         beatNumber,
         totalScore,
@@ -265,35 +345,23 @@ setHighestScore(updatedHighest);
         perfectSolves,
         highestScore
       );
-      if (remaining <= 0) {
-  setGameOver(true);
-  stopPlayback();
-  saveProgress(
-    beatNumber,
-    0,                // reset current score
-    beatsCompleted,
-    newTotalAttempts,
-    perfectSolves,
-    highestScore      // keep highest score
-  );
-} else {
-  setAttemptsLeft(remaining);
-  saveProgress(
-    beatNumber,
-    totalScore,
-    beatsCompleted,
-    newTotalAttempts,
-    perfectSolves,
-    updatedHighest
-  );
-  alert(`You matched ${correctCount}/${targetNoteCount} notes (${remainingNotes} more to go). You scored ${newlyCorrect * pointsPerCorrect} points.`);
-}
 
+      // ✅ Toast for partial attempt
+      toast(`🎯 You matched ${correctCount}/${targetNoteCount} notes (${remainingNotes} more to go). You scored ${newlyCorrect * pointsPerCorrect} points.`, {
+        style: {
+          background: "#333",
+          color: "#fff",
+        },
+        duration: 4000,
+      });
     }
+  }
 
-    setClaimedCorrectSteps(updatedClaimed);
-    setScore(totalScore);
-  };
+  setClaimedCorrectSteps(updatedClaimed);
+  setScore(totalScore);
+};
+
+
 
   const clearGrid = () => {
     setGrid(createEmptyGrid());
