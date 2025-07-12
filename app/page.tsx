@@ -527,6 +527,11 @@ const submitGuess = () => {
           )}
         </div>
       )}
-    </main>
+          <footer className="mt-8 text-gray-500 text-sm font-mono">
+      © {new Date().getFullYear()} Junkerri
+    </footer>
+  </main>
   );
 }
+
+ 
