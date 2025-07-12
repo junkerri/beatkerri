@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import * as Tone from "tone";
+import seedrandom from "seedrandom";
 import { SequencerGrid } from "../components/SequencerGrid";
 
 export default function Home() {
@@ -10,46 +11,87 @@ export default function Home() {
       .fill(null)
       .map(() => Array(16).fill(false));
 
-  const createPatternForLevel = (level: number) => {
+  const createPatternForBeat = (beatNumber: number) => {
     const grid = createEmptyGrid();
+    const rng = seedrandom(`Beat${beatNumber}`);
 
-    if (level === 1) {
-      const quarterBeats = [0, 4, 8, 12];
-      let totalNotes = 0;
-      while (totalNotes < 8) {
-        const row = Math.floor(Math.random() * 3); // Kick, Snare, Closed HH
-        const col = quarterBeats[Math.floor(Math.random() * quarterBeats.length)];
-        if (!grid[row][col]) {
-          grid[row][col] = true;
-          totalNotes++;
-        }
-      }
-      return grid;
+    let instrumentsRange = 3;
+    let maxNotes = 8;
+    let allowedCols = [0, 4, 8, 12];
+
+    if (beatNumber >= 6 && beatNumber <= 10) {
+      instrumentsRange = 4;
+      maxNotes = 10;
+    } else if (beatNumber >= 11 && beatNumber <= 15) {
+      instrumentsRange = 5;
+      maxNotes = 12;
+      allowedCols = Array.from({ length: 16 }, (_, i) => i);
+    } else if (beatNumber >= 16) {
+      instrumentsRange = 7;
+      maxNotes = 16;
+      allowedCols = Array.from({ length: 16 }, (_, i) => i);
     }
 
-    // For now, default to Level 1 rules for all levels
-    // You can add more logic here for higher levels
+    let totalNotes = 0;
+    while (totalNotes < maxNotes) {
+      const row = Math.floor(rng() * instrumentsRange);
+      const col = allowedCols[Math.floor(rng() * allowedCols.length)];
+      if (!grid[row][col]) {
+        grid[row][col] = true;
+        totalNotes++;
+      }
+    }
+
     return grid;
   };
 
-  const createRandomBpm = () =>
-    Math.floor(Math.random() * 40) + 80;
-
   const [grid, setGrid] = useState(createEmptyGrid());
-  const [level, setLevel] = useState(1);
-  const [levelProgress, setLevelProgress] = useState(0);
-  const [targetGrid, setTargetGrid] = useState(createPatternForLevel(1));
-  const [targetBpm, setTargetBpm] = useState(createRandomBpm());
-  const [feedbackGrid, setFeedbackGrid] = useState<
-    ("correct" | "incorrect" | null)[][] | null
-  >(null);
+  const [beatNumber, setBeatNumber] = useState(1);
+  const [targetGrid, setTargetGrid] = useState(createPatternForBeat(1));
+  const [feedbackGrid, setFeedbackGrid] = useState<("correct" | "incorrect" | null)[][] | null>(null);
   const [mode, setMode] = useState<"target" | "recreate">("recreate");
   const [attemptsLeft, setAttemptsLeft] = useState(3);
   const [gameOver, setGameOver] = useState(false);
   const [gameWon, setGameWon] = useState(false);
   const [activeStep, setActiveStep] = useState<number | null>(null);
   const [score, setScore] = useState(0);
+  const [highestScore, setHighestScore] = useState(0);
   const [claimedCorrectSteps, setClaimedCorrectSteps] = useState<boolean[][]>(createEmptyGrid());
+  const [beatsCompleted, setBeatsCompleted] = useState(0);
+  const [totalAttempts, setTotalAttempts] = useState(0);
+  const [perfectSolves, setPerfectSolves] = useState(0);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("beatkerri_progress");
+    if (saved) {
+      const data = JSON.parse(saved);
+      setBeatNumber(data.beatNumber || 1);
+      setScore(data.score || 0);
+      setHighestScore(data.highestScore || 0);
+      setBeatsCompleted(data.beatsCompleted || 0);
+      setTotalAttempts(data.totalAttempts || 0);
+      setPerfectSolves(data.perfectSolves || 0);
+      setTargetGrid(createPatternForBeat(data.beatNumber || 1));
+    }
+  }, []);
+
+  const saveProgress = (
+    newBeatNumber = beatNumber,
+    newScore = score,
+    newBeatsCompleted = beatsCompleted,
+    newTotalAttempts = totalAttempts,
+    newPerfectSolves = perfectSolves,
+    newHighestScore = highestScore
+  ) => {
+    localStorage.setItem("beatkerri_progress", JSON.stringify({
+      beatNumber: newBeatNumber,
+      score: newScore,
+      beatsCompleted: newBeatsCompleted,
+      totalAttempts: newTotalAttempts,
+      perfectSolves: newPerfectSolves,
+      highestScore: newHighestScore
+    }));
+  };
 
   const padPlayers = useRef<Tone.Players | null>(null);
   useEffect(() => {
@@ -69,9 +111,9 @@ export default function Home() {
     "snare",
     "closed_hihat",
     "open_hihat",
+    "clap",
     "low_tom",
     "high_tom",
-    "clap",
   ];
 
   const toggleStep = async (row: number, col: number) => {
@@ -90,7 +132,8 @@ export default function Home() {
     await Tone.start();
     Tone.Transport.stop();
     Tone.Transport.cancel();
-    Tone.Transport.bpm.value = targetBpm;
+    Tone.Transport.bpm.value = 100;
+
     const players = new Tone.Players({
       kick: "/samples/kick.wav",
       snare: "/samples/snare.wav",
@@ -155,7 +198,7 @@ export default function Home() {
         if (
           !claimed &&
           grid[rowIndex][colIndex] &&
-         targetGrid[rowIndex][colIndex]
+          targetGrid[rowIndex][colIndex]
         ) {
           newlyCorrect++;
           return true;
@@ -165,11 +208,18 @@ export default function Home() {
     );
 
     let pointsPerCorrect = 0;
-    if (attemptsLeft === 3) pointsPerCorrect = 3;
-    else if (attemptsLeft === 2) pointsPerCorrect = 2;
+    if (attemptsLeft === 3) pointsPerCorrect = 5;
+    else if (attemptsLeft === 2) pointsPerCorrect = 3;
     else pointsPerCorrect = 1;
 
     let totalScore = score + newlyCorrect * pointsPerCorrect;
+    const targetNoteCount = targetGrid.flat().filter(Boolean).length;
+    const correctCount = grid.flat().filter((val, i) => {
+      const row = Math.floor(i / 16);
+      const col = i % 16;
+      return val && targetGrid[row][col];
+    }).length;
+    const remainingNotes = targetNoteCount - correctCount;
 
     let allCorrect = true;
     for (let row = 0; row < 7; row++) {
@@ -182,19 +232,63 @@ export default function Home() {
       if (!allCorrect) break;
     }
 
+    const newTotalAttempts = totalAttempts + 1;
+
     if (allCorrect) {
       totalScore += 10;
+      const updatedHighest = Math.max(highestScore, totalScore);
+setHighestScore(updatedHighest);
+
       setGameWon(true);
+      setBeatsCompleted(beatsCompleted + 1);
+      if (attemptsLeft === 3) {
+        setPerfectSolves(perfectSolves + 1);
+      }
+     saveProgress(
+  beatNumber,
+  totalScore,
+  beatsCompleted + 1,
+  newTotalAttempts,
+  perfectSolves + (attemptsLeft === 3 ? 1 : 0),
+  updatedHighest
+);
+
       stopPlayback();
     } else {
       const remaining = attemptsLeft - 1;
+      setTotalAttempts(newTotalAttempts);
+      saveProgress(
+        beatNumber,
+        totalScore,
+        beatsCompleted,
+        newTotalAttempts,
+        perfectSolves,
+        highestScore
+      );
       if (remaining <= 0) {
-        setGameOver(true);
-        stopPlayback();
-      } else {
-        setAttemptsLeft(remaining);
-        alert(`You scored ${newlyCorrect * pointsPerCorrect} points. Attempts left: ${remaining}`);
-      }
+  setGameOver(true);
+  stopPlayback();
+  saveProgress(
+    beatNumber,
+    0,                // reset current score
+    beatsCompleted,
+    newTotalAttempts,
+    perfectSolves,
+    highestScore      // keep highest score
+  );
+} else {
+  setAttemptsLeft(remaining);
+  saveProgress(
+    beatNumber,
+    totalScore,
+    beatsCompleted,
+    newTotalAttempts,
+    perfectSolves,
+    updatedHighest
+  );
+  alert(`You matched ${correctCount}/${targetNoteCount} notes (${remainingNotes} more to go). You scored ${newlyCorrect * pointsPerCorrect} points.`);
+}
+
     }
 
     setClaimedCorrectSteps(updatedClaimed);
@@ -210,42 +304,33 @@ export default function Home() {
   const resetGame = () => {
     setGameOver(false);
     setGameWon(false);
-    setLevel(1);
-    setLevelProgress(0);
     setGrid(createEmptyGrid());
     setFeedbackGrid(null);
     setAttemptsLeft(3);
     setMode("recreate");
     setActiveStep(null);
-    setScore(0);
+    setScore(0); // Reset score when retrying
     setClaimedCorrectSteps(createEmptyGrid());
-    setTargetGrid(createPatternForLevel(1));
-    setTargetBpm(createRandomBpm());
+    setTargetGrid(createPatternForBeat(beatNumber));
     stopPlayback();
   };
 
-  const continueGame = () => {
-    let newLevel = level;
-    let newProgress = levelProgress + 1;
+  const nextBeat = () => {
+  const next = beatNumber + 1;
+  setGameWon(false);
+  setBeatNumber(next);
+  setGrid(createEmptyGrid());
+  setFeedbackGrid(null);
+  setAttemptsLeft(3);
+  setMode("recreate");
+  setActiveStep(null);
+  // ❌ Do NOT reset score here—so it keeps accumulating
+  setClaimedCorrectSteps(createEmptyGrid());
+  setTargetGrid(createPatternForBeat(next));
+  stopPlayback();
+  saveProgress(next, score, beatsCompleted, totalAttempts, perfectSolves, highestScore);
+};
 
-    if (level === 1 && newProgress >= 3) {
-      newLevel = 2;
-      newProgress = 0;
-    }
-
-    setGameWon(false);
-    setGrid(createEmptyGrid());
-    setFeedbackGrid(null);
-    setAttemptsLeft(3);
-    setMode("recreate");
-    setActiveStep(null);
-    setClaimedCorrectSteps(createEmptyGrid());
-    setLevel(newLevel);
-    setLevelProgress(newProgress);
-    setTargetGrid(createPatternForLevel(newLevel));
-    setTargetBpm(createRandomBpm());
-    stopPlayback();
-  };
 
   const handleTabClick = (tab: "target" | "recreate") => {
     if (gameOver || gameWon) return;
@@ -259,10 +344,9 @@ export default function Home() {
   return (
     <main className="relative flex flex-col items-center justify-center min-h-screen bg-black text-white p-4">
       <h1 className="text-3xl font-bold mb-2 font-mono">BeatKerri</h1>
-      <p className="mb-2 text-gray-400 font-mono">Level {level} - Attempt {levelProgress + 1}/3</p>
+      <p className="mb-2 text-gray-400 font-mono">Beat {beatNumber}</p>
       <p className="mb-2 text-sm text-gray-500 font-mono">Attempts Left: {attemptsLeft}</p>
-      <p className="mb-4 text-sm text-yellow-400 font-mono">⭐ Score: {score}</p>
-
+      <p className="mb-4 text-sm text-yellow-400 font-mono">⭐ Score: {score} | 🏆 High Score: {highestScore}</p>
       <div className="flex mb-4 space-x-2">
         <button
           onClick={() => handleTabClick("target")}
@@ -271,7 +355,7 @@ export default function Home() {
             mode === "target" ? "bg-purple-600" : "bg-gray-700"
           } ${gameOver || gameWon ? "opacity-50 cursor-not-allowed" : ""}`}
         >
-          🎵 Target Beat (BPM {targetBpm})
+          🎵 Target Beat
         </button>
         <button
           onClick={() => handleTabClick("recreate")}
@@ -322,6 +406,15 @@ export default function Home() {
         </div>
       )}
 
+     {/* Stats panel */}
+<div className="mt-6 w-full max-w-md bg-gray-800 p-4 rounded-lg text-sm space-y-2">
+  <h2 className="text-lg font-bold mb-2 text-white font-mono">Stats</h2>
+  <p className="text-gray-300 font-mono">✅ Beats Completed: {beatsCompleted}</p>
+  <p className="text-gray-300 font-mono">🎯 Perfect Solves: {perfectSolves}</p>
+  <p className="text-gray-300 font-mono">🏆 Highest Score: {highestScore}</p>
+</div>
+
+
       {(gameOver || gameWon) && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex flex-col items-center justify-center space-y-4">
           {gameOver && (
@@ -329,20 +422,16 @@ export default function Home() {
               <div className="text-red-500 text-4xl font-extrabold animate-pulse font-mono">
                 👻 GAME OVER 👻
               </div>
-              <p className="text-yellow-400 font-mono text-lg">⭐ Total Score: {score}</p>
-              <div>
-                <p className="text-gray-300 mb-2 text-center">Solution:</p>
-                <SequencerGrid
-                  grid={targetGrid}
-                  readonly
-                  activeStep={activeStep}
-                />
-              </div>
+              <p className="text-yellow-400 font-mono text-lg">⭐ Score: {score}</p>
+              <SequencerGrid
+                grid={targetGrid}
+                activeStep={activeStep}
+              />
               <button
                 onClick={resetGame}
                 className="mt-4 px-4 py-2 bg-red-600 text-white rounded"
               >
-                🔄 Restart Game
+                🔄 Retry This Beat
               </button>
             </>
           )}
@@ -351,20 +440,16 @@ export default function Home() {
               <div className="text-green-400 text-4xl font-extrabold animate-pulse font-mono">
                 🎉 CONGRATULATIONS! 🎉
               </div>
-              <p className="text-yellow-400 font-mono text-lg">⭐ Total Score: {score}</p>
-              <p className="text-gray-300 text-center">You nailed it! Ready for the next beat?</p>
-              <div>
-                <SequencerGrid
-                  grid={targetGrid}
-                  readonly
-                  activeStep={activeStep}
-                />
-              </div>
+              <p className="text-yellow-400 font-mono text-lg">⭐ Score: {score}</p>
+              <SequencerGrid
+                grid={targetGrid}
+                activeStep={activeStep}
+              />
               <button
-                onClick={continueGame}
+                onClick={nextBeat}
                 className="mt-4 px-4 py-2 bg-green-600 text-white rounded animate-bounce"
               >
-                ✅ Next
+                ✅ Next Beat
               </button>
             </>
           )}
