@@ -175,38 +175,43 @@ export default function Home() {
   };
 
   const playPattern = async (pattern: boolean[][]) => {
-    await Tone.start();
-    Tone.Transport.stop();
-    Tone.Transport.cancel();
-    Tone.Transport.bpm.value = 100;
+  await Tone.start();
 
-    const players = new Tone.Players({
-      kick: "/samples/kick.wav",
-      snare: "/samples/snare.wav",
-      closed_hihat: "/samples/closed_hihat.wav",
-      open_hihat: "/samples/open_hihat.wav",
-      clap: "/samples/clap.wav",
-      low_tom: "/samples/low_tom.wav",
-      high_tom: "/samples/high_tom.wav",
-    }).toDestination();
+  // Stop and clear any prior playback
+  Tone.Transport.stop();
+  Tone.Transport.cancel();
 
-    const seq = new Tone.Sequence(
-      (time, col) => {
-        setActiveStep(col);
-        pattern.forEach((row, rowIndex) => {
-          if (row[col]) {
-            players.player(instruments[rowIndex]).start(time);
-          }
-        });
-      },
-      [...Array(16).keys()],
-      "16n"
-    );
+  Tone.Transport.bpm.value = 100;
 
-   seq.start(undefined, 0); // Start immediately from step 0
-Tone.Transport.start("+0.1"); // Small offset to ensure smooth scheduling
+  const players = new Tone.Players({
+    kick: "/samples/kick.wav",
+    snare: "/samples/snare.wav",
+    closed_hihat: "/samples/closed_hihat.wav",
+    open_hihat: "/samples/open_hihat.wav",
+    clap: "/samples/clap.wav",
+    low_tom: "/samples/low_tom.wav",
+    high_tom: "/samples/high_tom.wav",
+  }).toDestination();
 
-  };
+  const seq = new Tone.Sequence(
+    (time, col) => {
+      setActiveStep(col);
+      pattern.forEach((row, rowIndex) => {
+        if (row[col]) {
+          players.player(instruments[rowIndex]).start(time);
+        }
+      });
+    },
+    [...Array(16).keys()],
+    "16n"
+  );
+
+  seq.loop = true; // This is enough to keep it looping
+
+  seq.start(0);
+  Tone.Transport.start("+0.1");
+};
+
 
   const playGrid = () => playPattern(grid);
   const playTargetGrid = () => playPattern(targetGrid);
