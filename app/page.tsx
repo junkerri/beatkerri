@@ -103,36 +103,41 @@ export default function Home() {
   const [perfectSolves, setPerfectSolves] = useState(0);
 
   useEffect(() => {
-    const saved = localStorage.getItem("beatkerri_progress");
-    if (saved) {
-      const data = JSON.parse(saved);
-      setBeatNumber(data.beatNumber || 1);
-      setScore(data.score || 0);
-      setHighestScore(data.highestScore || 0);
-      setBeatsCompleted(data.beatsCompleted || 0);
-      setTotalAttempts(data.totalAttempts || 0);
-      setPerfectSolves(data.perfectSolves || 0);
-      setTargetGrid(createPatternForBeat(data.beatNumber || 1));
-    }
-  }, []);
+  const saved = localStorage.getItem("beatkerri_progress");
+  if (saved) {
+    const data = JSON.parse(saved);
+    setBeatNumber(data.beatNumber || 1);
+    setScore(data.score || 0);
+    setHighestScore(data.highestScore || 0);
+    setBeatsCompleted(data.beatsCompleted || 0);
+    setTotalAttempts(data.totalAttempts || 0);
+    setPerfectSolves(data.perfectSolves || 0);
+    setAttemptsLeft(data.attemptsLeft ?? 3); // 👈 Restore attempts
+    setTargetGrid(createPatternForBeat(data.beatNumber || 1));
+  }
+}, []);
 
-  const saveProgress = (
-    newBeatNumber = beatNumber,
-    newScore = score,
-    newBeatsCompleted = beatsCompleted,
-    newTotalAttempts = totalAttempts,
-    newPerfectSolves = perfectSolves,
-    newHighestScore = highestScore
-  ) => {
-    localStorage.setItem("beatkerri_progress", JSON.stringify({
-      beatNumber: newBeatNumber,
-      score: newScore,
-      beatsCompleted: newBeatsCompleted,
-      totalAttempts: newTotalAttempts,
-      perfectSolves: newPerfectSolves,
-      highestScore: newHighestScore
-    }));
-  };
+
+ const saveProgress = (
+  newBeatNumber = beatNumber,
+  newScore = score,
+  newBeatsCompleted = beatsCompleted,
+  newTotalAttempts = totalAttempts,
+  newPerfectSolves = perfectSolves,
+  newHighestScore = highestScore,
+  newAttemptsLeft = attemptsLeft // 👈 Add this
+) => {
+  localStorage.setItem("beatkerri_progress", JSON.stringify({
+    beatNumber: newBeatNumber,
+    score: newScore,
+    beatsCompleted: newBeatsCompleted,
+    totalAttempts: newTotalAttempts,
+    perfectSolves: newPerfectSolves,
+    highestScore: newHighestScore,
+    attemptsLeft: newAttemptsLeft // 👈 Save it
+  }));
+};
+
 
   const padPlayers = useRef<Tone.Players | null>(null);
   useEffect(() => {
@@ -286,17 +291,17 @@ const submitGuess = () => {
       setPerfectSolves(perfectSolves + 1);
     }
     saveProgress(
-      beatNumber,
+      beatNumber,                   // ✅ Correct here
       totalScore,
       beatsCompleted + 1,
       newTotalAttempts,
       perfectSolves + (attemptsLeft === 3 ? 1 : 0),
-      updatedHighest
+      updatedHighest,
+      3 // reset attempts for next beat
     );
 
     stopPlayback();
 
-    // ✅ Toast for perfect solve
     toast.success(`🎉 Perfect! You recreated the beat and earned ${newlyCorrect * pointsPerCorrect + 10} total points!`, {
       style: {
         background: "#22c55e",
@@ -313,7 +318,8 @@ const submitGuess = () => {
       beatsCompleted,
       newTotalAttempts,
       perfectSolves,
-      highestScore
+      highestScore,
+      remaining // save remaining attempts
     );
 
     if (remaining <= 0) {
@@ -321,14 +327,14 @@ const submitGuess = () => {
       stopPlayback();
       saveProgress(
         beatNumber,
-        0, // reset score
+        0,
         beatsCompleted,
         newTotalAttempts,
         perfectSolves,
-        highestScore
+        highestScore,
+        3 // reset to 3 for retry
       );
 
-      // ✅ Toast for Game Over
       toast.error("👻 Game Over! Try again.", {
         style: {
           background: "#b91c1c",
@@ -338,16 +344,7 @@ const submitGuess = () => {
       });
     } else {
       setAttemptsLeft(remaining);
-      saveProgress(
-        beatNumber,
-        totalScore,
-        beatsCompleted,
-        newTotalAttempts,
-        perfectSolves,
-        highestScore
-      );
 
-      // ✅ Toast for partial attempt
       toast(`🎯 You matched ${correctCount}/${targetNoteCount} notes (${remainingNotes} more to go). You scored ${newlyCorrect * pointsPerCorrect} points.`, {
         style: {
           background: "#333",
