@@ -198,8 +198,9 @@ export default function Home() {
       "16n"
     );
 
-    seq.start(0);
-    Tone.Transport.start();
+   seq.start(undefined, 0); // Start immediately from step 0
+Tone.Transport.start("+0.1"); // Small offset to ensure smooth scheduling
+
   };
 
   const playGrid = () => playPattern(grid);
