@@ -411,128 +411,165 @@ const submitGuess = () => {
   };
 
   return (
-    <main className="relative flex flex-col items-center justify-center min-h-screen bg-black text-white p-4">
-      <h1 className="text-3xl font-bold mb-2 font-mono">BeatKerri</h1>
-      <p className="mb-2 text-gray-400 font-mono">Beat {beatNumber}</p>
-      <p className="mb-2 text-sm text-gray-500 font-mono">Attempts Left: {attemptsLeft}</p>
-      <p className="mb-4 text-sm text-yellow-400 font-mono">⭐ Score: {score} | 🏆 High Score: {highestScore}</p>
-      <div className="flex mb-4 space-x-2">
-        <button
-          onClick={() => handleTabClick("target")}
-          disabled={gameOver || gameWon}
-          className={`px-4 py-2 rounded ${
-            mode === "target" ? "bg-purple-600" : "bg-gray-700"
-          } ${gameOver || gameWon ? "opacity-50 cursor-not-allowed" : ""}`}
-        >
-          🎵 Target Beat
-        </button>
-        <button
-          onClick={() => handleTabClick("recreate")}
-          disabled={gameOver || gameWon}
-          className={`px-4 py-2 rounded ${
-            mode === "recreate" ? "bg-green-600" : "bg-gray-700"
-          } ${gameOver || gameWon ? "opacity-50 cursor-not-allowed" : ""}`}
-        >
-          ✨ Recreate
-        </button>
-      </div>
+  <main className="relative flex flex-col items-center justify-center min-h-screen bg-black text-white p-4">
+    <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 inline-block shadow-lg w-full max-w-2xl">
+      <h1 className="text-xl font-bold mb-2 font-mono text-center tracking-widest">
+        BEATKERRI 303
+      </h1>
 
-      <div className="bg-gray-900 rounded-lg p-4 inline-block relative">
-        <SequencerGrid
-          grid={grid}
-          toggleStep={toggleStep}
-          feedbackGrid={feedbackGrid || undefined}
-          activeStep={activeStep}
-        />
-      </div>
+      <p className="text-gray-400 font-mono text-center mb-2">Beat {beatNumber}</p>
 
-      {!gameOver && !gameWon && mode === "recreate" && (
-        <div className="flex space-x-2 mt-4 flex-wrap">
-          <button
-            onClick={playGrid}
-            className="px-4 py-2 bg-green-500 text-white rounded"
-          >
-            ▶ Play My Pattern
-          </button>
-          <button
-            onClick={stopPlayback}
-            className="px-4 py-2 bg-yellow-500 text-white rounded"
-          >
-            ⏹ Stop
-          </button>
-          <button
-            onClick={submitGuess}
-            className="px-4 py-2 bg-blue-500 text-white rounded"
-          >
-            ✅ Submit Guess
-          </button>
-          <button
-            onClick={clearGrid}
-            className="px-4 py-2 bg-gray-500 text-white rounded"
-          >
-            🗑 Clear
-          </button>
-        </div>
-      )}
+      <div className="flex flex-wrap justify-between items-center mb-4 gap-2 w-full">
+  <div className="flex space-x-2">
+    <button
+      onClick={() => handleTabClick("target")}
+      disabled={gameOver || gameWon}
+      className={`px-3 py-1 text-xs font-mono border border-gray-600 rounded ${
+        mode === "target" ? "bg-purple-700 text-white" : "bg-black text-gray-300"
+      } ${gameOver || gameWon ? "opacity-50 cursor-not-allowed" : ""}`}
+    >
+      🎯  TARGET
+    </button>
+    <button
+      onClick={() => handleTabClick("recreate")}
+      disabled={gameOver || gameWon}
+      className={`px-3 py-1 text-xs font-mono border border-gray-600 rounded ${
+        mode === "recreate" ? "bg-green-700 text-white" : "bg-black text-gray-300"
+      } ${gameOver || gameWon ? "opacity-50 cursor-not-allowed" : ""}`}
+    >
+      🪄 RECREATE
+    </button>
+  </div>
 
-     {/* Stats panel */}
-<div className="mt-6 w-full max-w-md bg-gray-800 p-4 rounded-lg text-sm space-y-2">
-  <h2 className="text-lg font-bold mb-2 text-white font-mono">Stats</h2>
-  <p className="text-gray-300 font-mono">✅ Beats Completed: {beatsCompleted}</p>
-  <p className="text-gray-300 font-mono">🎯 Perfect Solves: {perfectSolves}</p>
-  <p className="text-gray-300 font-mono">🏆 Highest Score: {highestScore}</p>
+  <div className="flex flex-wrap gap-2 items-center justify-end">
+    <div className="text-xs font-mono text-gray-400">
+      BPM
+      <span className="ml-1 inline-block px-2 py-0.5 bg-black border border-gray-700 text-red-500 font-mono rounded min-w-[2rem] text-center">
+        100
+      </span>
+    </div>
+    <div className="text-xs font-mono text-gray-400">
+      SCORE
+      <span className="ml-1 inline-block px-2 py-0.5 bg-black border border-gray-700 text-red-500 font-mono rounded min-w-[2rem] text-center">
+        {score}
+      </span>
+    </div>
+    <div className="text-xs font-mono text-gray-400">
+      HIGHEST
+      <span className="ml-1 inline-block px-2 py-0.5 bg-black border border-gray-700 text-red-500 font-mono rounded min-w-[2rem] text-center">
+        {highestScore}
+      </span>
+    </div>
+    <div className="text-xs font-mono text-gray-400">
+      ATTEMPTS
+      <span className="ml-1 inline-block px-2 py-0.5 bg-black border border-gray-700 text-red-500 font-mono rounded min-w-[2rem] text-center">
+        {attemptsLeft}
+      </span>
+    </div>
+  </div>
 </div>
 
 
-      {(gameOver || gameWon) && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex flex-col items-center justify-center space-y-4">
-          {gameOver && (
-            <>
-              <div className="text-red-500 text-4xl font-extrabold animate-pulse font-mono">
-                👻 GAME OVER 👻
-              </div>
-              <p className="text-yellow-400 font-mono text-lg">⭐ Score: {score}</p>
-              <SequencerGrid
-  grid={targetGrid}
-  activeStep={activeStep}
-  toggleStep={() => {}}
-/>
+      <SequencerGrid
+        grid={grid}
+        toggleStep={toggleStep}
+        feedbackGrid={feedbackGrid || undefined}
+        activeStep={activeStep}
+      />
 
-              <button
-                onClick={resetGame}
-                className="mt-4 px-4 py-2 bg-red-600 text-white rounded"
-              >
-                🔄 Retry This Beat
-              </button>
-            </>
-          )}
-          {gameWon && (
-            <>
-              <div className="text-green-400 text-4xl font-extrabold animate-pulse font-mono">
-                🎉 CONGRATULATIONS! 🎉
-              </div>
-              <p className="text-yellow-400 font-mono text-lg">⭐ Score: {score}</p>
-              <SequencerGrid
-  grid={targetGrid}
-  activeStep={activeStep}
-  toggleStep={() => {}}
-/>
-
-              <button
-                onClick={nextBeat}
-                className="mt-4 px-4 py-2 bg-green-600 text-white rounded animate-bounce"
-              >
-                ✅ Next Beat
-              </button>
-            </>
-          )}
+      {!gameOver && !gameWon && mode === "recreate" && (
+        <div className="flex space-x-1 mt-3 justify-center">
+          <button
+            onClick={playGrid}
+            className="p-2 bg-gray-800 hover:bg-gray-700 rounded"
+            title="Play My Pattern"
+          >
+            ▶
+          </button>
+          <button
+            onClick={stopPlayback}
+            className="p-2 bg-gray-800 hover:bg-gray-700 rounded"
+            title="Stop"
+          >
+            ■
+          </button>
+          <button
+            onClick={submitGuess}
+            className="p-2 bg-gray-800 hover:bg-gray-700 rounded"
+            title="Submit Guess"
+          >
+            ✅
+          </button>
+          <button
+            onClick={clearGrid}
+            className="p-2 bg-gray-800 hover:bg-gray-700 rounded"
+            title="Clear"
+          >
+            🗑
+          </button>
         </div>
       )}
-          <footer className="mt-8 text-gray-500 text-sm font-mono">
+
+     
+    </div>
+
+    <div className="mt-4 w-full max-w-md bg-gray-800 p-3 rounded-lg text-sm space-y-1">
+      <h2 className="text-base font-bold text-white font-mono mb-1">Stats</h2>
+      <p className="text-gray-300 font-mono">Beats Completed: {beatsCompleted}</p>
+      <p className="text-gray-300 font-mono">Perfect Solves: {perfectSolves}</p>
+      <p className="text-gray-300 font-mono">Highest Score: {highestScore}</p>
+
+    </div>
+
+    {(gameOver || gameWon) && (
+      <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex flex-col items-center justify-center space-y-4">
+        {gameOver && (
+          <>
+            <div className="text-red-500 text-4xl font-extrabold animate-pulse font-mono">
+              👻 GAME OVER 👻
+            </div>
+            <p className="text-yellow-400 font-mono text-lg">⭐ Score: {score}</p>
+            <SequencerGrid
+              grid={targetGrid}
+              activeStep={activeStep}
+              toggleStep={() => {}}
+            />
+            <button
+              onClick={resetGame}
+              className="mt-4 px-4 py-2 bg-red-600 text-white rounded"
+            >
+              🔄 Retry This Beat
+            </button>
+          </>
+        )}
+        {gameWon && (
+          <>
+            <div className="text-green-400 text-4xl font-extrabold animate-pulse font-mono">
+              🎉 CONGRATULATIONS! 🎉
+            </div>
+            <p className="text-yellow-400 font-mono text-lg">⭐ Score: {score}</p>
+            <SequencerGrid
+              grid={targetGrid}
+              activeStep={activeStep}
+              toggleStep={() => {}}
+            />
+            <button
+              onClick={nextBeat}
+              className="mt-4 px-4 py-2 bg-green-600 text-white rounded animate-bounce"
+            >
+              ✅ Next Beat
+            </button>
+          </>
+        )}
+      </div>
+    )}
+
+    <footer className="mt-6 text-gray-500 text-xs font-mono">
       © {new Date().getFullYear()} Junkerri
     </footer>
   </main>
-  );
+);
+
 }
 
  
