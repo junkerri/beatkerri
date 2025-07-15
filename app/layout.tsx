@@ -32,6 +32,7 @@ export default function RootLayout({
         {/* 🟢 Toast notifications */}
         <Toaster />
         {children}
+         <Analytics />
       </body>
     </html>
   );
