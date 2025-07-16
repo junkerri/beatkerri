@@ -108,7 +108,7 @@ export default function Home() {
   const [beatsCompleted, setBeatsCompleted] = useState(0);
   const [totalAttempts, setTotalAttempts] = useState(0);
   const [perfectSolves, setPerfectSolves] = useState(0);
-
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const saved = localStorage.getItem("beatkerri_progress");
     if (saved) {
@@ -175,10 +175,15 @@ export default function Home() {
       stopPlayback();
       setIsPlaying(false);
     } else {
-      await playPattern(mode === "target" ? targetGrid : grid);
+      if (mode === "target") {
+        await playTargetGrid();
+      } else {
+        await playGrid();
+      }
       setIsPlaying(true);
     }
   };
+
   const toggleStep = async (row: number, col: number) => {
     if (mode === "recreate" && !gameOver && !gameWon) {
       const newGrid = grid.map((r, i) =>
@@ -251,7 +256,8 @@ export default function Home() {
     if (gameOver || gameWon) {
       playTargetGrid();
     }
-  }, [gameOver, gameWon]);
+  }, [gameOver, gameWon, playTargetGrid]);
+
   const submitGuess = () => {
     const newFeedback = grid.map((row, rowIndex) =>
       row.map((step, colIndex) => {
@@ -527,7 +533,7 @@ export default function Home() {
           <div className="flex space-x-2 mt-4 justify-center">
             {/* Play / Stop Toggle */}
             <button
-              onClick={isPlaying ? stopPlayback : playGrid}
+              onClick={togglePlay}
               className={`p-4 rounded ${
                 isPlaying
                   ? "bg-red-600 hover:bg-red-500"
