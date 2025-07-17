@@ -99,7 +99,6 @@ export default function Home() {
   const [activeStep, setActiveStep] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLooping, setIsLooping] = useState(true);
-  const currentSeqRef = useRef<Tone.Sequence | null>(null);
 
   const [score, setScore] = useState(0);
   const [highestScore, setHighestScore] = useState(0);
