@@ -99,6 +99,7 @@ export default function Home() {
   const [activeStep, setActiveStep] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLooping, setIsLooping] = useState(true);
+  const currentSeqRef = useRef<Tone.Sequence | null>(null);
 
   const [score, setScore] = useState(0);
   const [highestScore, setHighestScore] = useState(0);
@@ -226,20 +227,17 @@ export default function Home() {
     );
 
     seq.loop = isLooping;
+    seq.start(undefined, 0);
 
-    seq.start(0);
+    // Automatically reset isPlaying when transport stops
+    Tone.Transport.scheduleOnce(() => {
+      setIsPlaying(false);
+      setActiveStep(null);
+    }, `+${isLooping ? 1000 : "1m"}`); // In looping mode, this won’t fire; in non-looping, it will
+
     Tone.Transport.start("+0.1");
 
     setIsPlaying(true);
-
-    // ✅ When not looping, automatically reset after one cycle
-    if (!isLooping) {
-      const loopLength = Tone.Time("16n").toSeconds() * 16;
-      Tone.Transport.scheduleOnce(() => {
-        setIsPlaying(false);
-        setActiveStep(null);
-      }, `+${loopLength}`);
-    }
   };
 
   const playGrid = () => playPattern(grid);
@@ -253,10 +251,13 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (gameOver || gameWon) {
+    const isReady =
+      targetGrid && targetGrid.length > 0 && targetGrid[0].length > 0;
+
+    if (isReady && (gameOver || gameWon)) {
       playTargetGrid();
     }
-  }, [gameOver, gameWon, playTargetGrid]);
+  }, [gameOver, gameWon, targetGrid]);
 
   const submitGuess = () => {
     const newFeedback = grid.map((row, rowIndex) =>
@@ -459,6 +460,10 @@ export default function Home() {
 
   return (
     <main className="relative flex flex-col items-center justify-center min-h-screen bg-black text-white p-4">
+      <p className="text-center text-sm text-gray-400 mt-4 mb-2 font-mono">
+        🎧 Listen to the target beat and recreate it using the drum machine.
+      </p>
+
       <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 inline-block shadow-lg w-full max-w-2xl">
         <h1 className="text-xl font-bold mb-2 font-mono text-center tracking-widest">
           BEATKERRI 303
