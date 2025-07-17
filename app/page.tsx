@@ -6,7 +6,15 @@ import seedrandom from "seedrandom";
 import { SequencerGrid } from "../components/SequencerGrid";
 import toast from "react-hot-toast";
 import "./globals.css";
-import { Play, Square, Repeat, Trash2, Send } from "lucide-react";
+import {
+  Play,
+  Square,
+  Repeat,
+  Trash2,
+  Send,
+  Wand2,
+  Crosshair,
+} from "lucide-react";
 
 export default function Home() {
   const createEmptyGrid = () =>
@@ -477,24 +485,27 @@ export default function Home() {
             <button
               onClick={() => handleTabClick("target")}
               disabled={gameOver || gameWon}
-              className={`px-3 py-1 text-xs font-mono border border-gray-600 rounded ${
+              className={`flex items-center gap-1 px-3 py-1.5 text-xs font-mono rounded-md transition ${
                 mode === "target"
-                  ? "bg-purple-700 text-white"
-                  : "bg-black text-gray-300"
+                  ? "bg-purple-700 text-white shadow"
+                  : "bg-black text-gray-300 border border-gray-600"
               } ${gameOver || gameWon ? "opacity-50 cursor-not-allowed" : ""}`}
             >
-              TARGET
+              <Crosshair size={16} />
+              Target
             </button>
+
             <button
               onClick={() => handleTabClick("recreate")}
               disabled={gameOver || gameWon}
-              className={`px-3 py-1 text-xs font-mono border border-gray-600 rounded ${
+              className={`flex items-center gap-1 px-3 py-1.5 text-xs font-mono rounded-md transition ${
                 mode === "recreate"
-                  ? "bg-green-700 text-white"
-                  : "bg-black text-gray-300"
+                  ? "bg-green-700 text-white shadow"
+                  : "bg-black text-gray-300 border border-gray-600"
               } ${gameOver || gameWon ? "opacity-50 cursor-not-allowed" : ""}`}
             >
-              RECREATE
+              <Wand2 size={16} />
+              Recreate
             </button>
           </div>
 
