@@ -21,75 +21,111 @@ export default function Home() {
     Array(7)
       .fill(null)
       .map(() => Array(16).fill(false));
+  // Utility Functions
+  const getUnlockedInstruments = (beatNumber: number): number[] => {
+    const unlocked = [0, 1, 2]; // BD, SN, HH
+    if (beatNumber >= 6) unlocked.push(6); // CL (index 6)
+    if (beatNumber >= 11) unlocked.push(4); // LT (index 4)
+    if (beatNumber >= 16) unlocked.push(5); // HT (index 5)
+    if (beatNumber >= 21) unlocked.push(3); // OH (index 3)
+    return unlocked;
+  };
+  const getStackRulesForBeat = (beatNumber: number) => {
+    if (beatNumber <= 15) {
+      return {
+        maxPerColumn: 1,
+        allowedCombos: [], // no stacking
+      };
+    }
+
+    if (beatNumber <= 30) {
+      return {
+        maxPerColumn: 2,
+        allowedCombos: [
+          [0, 2], // BD + HH
+          [0, 6], // BD + CL
+          [0, 1], // BD + SN
+        ],
+      };
+    }
+
+    return {
+      maxPerColumn: 3,
+      allowedCombos: [
+        [0, 2],
+        [0, 6],
+        [0, 1],
+        [0, 3], // BD + OH
+      ],
+    };
+  };
+
+  const getBpmForBeat = (beatNumber: number): number => {
+    const rng = seedrandom(`BPM${beatNumber}`);
+
+    if (beatNumber <= 20) {
+      // Randomized between 70–100, same per beat (deterministic)
+      return Math.floor(rng() * (100 - 70 + 1)) + 70;
+    }
+
+    // After 20, increase up to 130
+    const extra = Math.min(30, (beatNumber - 20) * 2);
+    return 100 + extra;
+  };
 
   const createPatternForBeat = (beatNumber: number) => {
     const grid = createEmptyGrid();
     const rng = seedrandom(`Beat${beatNumber}`);
 
-    if (beatNumber <= 5) {
-      // Beats 1–5: exactly one note per quarter note
-      const allowedCols = [0, 2, 4, 6, 8, 10, 12, 14];
-      allowedCols.forEach((col) => {
-        const row = Math.floor(rng() * 3); // Kick, Snare, Closed HH
-        grid[row][col] = true;
-      });
-      return grid;
-    }
+    const allowedRows = getUnlockedInstruments(beatNumber);
+    const { maxPerColumn, allowedCombos } = getStackRulesForBeat(beatNumber);
 
-    if (beatNumber <= 10) {
-      // Beats 6–10: 10–12 notes, some empty beats, max 1 stack per column
-      const allowedRows = 4; // Kick, Snare, Closed HH, Open HH
-      const targetNotes = Math.floor(rng() * 3) + 10; // 10–12 notes
+    let targetNotes = 8 + Math.floor(rng() * 8); // 8–15 notes
+    if (beatNumber >= 16) targetNotes += 2;
+    if (beatNumber >= 25) targetNotes += 2;
 
-      const columnCounts = Array(16).fill(0);
-      let totalNotes = 0;
-
-      while (totalNotes < targetNotes) {
-        const row = Math.floor(rng() * allowedRows);
-        const col = Math.floor(rng() * 16);
-
-        if (!grid[row][col] && columnCounts[col] < 1) {
-          grid[row][col] = true;
-          columnCounts[col]++;
-          totalNotes++;
-        }
-      }
-      return grid;
-    }
-
-    if (beatNumber <= 15) {
-      // Beats 11–15: 14–16 notes, max 2 stacks per column, adds Clap
-      const allowedRows = 5; // + Clap
-      const targetNotes = Math.floor(rng() * 3) + 14; // 14–16 notes
-
-      const columnCounts = Array(16).fill(0);
-      let totalNotes = 0;
-
-      while (totalNotes < targetNotes) {
-        const row = Math.floor(rng() * allowedRows);
-        const col = Math.floor(rng() * 16);
-
-        if (!grid[row][col] && columnCounts[col] < 2) {
-          grid[row][col] = true;
-          columnCounts[col]++;
-          totalNotes++;
-        }
-      }
-      return grid;
-    }
-
-    // Beat 16+: fully random, 16 notes, all instruments, unlimited stacks
-    const allowedRows = 7;
+    const columnCounts = Array(16).fill(0);
     let totalNotes = 0;
 
-    while (totalNotes < 16) {
-      const row = Math.floor(rng() * allowedRows);
+    while (totalNotes < targetNotes) {
+      const row = allowedRows[Math.floor(rng() * allowedRows.length)];
       const col = Math.floor(rng() * 16);
+
+      const stackCount = columnCounts[col];
+
+      // Skip if over column stack limit
+      if (stackCount >= maxPerColumn) continue;
+
+      // Simulate what the stack would be if we added this row
+      const currentStack = grid
+        .map((r, i) => (r[col] ? i : null))
+        .filter((i) => i !== null);
+
+      const simulatedStack = [...currentStack, row].sort();
+
+      // If stacking, validate against allowedCombos
+      if (simulatedStack.length > 1) {
+        const isAllowed = allowedCombos.some((combo) => {
+          return (
+            combo.length === simulatedStack.length &&
+            combo.every((val, i) => val === simulatedStack[i])
+          );
+        });
+
+        if (!isAllowed) continue; // Skip if not allowed
+      }
+
+      // Passed all checks — add note
       if (!grid[row][col]) {
         grid[row][col] = true;
+        columnCounts[col]++;
         totalNotes++;
       }
     }
+    console.log(
+      `Beat ${beatNumber}: ${totalNotes} notes, allowedRows =`,
+      allowedRows
+    );
 
     return grid;
   };
@@ -204,11 +240,19 @@ export default function Home() {
     }
   };
 
-  const playPattern = async (pattern: boolean[][]) => {
+  const playPattern = async (pattern: boolean[][], beatNumber: number) => {
     await Tone.start();
+    console.log("🔍 Playing pattern:", pattern);
+    // 🛠 Step 2 validation
+    pattern.forEach((row, rowIndex) => {
+      if (row.length !== 16 || rowIndex >= instruments.length) {
+        console.warn(`⚠️ Row ${rowIndex} may be invalid`, row);
+      }
+    });
     Tone.Transport.stop();
     Tone.Transport.cancel();
-    Tone.Transport.bpm.value = 100;
+
+    Tone.Transport.bpm.value = getBpmForBeat(beatNumber);
 
     const players = new Tone.Players({
       kick: "/samples/kick.wav",
@@ -224,7 +268,7 @@ export default function Home() {
       (time, col) => {
         setActiveStep(col);
         pattern.forEach((row, rowIndex) => {
-          if (row[col]) {
+          if (row[col] && instruments[rowIndex]) {
             players.player(instruments[rowIndex]).start(time);
           }
         });
@@ -236,19 +280,18 @@ export default function Home() {
     seq.loop = isLooping;
     seq.start(undefined, 0);
 
-    // Automatically reset isPlaying when transport stops
+    // Only auto-reset when not looping
     Tone.Transport.scheduleOnce(() => {
       setIsPlaying(false);
       setActiveStep(null);
-    }, `+${isLooping ? 1000 : "1m"}`); // In looping mode, this won’t fire; in non-looping, it will
+    }, `+${isLooping ? 1000 : "1m"}`);
 
     Tone.Transport.start("+0.1");
-
     setIsPlaying(true);
   };
 
-  const playGrid = () => playPattern(grid);
-  const playTargetGrid = () => playPattern(targetGrid);
+  const playGrid = () => playPattern(grid, beatNumber);
+  const playTargetGrid = () => playPattern(targetGrid, beatNumber);
 
   const stopPlayback = () => {
     Tone.Transport.stop();
@@ -513,9 +556,10 @@ export default function Home() {
             <div className="text-xs font-mono text-gray-400">
               BPM
               <span className="ml-1 inline-block px-2 py-0.5 bg-black border border-gray-700 text-red-500 font-mono rounded min-w-[2rem] text-center">
-                100
+                {getBpmForBeat(beatNumber)}
               </span>
             </div>
+
             <div className="text-xs font-mono text-gray-400">
               SCORE
               <span className="ml-1 inline-block px-2 py-0.5 bg-black border border-gray-700 text-red-500 font-mono rounded min-w-[2rem] text-center">
