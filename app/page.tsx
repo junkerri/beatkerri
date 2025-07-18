@@ -80,9 +80,21 @@ export default function Home() {
     const allowedRows = getUnlockedInstruments(beatNumber);
     const { maxPerColumn, allowedCombos } = getStackRulesForBeat(beatNumber);
 
-    let targetNotes = 8 + Math.floor(rng() * 8); // 8–15 notes
-    if (beatNumber >= 16) targetNotes += 2;
-    if (beatNumber >= 25) targetNotes += 2;
+    let targetNotes = 8;
+
+    if (beatNumber >= 6 && beatNumber <= 10) {
+      targetNotes = 10;
+    } else if (beatNumber >= 11 && beatNumber <= 20) {
+      targetNotes = 12;
+    } else if (beatNumber >= 21 && beatNumber <= 30) {
+      targetNotes = 16;
+    } else if (beatNumber >= 31) {
+      targetNotes = 18;
+    }
+    console.log(
+      `Beat ${beatNumber}: ${targetNotes} notes, allowedRows =`,
+      allowedRows
+    );
 
     const columnCounts = Array(16).fill(0);
     let totalNotes = 0;
