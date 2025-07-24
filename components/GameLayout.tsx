@@ -31,8 +31,6 @@ interface GameLayoutProps {
   stopPlayback: () => void;
   currentPlayMode: "target" | "recreate";
   onTogglePlayMode: (mode: "target" | "recreate") => void;
-  playGrid: () => void;
-  playTargetGrid: () => void;
 
   // Controls
   onToggleStep: (row: number, col: number) => void;

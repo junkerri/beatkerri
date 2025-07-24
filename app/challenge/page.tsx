@@ -528,16 +528,33 @@ export default function Home() {
         🎧 Listen to the target beat and recreate it using the drum machine.
       </p>
 
-      <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 inline-block shadow-lg w-full max-w-2xl">
-        <h1 className="text-xl font-bold mb-2 font-mono text-center tracking-widest">
+      <div
+        className="
+          relative
+          bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900
+          border-4 border-gray-700
+          rounded-2xl
+          shadow-2xl
+          w-full max-w-2xl
+          p-6
+          flex flex-col items-center
+          drum-machine-outline
+        "
+        style={{
+          boxShadow:
+            "0 0 0 4px #222 inset, 0 8px 32px 0 rgba(0,0,0,0.8)",
+          borderRadius: "1.5rem",
+          border: "4px solid #444",
+          position: "relative",
+        }}
+      >
+        <h1 className="text-2xl font-extrabold mb-4 font-mono text-center tracking-widest text-amber-400 drop-shadow">
           BEATKERRI 303
         </h1>
-
         <p className="text-gray-400 font-mono text-center mb-2">
           Beat {beatNumber}
         </p>
-
-        <div className="flex flex-wrap justify-between items-center mb-4 gap-2 w-full">
+        <div className="flex justify-between mb-4 w-full">
           <div className="flex space-x-2">
             <button
               onClick={() => handleTabClick("target")}
@@ -551,7 +568,6 @@ export default function Home() {
               <Crosshair size={16} />
               Target
             </button>
-
             <button
               onClick={() => handleTabClick("recreate")}
               disabled={gameOver || gameWon}
@@ -565,7 +581,6 @@ export default function Home() {
               Recreate
             </button>
           </div>
-
           <div className="flex flex-wrap gap-2 items-center justify-end">
             <div className="text-xs font-mono text-gray-400">
               BPM
@@ -573,7 +588,6 @@ export default function Home() {
                 {getBpmForBeat(beatNumber)}
               </span>
             </div>
-
             <div className="text-xs font-mono text-gray-400">
               SCORE
               <span className="ml-1 inline-block px-2 py-0.5 bg-black border border-gray-700 text-red-500 font-mono rounded min-w-[2rem] text-center">
@@ -594,46 +608,35 @@ export default function Home() {
             </div>
           </div>
         </div>
-
-        <SequencerGrid
-          grid={grid}
-          toggleStep={toggleStep}
-          feedbackGrid={feedbackGrid || undefined}
-          activeStep={activeStep}
-        />
-
+        <div className="w-full mb-4">
+          <SequencerGrid
+            grid={grid}
+            toggleStep={toggleStep}
+            feedbackGrid={feedbackGrid || undefined}
+            activeStep={activeStep}
+          />
+        </div>
         {!gameOver && !gameWon && mode === "recreate" && (
-          <div className="flex space-x-2 mt-4 justify-center">
-            {/* Play / Stop Toggle */}
+          <div className="flex justify-center gap-2 mt-2 w-full">
             <button
               onClick={togglePlay}
-              className={`p-4 rounded ${
-                isPlaying
-                  ? "bg-red-600 hover:bg-red-500"
-                  : "bg-green-600 hover:bg-green-500"
+              className={`p-4 rounded-lg shadow ${
+                isPlaying ? "bg-red-600" : "bg-green-600"
               }`}
               title={isPlaying ? "Stop" : "Play"}
             >
-              {isPlaying ? (
-                <Square className="w-7 h-7" />
-              ) : (
-                <Play className="w-7 h-7" />
-              )}
+              {isPlaying ? <Square className="w-7 h-7" /> : <Play className="w-7 h-7" />}
             </button>
-
-            {/* Submit Guess */}
             <button
               onClick={submitGuess}
-              className="p-4 bg-blue-600 hover:bg-blue-500 rounded"
+              className="p-4 bg-blue-600 hover:bg-blue-500 rounded-lg shadow"
               title="Submit Guess"
             >
               <Send className="w-7 h-7" />
             </button>
-
-            {/* Loop Toggle */}
             <button
               onClick={() => setIsLooping(!isLooping)}
-              className={`p-4 rounded ${
+              className={`p-4 rounded-lg shadow transition ${
                 isLooping
                   ? "bg-purple-600 hover:bg-purple-500"
                   : "bg-gray-700 hover:bg-gray-600"
@@ -642,17 +645,28 @@ export default function Home() {
             >
               <Repeat className="w-7 h-7" />
             </button>
-
-            {/* Clear */}
             <button
               onClick={clearGrid}
-              className="p-4 bg-gray-700 hover:bg-gray-600 rounded"
+              className="p-4 bg-gray-700 hover:bg-gray-600 rounded-lg shadow"
               title="Clear"
             >
               <Trash2 className="w-7 h-7" />
             </button>
           </div>
         )}
+        <footer className="mt-6 text-gray-500 text-xs font-mono w-full text-center">
+          © {new Date().getFullYear()} Junkerri
+        </footer>
+        {/* Drum machine lights/knobs for realism */}
+        <div className="absolute top-2 left-2 flex gap-2">
+          <div className="w-3 h-3 rounded-full bg-red-700 border-2 border-gray-800 shadow-inner"></div>
+          <div className="w-3 h-3 rounded-full bg-yellow-400 border-2 border-gray-800 shadow-inner"></div>
+          <div className="w-3 h-3 rounded-full bg-green-600 border-2 border-gray-800 shadow-inner"></div>
+        </div>
+        <div className="absolute bottom-2 right-2 flex gap-2">
+          <div className="w-4 h-4 rounded-full bg-gray-700 border-2 border-gray-900"></div>
+          <div className="w-4 h-4 rounded-full bg-gray-700 border-2 border-gray-900"></div>
+        </div>
       </div>
 
       <div className="mt-4 w-full max-w-md bg-gray-800 p-3 rounded-lg text-sm space-y-1">
@@ -715,10 +729,6 @@ export default function Home() {
           )}
         </div>
       )}
-
-      <footer className="mt-6 text-gray-500 text-xs font-mono">
-        © {new Date().getFullYear()} Junkerri
-      </footer>
     </main>
   );
 }
