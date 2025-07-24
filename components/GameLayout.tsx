@@ -1,15 +1,7 @@
 "use client";
 
-import {
-  Play,
-  Square,
-  Repeat,
-  Trash2,
-  Send,
-  Crosshair,
-  Wand2,
-} from "lucide-react";
-import { useState } from "react";
+import { Play, Square, Repeat, Trash2, Send } from "lucide-react";
+
 import { SequencerGrid } from "./SequencerGrid";
 
 type Feedback = "correct" | "incorrect" | null;
@@ -71,8 +63,6 @@ export const GameLayout = ({
   onClearGrid,
   onNextBeat,
   onRetry,
-  playGrid,
-  playTargetGrid,
   score,
   highestScore,
   beatsCompleted,
@@ -80,8 +70,6 @@ export const GameLayout = ({
   currentPlayMode,
   onTogglePlayMode,
 }: GameLayoutProps) => {
-  const [activeTab, setActiveTab] = useState<"target" | "recreate">("recreate");
-
   const getModeTitle = (mode: string) => {
     switch (mode) {
       case "challenge":
@@ -93,16 +81,6 @@ export const GameLayout = ({
       default:
         return "Beatkerri";
     }
-  };
-
-  const handlePlayTarget = () => {
-    playTargetGrid();
-    setActiveTab("target");
-  };
-
-  const handlePlayGrid = () => {
-    playGrid();
-    setActiveTab("recreate");
   };
 
   return (

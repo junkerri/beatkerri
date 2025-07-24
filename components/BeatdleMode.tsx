@@ -281,10 +281,10 @@ export default function BeatdleMode() {
     const solved = gameWon;
     const attemptsUsed = attemptHistory.length;
     const maxAttempts = 3;
-    let header = solved
+    const header = solved
       ? `Beatdle #${beatNumber} ${attemptsUsed}/${maxAttempts} 🎉`
       : `Beatdle #${beatNumber} X/${maxAttempts} 😵`;
-    let rows = attemptHistory
+    const rows = attemptHistory
       .map((a) => getShareRow(a.grid, a.feedback))
       .join("\n");
     return `${header}\nScore: ${score}\n${rows}\nhttps://beatkerri.com/beatdle`;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import * as Tone from "tone";
 import seedrandom from "seedrandom";
 import { SequencerGrid } from "@/components/SequencerGrid";
@@ -75,7 +75,7 @@ export default function Home() {
     return 100 + extra;
   };
 
-  const createPatternForBeat = (beatNumber: number) => {
+  const createPatternForBeat = useCallback((beatNumber: number) => {
     const grid = createEmptyGrid();
     const rng = seedrandom(`Beat${beatNumber}`);
 
@@ -142,7 +142,7 @@ export default function Home() {
     );
 
     return grid;
-  };
+  }, []);
 
   const [grid, setGrid] = useState(createEmptyGrid());
   const [beatNumber, setBeatNumber] = useState(1);
@@ -166,7 +166,6 @@ export default function Home() {
   const [beatsCompleted, setBeatsCompleted] = useState(0);
   const [totalAttempts, setTotalAttempts] = useState(0);
   const [perfectSolves, setPerfectSolves] = useState(0);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const saved = localStorage.getItem("beatkerri_progress");
     if (saved) {
@@ -180,7 +179,7 @@ export default function Home() {
       setAttemptsLeft(data.attemptsLeft ?? 3); // 👈 Restore attempts
       setTargetGrid(createPatternForBeat(data.beatNumber || 1));
     }
-  }, []);
+  }, [createPatternForBeat]);
 
   const saveProgress = (
     newBeatNumber = beatNumber,
@@ -218,15 +217,18 @@ export default function Home() {
     }).toDestination();
   }, []);
 
-  const instruments = [
-    "kick",
-    "snare",
-    "closed_hihat",
-    "open_hihat",
-    "low_tom",
-    "high_tom",
-    "clap",
-  ];
+  const instruments = useMemo(
+    () => [
+      "kick",
+      "snare",
+      "closed_hihat",
+      "open_hihat",
+      "low_tom",
+      "high_tom",
+      "clap",
+    ],
+    []
+  );
 
   const togglePlay = async () => {
     if (isPlaying) {
@@ -254,58 +256,64 @@ export default function Home() {
     }
   };
 
-  const playPattern = async (pattern: boolean[][], beatNumber: number) => {
-    await Tone.start();
-    console.log("🔍 Playing pattern:", pattern);
-    // 🛠 Step 2 validation
-    pattern.forEach((row, rowIndex) => {
-      if (row.length !== 16 || rowIndex >= instruments.length) {
-        console.warn(`⚠️ Row ${rowIndex} may be invalid`, row);
-      }
-    });
-    Tone.Transport.stop();
-    Tone.Transport.cancel();
+  const playPattern = useCallback(
+    async (pattern: boolean[][], beatNumber: number) => {
+      await Tone.start();
+      console.log("🔍 Playing pattern:", pattern);
+      // 🛠 Step 2 validation
+      pattern.forEach((row, rowIndex) => {
+        if (row.length !== 16 || rowIndex >= instruments.length) {
+          console.warn(`⚠️ Row ${rowIndex} may be invalid`, row);
+        }
+      });
+      Tone.Transport.stop();
+      Tone.Transport.cancel();
 
-    Tone.Transport.bpm.value = getBpmForBeat(beatNumber);
+      Tone.Transport.bpm.value = getBpmForBeat(beatNumber);
 
-    const players = new Tone.Players({
-      kick: "/samples/kick.wav",
-      snare: "/samples/snare.wav",
-      closed_hihat: "/samples/closed_hihat.wav",
-      open_hihat: "/samples/open_hihat.wav",
-      clap: "/samples/clap.wav",
-      low_tom: "/samples/low_tom.wav",
-      high_tom: "/samples/high_tom.wav",
-    }).toDestination();
+      const players = new Tone.Players({
+        kick: "/samples/kick.wav",
+        snare: "/samples/snare.wav",
+        closed_hihat: "/samples/closed_hihat.wav",
+        open_hihat: "/samples/open_hihat.wav",
+        clap: "/samples/clap.wav",
+        low_tom: "/samples/low_tom.wav",
+        high_tom: "/samples/high_tom.wav",
+      }).toDestination();
 
-    const seq = new Tone.Sequence(
-      (time, col) => {
-        setActiveStep(col);
-        pattern.forEach((row, rowIndex) => {
-          if (row[col] && instruments[rowIndex]) {
-            players.player(instruments[rowIndex]).start(time);
-          }
-        });
-      },
-      [...Array(16).keys()],
-      "16n"
-    );
+      const seq = new Tone.Sequence(
+        (time, col) => {
+          setActiveStep(col);
+          pattern.forEach((row, rowIndex) => {
+            if (row[col] && instruments[rowIndex]) {
+              players.player(instruments[rowIndex]).start(time);
+            }
+          });
+        },
+        [...Array(16).keys()],
+        "16n"
+      );
 
-    seq.loop = isLooping;
-    seq.start(undefined, 0);
+      seq.loop = isLooping;
+      seq.start(undefined, 0);
 
-    // Only auto-reset when not looping
-    Tone.Transport.scheduleOnce(() => {
-      setIsPlaying(false);
-      setActiveStep(null);
-    }, `+${isLooping ? 1000 : "1m"}`);
+      // Only auto-reset when not looping
+      Tone.Transport.scheduleOnce(() => {
+        setIsPlaying(false);
+        setActiveStep(null);
+      }, `+${isLooping ? 1000 : "1m"}`);
 
-    Tone.Transport.start("+0.1");
-    setIsPlaying(true);
-  };
+      Tone.Transport.start("+0.1");
+      setIsPlaying(true);
+    },
+    [instruments, isLooping]
+  );
 
   const playGrid = () => playPattern(grid, beatNumber);
-  const playTargetGrid = () => playPattern(targetGrid, beatNumber);
+  const playTargetGrid = useCallback(
+    () => playPattern(targetGrid, beatNumber),
+    [targetGrid, beatNumber, playPattern]
+  );
 
   const stopPlayback = () => {
     Tone.Transport.stop();
@@ -321,7 +329,7 @@ export default function Home() {
     if (isReady && (gameOver || gameWon)) {
       playTargetGrid();
     }
-  }, [gameOver, gameWon, targetGrid]);
+  }, [gameOver, gameWon, targetGrid, playTargetGrid]);
 
   const submitGuess = () => {
     const newFeedback = grid.map((row, rowIndex) =>
@@ -541,8 +549,7 @@ export default function Home() {
           drum-machine-outline
         "
         style={{
-          boxShadow:
-            "0 0 0 4px #222 inset, 0 8px 32px 0 rgba(0,0,0,0.8)",
+          boxShadow: "0 0 0 4px #222 inset, 0 8px 32px 0 rgba(0,0,0,0.8)",
           borderRadius: "1.5rem",
           border: "4px solid #444",
           position: "relative",
@@ -625,7 +632,11 @@ export default function Home() {
               }`}
               title={isPlaying ? "Stop" : "Play"}
             >
-              {isPlaying ? <Square className="w-7 h-7" /> : <Play className="w-7 h-7" />}
+              {isPlaying ? (
+                <Square className="w-7 h-7" />
+              ) : (
+                <Play className="w-7 h-7" />
+              )}
             </button>
             <button
               onClick={submitGuess}
