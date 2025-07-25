@@ -725,9 +725,7 @@ export default function BeatdleMode() {
           </div>
           <p className="text-yellow-400 font-mono text-lg">
             <Trophy className="inline w-5 h-5 mr-2" />
-            {gameWon
-              ? `Congratulations! You scored ${score} points!`
-              : `Final Score: ${score}`}
+            {gameWon ? `You scored ${score} points!` : `Final Score: ${score}`}
           </p>
           <div className="mb-4">
             {/* Show the solution grid visually, as before */}
