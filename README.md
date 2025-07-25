@@ -1,36 +1,151 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BeatKerri
 
-## Getting Started
+A beat-matching game built with Next.js, TypeScript, and Tone.js.
 
-First, run the development server:
+## Architecture
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+The project has been refactored to follow DRY principles with shared components and hooks:
+
+### Shared Utilities (`utils/gameUtils.ts`)
+
+- `createEmptyGrid()` - Creates a 7x16 grid for the sequencer
+- `instruments` - Array of instrument names
+- `instrumentNames` - Display names for instruments
+- `createPadPlayers()` - Creates Tone.js players for individual pad sounds
+- `createPlayers()` - Creates Tone.js players for pattern playback
+- Type definitions for `Feedback`, `PlayMode`, and `GameMode`
+
+### Custom Hooks
+
+#### `useAudioPlayback` (`hooks/useAudioPlayback.ts`)
+
+Manages all audio playback logic:
+
+- Pattern playback with Tone.js
+- Active step tracking
+- Play/pause state management
+- Individual pad sound playback
+
+#### `useGameState` (`hooks/useGameState.ts`)
+
+Manages common game state:
+
+- Grid state and updates
+- Score tracking
+- Attempt management
+- Game win/lose state
+- Feedback grid
+
+### Shared Components
+
+#### `GameLayout` (`components/GameLayout.tsx`)
+
+Main layout component that combines:
+
+- Drum machine styling
+- Stats display
+- Mode toggles
+- Controls
+- Game over/win overlays
+
+#### `SequencerGrid` (`components/SequencerGrid.tsx`)
+
+Reusable sequencer grid with:
+
+- 7x16 grid layout
+- Instrument labels
+- Step toggling
+- Visual feedback
+- Active step highlighting
+
+#### `GameControls` (`components/GameControls.tsx`)
+
+Standard control buttons:
+
+- Play/Stop
+- Loop toggle
+- Submit guess
+- Clear grid
+
+#### `GameStats` (`components/GameStats.tsx`)
+
+Displays game statistics:
+
+- BPM
+- Score
+- Highest score
+- Attempts left
+- Extended stats (optional)
+
+#### `ModeToggle` (`components/ModeToggle.tsx`)
+
+Toggle between target and recreate modes
+
+## Game Modes
+
+### Beatdle Mode
+
+Daily challenge with:
+
+- Daily beat generation
+- 3 attempts per day
+- Score tracking
+- Social sharing
+
+### Challenge Mode
+
+Progressive difficulty with:
+
+- Unlocking instruments
+- Increasing complexity
+- Persistent progress
+
+## Usage Example
+
+```tsx
+import { GameLayout } from "@/components/GameLayout";
+import { useAudioPlayback } from "@/hooks/useAudioPlayback";
+import { useGameState } from "@/hooks/useGameState";
+
+export default function MyGameMode() {
+  const { activeStep, isPlaying, playPattern, stopPlayback } = useAudioPlayback(
+    {
+      bpm: 120,
+      isLooping: true,
+    }
+  );
+
+  const { grid, score, gameWon, toggleStep, clearGrid } = useGameState();
+
+  return (
+    <GameLayout
+      mode="challenge"
+      beatLabel="Beat #1"
+      bpm={120}
+      grid={grid}
+      activeStep={activeStep}
+      isPlaying={isPlaying}
+      gameWon={gameWon}
+      onToggleStep={toggleStep}
+      onClearGrid={clearGrid}
+      score={score}
+    />
+  );
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Development
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Technologies
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Next.js 14
+- TypeScript
+- Tone.js (audio)
+- Tailwind CSS
+- React Hot Toast
+- Lucide React (icons)

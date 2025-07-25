@@ -1,30 +1,14 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import * as Tone from "tone";
 import seedrandom from "seedrandom";
-import { SequencerGrid } from "@/components/SequencerGrid";
-import {
-  Play,
-  Square,
-  Repeat,
-  Trash2,
-  Wand2,
-  Crosshair,
-  Headphones,
-  Trophy,
-  Clock,
-  Target,
-  Music,
-  Share2,
-  Zap,
-} from "lucide-react";
+import { GameLayout } from "@/components/GameLayout";
+import { useAudioPlayback } from "@/hooks/useAudioPlayback";
+import { useGameState } from "@/hooks/useGameState";
+import { createEmptyGrid, PlayMode } from "@/utils/gameUtils";
+import { Headphones, Clock, Share2 } from "lucide-react";
 import toast from "react-hot-toast";
-
-const createEmptyGrid = () =>
-  Array(7)
-    .fill(null)
-    .map(() => Array(16).fill(false));
 
 const getTodayBeatNumber = () => {
   const epoch = new Date("2024-01-01");
@@ -94,42 +78,47 @@ export default function BeatdleMode() {
   const bpm = getDailyBPM(beatNumber);
   const targetGrid = createDailyPattern(beatNumber);
 
-  const [grid, setGrid] = useState(createEmptyGrid());
-  const [mode, setMode] = useState<"target" | "recreate">("recreate");
-  const [activeStep, setActiveStep] = useState<number | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [mode, setMode] = useState<PlayMode>("recreate");
   const [isLooping, setIsLooping] = useState(true);
-  const [feedbackGrid, setFeedbackGrid] = useState<
-    ("correct" | "incorrect" | null)[][] | null
-  >(null);
-  const [claimedCorrectSteps, setClaimedCorrectSteps] = useState(
-    createEmptyGrid()
-  );
-  const [gameWon, setGameWon] = useState(false);
-  const [gameOver, setGameOver] = useState(false);
-  const [score, setScore] = useState(0);
-  const [highestScore, setHighestScore] = useState(0);
+  const [attemptHistory, setAttemptHistory] = useState<Attempt[]>([]);
+  const [alreadyPlayed, setAlreadyPlayed] = useState(false);
+  const [isTargetPlaying, setIsTargetPlaying] = useState(false);
+
+  // Additional state for Beatdle mode
   const [beatsCompleted, setBeatsCompleted] = useState(0);
   const [totalAttempts, setTotalAttempts] = useState(0);
   const [perfectSolves, setPerfectSolves] = useState(0);
-  const [attemptsLeft, setAttemptsLeft] = useState(3);
-  const [attemptHistory, setAttemptHistory] = useState<Attempt[]>([]);
-  const [alreadyPlayed, setAlreadyPlayed] = useState(false);
-  // --- ADDED STATE FOR AUDIO SHARING ---
-  const [isTargetPlaying, setIsTargetPlaying] = useState(false);
 
-  const padPlayers = useRef<Tone.Players | null>(null);
-  useEffect(() => {
-    padPlayers.current = new Tone.Players({
-      kick: "/samples/kick.wav",
-      snare: "/samples/snare.wav",
-      closed_hihat: "/samples/closed_hihat.wav",
-      open_hihat: "/samples/open_hihat.wav",
-      clap: "/samples/clap.wav",
-      low_tom: "/samples/low_tom.wav",
-      high_tom: "/samples/high_tom.wav",
-    }).toDestination();
-  }, []);
+  // Use shared hooks
+  const {
+    activeStep,
+    isPlaying,
+    setIsPlaying,
+    playPattern: playPatternAudio,
+    stopPlayback: stopPlaybackAudio,
+    playStep,
+  } = useAudioPlayback({ bpm, isLooping });
+
+  const {
+    grid,
+    feedbackGrid,
+    score,
+    highestScore,
+    attemptsLeft,
+    gameWon,
+    gameOver,
+    claimedCorrectSteps,
+    setFeedbackGrid,
+    setScore,
+    setHighestScore,
+    setAttemptsLeft,
+    setGameWon,
+    setGameOver,
+    setClaimedCorrectSteps,
+    toggleStep: toggleStepGrid,
+    clearGrid,
+    updateScore,
+  } = useGameState();
 
   useEffect(() => {
     const progress = localStorage.getItem("beatdle_progress");
@@ -158,88 +147,30 @@ export default function BeatdleMode() {
 
   const togglePlay = async () => {
     if (isPlaying) {
-      stopPlayback();
+      stopPlaybackAudio();
       setIsPlaying(false);
     } else {
       if (mode === "target") {
-        await playPattern(targetGrid);
+        await playPatternAudio(targetGrid);
       } else {
-        await playPattern(grid);
+        await playPatternAudio(grid);
       }
       setIsPlaying(true);
     }
   };
 
-  const stopPlayback = () => {
-    Tone.Transport.stop();
-    Tone.Transport.cancel();
-    setActiveStep(null);
-    setIsPlaying(false);
-  };
-
-  const playPattern = async (
-    pattern: boolean[][],
-    loop: boolean = isLooping,
-    onDone?: () => void
-  ) => {
-    await Tone.start();
-    Tone.Transport.stop();
-    Tone.Transport.cancel();
-    Tone.Transport.bpm.value = bpm;
-
-    const players = new Tone.Players({
-      kick: "/samples/kick.wav",
-      snare: "/samples/snare.wav",
-      closed_hihat: "/samples/closed_hihat.wav",
-      open_hihat: "/samples/open_hihat.wav",
-      clap: "/samples/clap.wav",
-      low_tom: "/samples/low_tom.wav",
-      high_tom: "/samples/high_tom.wav",
-    }).toDestination();
-
-    const seq = new Tone.Sequence(
-      (time, col) => {
-        setActiveStep(col);
-        pattern.forEach((row, rowIndex) => {
-          if (row[col]) {
-            players.player(instruments[rowIndex]).start(time);
-          }
-        });
-      },
-      [...Array(16).keys()],
-      "16n"
-    );
-
-    seq.loop = loop;
-    seq.start(undefined, 0);
-
-    Tone.Transport.start("+0.1");
-
-    if (!loop) {
-      Tone.Transport.scheduleOnce(() => {
-        setIsPlaying(false);
-        setActiveStep(null);
-        if (onDone) onDone();
-      }, `+${(16 * 60) / bpm}s`);
-    }
-  };
-
   const toggleStep = async (row: number, col: number) => {
     if (mode === "recreate") {
-      const newGrid = grid.map((r, i) =>
-        i === row ? r.map((s, j) => (j === col ? !s : s)) : r
-      );
-      setGrid(newGrid);
-      await Tone.start();
-      padPlayers.current?.player(instruments[row]).start();
+      toggleStepGrid(row, col);
+      await playStep(row);
     }
   };
 
-  const handleTabClick = (tab: "target" | "recreate") => {
+  const handleTabClick = (tab: PlayMode) => {
     setMode(tab);
-    stopPlayback();
+    stopPlaybackAudio();
     if (tab === "target") {
-      playPattern(targetGrid);
+      playPatternAudio(targetGrid);
     }
   };
   const saveProgress = (
@@ -288,6 +219,21 @@ export default function BeatdleMode() {
       .join("");
   }
 
+  // Get attempt emoji for sharing
+  function getAttemptEmoji(attempts: number, gameWon: boolean) {
+    if (!gameWon) return "💀"; // Dead emoji for X/3
+    switch (attempts) {
+      case 1:
+        return "🎯"; // Bullseye for 1/3
+      case 2:
+        return "🎩"; // Hat for 2/3
+      case 3:
+        return "🎉"; // Party hat for 3/3
+      default:
+        return "💀"; // Dead emoji for X/3
+    }
+  }
+
   // Visual squares for overlay
   function getShareText() {
     const solved = gameWon;
@@ -296,13 +242,17 @@ export default function BeatdleMode() {
     const attemptStr = solved
       ? `${attemptsUsed}/${maxAttempts}`
       : `X/${maxAttempts}`;
-    const header = `Beatdle #${beatNumber} ${attemptStr} 🎧`;
+    const attemptEmoji = getAttemptEmoji(attemptsUsed, gameWon);
+    const header = `Beatdle #${beatNumber} ${attemptStr} ${attemptEmoji} 🎧`;
     // All attempts' colored squares, each on a new line
     const rows = attemptHistory
       .map((a) => getShareRow(a.grid, a.feedback))
       .join("\n");
     return `${header}\n${rows}\nScore: ${score}\nCan you beat it?\nhttps://beatkerri.vercel.app/`;
   }
+
+  // Share menu/modal state
+  const [showShareMenu, setShowShareMenu] = useState(false);
 
   const handleShare = async () => {
     const text = getShareText();
@@ -317,26 +267,6 @@ export default function BeatdleMode() {
       await navigator.clipboard.writeText(text);
       toast.success("Results copied to clipboard!");
     }
-  };
-
-  // Share menu/modal state
-  const [showShareMenu, setShowShareMenu] = useState(false);
-  const handleCopyShare = async () => {
-    await navigator.clipboard.writeText(getShareText());
-    toast.success("Results copied to clipboard!");
-    setShowShareMenu(false);
-  };
-  const handleShareFacebook = () => {
-    window.open(
-      `https://www.facebook.com/sharer/sharer.php?u=https://beatkerri.vercel.app/`,
-      "_blank"
-    );
-    setShowShareMenu(false);
-  };
-  const handleShareTwitter = () => {
-    const text = encodeURIComponent(getShareText());
-    window.open(`https://twitter.com/intent/tweet?text=${text}`, "_blank");
-    setShowShareMenu(false);
   };
 
   const submitGuess = () => {
@@ -439,7 +369,7 @@ export default function BeatdleMode() {
         false // gameOver
       );
 
-      stopPlayback();
+      stopPlaybackAudio();
 
       toast.success(
         `🎉 Perfect! You recreated the beat and earned ${
@@ -470,7 +400,7 @@ export default function BeatdleMode() {
 
       if (remaining <= 0) {
         setGameOver(true);
-        stopPlayback();
+        stopPlaybackAudio();
         saveProgress(
           beatNumber,
           0,
@@ -509,13 +439,13 @@ export default function BeatdleMode() {
   // Toggle Listen (Headphones) for target beat
   const toggleTargetBeat = async () => {
     if (isTargetPlaying) {
-      Tone.Transport.stop();
-      Tone.Transport.cancel();
-      setActiveStep(null);
+      stopPlaybackAudio();
       setIsTargetPlaying(false);
     } else {
       setIsTargetPlaying(true);
-      await playPattern(targetGrid, false, () => setIsTargetPlaying(false));
+      await playPatternAudio(targetGrid, false, () =>
+        setIsTargetPlaying(false)
+      );
     }
   };
 
@@ -528,20 +458,8 @@ export default function BeatdleMode() {
             🕐 ALREADY PLAYED TODAY 🕐
           </div>
           <p className="text-yellow-400 font-mono text-lg">
-            <Trophy className="inline w-5 h-5 mr-2" />
             Final Score: {score}
           </p>
-          <div className="mb-4">
-            <SequencerGrid
-              grid={targetGrid}
-              toggleStep={() => {}}
-              activeStep={activeStep}
-            />
-            <p className="text-center text-gray-400 mt-2 font-mono text-sm">
-              <Target className="inline w-4 h-4 mr-1" />
-              Solution
-            </p>
-          </div>
           <div className="flex items-center gap-3">
             <button
               onClick={toggleTargetBeat}
@@ -572,293 +490,36 @@ export default function BeatdleMode() {
   }
 
   return (
-    <main className="relative flex flex-col items-center justify-center min-h-screen bg-black text-white p-4">
-      <p className="text-center text-sm text-gray-400 mt-4 mb-2 font-mono">
-        <Music className="inline w-4 h-4 mr-1" />
-        Beatdle #{beatNumber} — Listen & Recreate
-      </p>
-      <div
-        className="
-          relative
-          bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900
-          border-4 border-gray-700
-          rounded-2xl
-          shadow-2xl
-          w-full max-w-2xl
-          p-6
-          flex flex-col items-center
-          drum-machine-outline
-        "
-        style={{
-          boxShadow: "0 0 0 4px #222 inset, 0 8px 32px 0 rgba(0,0,0,0.8)",
-          borderRadius: "1.5rem",
-          border: "4px solid #444",
-          position: "relative",
-        }}
-      >
-        <h1 className="text-2xl font-extrabold mb-4 font-mono text-center tracking-widest text-amber-400 drop-shadow">
-          BEATKERRI 303
-        </h1>
-        <div className="flex justify-between mb-4 w-full">
-          <div className="flex space-x-2">
-            <button
-              onClick={() => handleTabClick("target")}
-              className={`flex items-center gap-1 px-3 py-1.5 text-xs font-mono rounded-md transition ${
-                mode === "target"
-                  ? "bg-purple-700 text-white shadow"
-                  : "bg-black text-gray-300 border border-gray-600"
-              }`}
-            >
-              <Crosshair size={16} /> Target
-            </button>
-            <button
-              onClick={() => handleTabClick("recreate")}
-              className={`flex items-center gap-1 px-3 py-1.5 text-xs font-mono rounded-md transition ${
-                mode === "recreate"
-                  ? "bg-green-700 text-white shadow"
-                  : "bg-black text-gray-300 border border-gray-600"
-              }`}
-            >
-              <Wand2 size={16} /> Recreate
-            </button>
-          </div>
-          <div className="flex flex-wrap gap-2 items-center justify-end">
-            <div className="text-xs font-mono text-gray-400">
-              BPM
-              <span className="ml-1 inline-block px-2 py-0.5 bg-black border border-gray-700 text-red-500 font-mono rounded min-w-[2rem] text-center">
-                {bpm}
-              </span>
-            </div>
-            <div className="text-xs font-mono text-gray-400">
-              SCORE
-              <span className="ml-1 inline-block px-2 py-0.5 bg-black border border-gray-700 text-red-500 font-mono rounded min-w-[2rem] text-center">
-                {score}
-              </span>
-            </div>
-            <div className="text-xs font-mono text-gray-400">
-              HIGHEST
-              <span className="ml-1 inline-block px-2 py-0.5 bg-black border border-gray-700 text-red-500 font-mono rounded min-w-[2rem] text-center">
-                {highestScore}
-              </span>
-            </div>
-            <div className="text-xs font-mono text-gray-400">
-              ATTEMPTS
-              <span className="ml-1 inline-block px-2 py-0.5 bg-black border border-gray-700 text-red-500 font-mono rounded min-w-[2rem] text-center">
-                {attemptsLeft}
-              </span>
-            </div>
-          </div>
-        </div>
-        <div className="w-full mb-4">
-          <SequencerGrid
-            grid={grid}
-            toggleStep={toggleStep}
-            feedbackGrid={feedbackGrid || undefined} // <-- This will show feedback!
-            activeStep={activeStep}
-          />
-        </div>
-        {mode === "recreate" && (
-          <div className="flex justify-center gap-2 mt-2 w-full">
-            <button
-              onClick={togglePlay}
-              className={`p-4 rounded-lg shadow transition-colors ${
-                isPlaying
-                  ? "bg-red-600 hover:bg-red-500"
-                  : "bg-blue-600 hover:bg-blue-500"
-              }`}
-            >
-              {isPlaying ? <Square /> : <Play />}
-            </button>
-            <button
-              onClick={() => setIsLooping(!isLooping)}
-              className={`p-4 rounded-lg shadow transition ${
-                isLooping
-                  ? "bg-purple-600 hover:bg-purple-500"
-                  : "bg-gray-700 hover:bg-gray-600"
-              }`}
-              title="Toggle Looping"
-            >
-              <Repeat className="w-7 h-7" />
-            </button>
-            <button
-              onClick={submitGuess}
-              className="p-4 bg-green-600 hover:bg-green-500 rounded-lg shadow transition-colors"
-              title="Submit Guess"
-            >
-              <Zap className="w-7 h-7" />
-            </button>
-            <button
-              onClick={() => {
-                setGrid(createEmptyGrid());
-                stopPlayback();
-              }}
-              className="p-4 bg-gray-700 hover:bg-gray-600 rounded-lg shadow transition-colors"
-            >
-              <Trash2 />
-            </button>
-          </div>
-        )}
-        <footer className="mt-6 text-gray-500 text-xs font-mono w-full text-center">
-          © {new Date().getFullYear()} Junkerri
-        </footer>
-        {/* Optional: Add drum machine "knobs" or "lights" for more realism */}
-        <div className="absolute top-2 left-2 flex gap-2">
-          <div className="w-3 h-3 rounded-full bg-red-700 border-2 border-gray-800 shadow-inner"></div>
-          <div className="w-3 h-3 rounded-full bg-yellow-400 border-2 border-gray-800 shadow-inner"></div>
-          <div className="w-3 h-3 rounded-full bg-green-600 border-2 border-gray-800 shadow-inner"></div>
-        </div>
-        <div className="absolute bottom-2 right-2 flex gap-2">
-          <div className="w-4 h-4 rounded-full bg-gray-700 border-2 border-gray-900"></div>
-          <div className="w-4 h-4 rounded-full bg-gray-700 border-2 border-gray-900"></div>
-        </div>
-      </div>
-
-      {/* Game Over / Win Overlay */}
-      {(gameOver || gameWon) && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex flex-col items-center justify-center space-y-4">
-          <div
-            className={`text-4xl font-extrabold animate-pulse font-mono ${
-              gameOver ? "text-red-500" : "text-green-400"
-            }`}
-          >
-            {gameOver ? "👻 GAME OVER 👻" : "🎉 CONGRATULATIONS! 🎉"}
-          </div>
-          <p className="text-yellow-400 font-mono text-lg">
-            <Trophy className="inline w-5 h-5 mr-2" />
-            {gameWon ? `You scored ${score} points!` : `Final Score: ${score}`}
-          </p>
-          <div className="mb-4">
-            {/* Show the solution grid visually, as before */}
-            <SequencerGrid
-              grid={targetGrid}
-              toggleStep={() => {}}
-              activeStep={activeStep}
-            />
-            <p className="text-center text-gray-400 mt-2 font-mono text-sm">
-              <Target className="inline w-4 h-4 mr-1" />
-              Solution
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={toggleTargetBeat}
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded flex items-center space-x-2 transition-colors"
-              title="Play Beat"
-            >
-              <Headphones size={22} className="text-white" />
-              <span>{isTargetPlaying ? "Stop" : "Listen"}</span>
-            </button>
-            <button
-              onClick={handleShare}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded flex items-center space-x-2 transition-colors"
-            >
-              <Share2 size={18} className="text-white" />
-              <span>Share Results</span>
-            </button>
-          </div>
-          <p className="text-gray-400 font-mono text-center mt-4">
-            Come back tomorrow for a new beat!
-          </p>
-          <p className="text-gray-500 font-mono text-center text-xs flex items-center justify-center">
-            <Clock className="w-3 h-3 mr-1" />
-            Next beat available in {getTimeUntilNextBeat()}
-          </p>
-        </div>
-      )}
-      {showShareMenu && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-80 flex flex-col items-center justify-center">
-          <div className="bg-gray-900 rounded-lg p-6 flex flex-col gap-4 items-center w-80">
-            <button
-              onClick={handleShareFacebook}
-              className="w-full flex items-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded transition-colors"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="lucide lucide-facebook"
-              >
-                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-              </svg>{" "}
-              Facebook
-            </button>
-            <button
-              onClick={handleShareTwitter}
-              className="w-full flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="lucide lucide-twitter"
-              >
-                <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z" />
-              </svg>{" "}
-              Twitter/X
-            </button>
-            <div className="w-full flex items-center gap-2 px-4 py-2 bg-pink-600 text-white rounded opacity-80 cursor-not-allowed">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="lucide lucide-instagram"
-              >
-                <path d="M15 6v8h-3V6h3z" />
-                <circle cx="12" cy="12" r="3" />
-                <path d="M19 5h-2a3 3 0 0 0-3 3v7a3 3 0 0 0 3 3h7a3 3 0 0 0 3-3v-7a3 3 0 0 0-3-3h-2" />
-              </svg>{" "}
-              Instagram (screenshot & share!)
-            </div>
-            <button
-              onClick={handleCopyShare}
-              className="w-full flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="lucide lucide-copy"
-              >
-                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-                <rect x="9" y="3" width="6" height="4" />
-                <path d="M9 17h6" />
-                <path d="M9 21h6" />
-              </svg>{" "}
-              Copy
-            </button>
-            <button
-              onClick={() => setShowShareMenu(false)}
-              className="mt-2 text-gray-400 hover:text-white"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-    </main>
+    <GameLayout
+      mode="beatdle"
+      beatLabel={`Beatdle #${beatNumber} — Listen & Recreate`}
+      bpm={bpm}
+      grid={grid}
+      targetGrid={targetGrid}
+      feedbackGrid={feedbackGrid || undefined}
+      activeStep={activeStep}
+      isLooping={isLooping}
+      isPlaying={isPlaying}
+      gameOver={gameOver}
+      gameWon={gameWon}
+      attemptsLeft={attemptsLeft}
+      currentPlayMode={mode}
+      onTogglePlayMode={handleTabClick}
+      onToggleStep={toggleStep}
+      onTogglePlay={togglePlay}
+      onToggleLoop={() => setIsLooping(!isLooping)}
+      onSubmitGuess={submitGuess}
+      onClearGrid={clearGrid}
+      onListenTarget={toggleTargetBeat}
+      onShare={handleShare}
+      isTargetPlaying={isTargetPlaying}
+      showShareMenu={showShareMenu}
+      onCloseShareMenu={() => setShowShareMenu(false)}
+      alreadyPlayed={alreadyPlayed}
+      timeUntilNextBeat={getTimeUntilNextBeat()}
+      totalAttempts={attemptHistory.length}
+      score={score}
+      highestScore={highestScore}
+    />
   );
 }

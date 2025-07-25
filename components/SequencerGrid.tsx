@@ -1,13 +1,12 @@
 import React from "react";
+import { instrumentNames, Feedback } from "@/utils/gameUtils";
 
 interface SequencerGridProps {
   grid: boolean[][];
-  toggleStep?: (row: number, col: number) => void; // IMPORTANT: the "?" here
-  feedbackGrid?: ("correct" | "incorrect" | null)[][];
+  toggleStep?: (row: number, col: number) => void;
+  feedbackGrid?: Feedback[][];
   activeStep?: number | null;
 }
-
-const instrumentNames = ["BD", "SN", "HH", "OH", "LT", "HT", "CL"];
 
 export const SequencerGrid: React.FC<SequencerGridProps> = ({
   grid,
