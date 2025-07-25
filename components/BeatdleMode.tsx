@@ -9,7 +9,6 @@ import {
   Square,
   Repeat,
   Trash2,
-  Send,
   Wand2,
   Crosshair,
   Headphones,
@@ -118,8 +117,6 @@ export default function BeatdleMode() {
   const [alreadyPlayed, setAlreadyPlayed] = useState(false);
   // --- ADDED STATE FOR AUDIO SHARING ---
   const [isTargetPlaying, setIsTargetPlaying] = useState(false);
-  const [targetAudioUrl, setTargetAudioUrl] = useState<string | null>(null);
-  const recorderRef = useRef<Tone.Recorder | null>(null);
 
   const padPlayers = useRef<Tone.Players | null>(null);
   useEffect(() => {
@@ -292,19 +289,6 @@ export default function BeatdleMode() {
   }
 
   // Visual squares for overlay
-  function getShareSquares() {
-    if (!attemptHistory.length) return null;
-    // Only show the last attempt visually
-    const last = attemptHistory[attemptHistory.length - 1];
-    return getShareRow(last.grid, last.feedback)
-      .split("")
-      .map((sq, i) => (
-        <span key={i} style={{ fontSize: "1.5rem", lineHeight: 1 }}>
-          {sq}
-        </span>
-      ));
-  }
-
   function getShareText() {
     const solved = gameWon;
     const attemptsUsed = attemptHistory.length;
@@ -337,10 +321,6 @@ export default function BeatdleMode() {
 
   // Share menu/modal state
   const [showShareMenu, setShowShareMenu] = useState(false);
-  const handleShareMenu = async () => {
-    await renderTargetBeatToWav(); // Ensure audio is ready
-    setShowShareMenu(true);
-  };
   const handleCopyShare = async () => {
     await navigator.clipboard.writeText(getShareText());
     toast.success("Results copied to clipboard!");
@@ -524,54 +504,6 @@ export default function BeatdleMode() {
 
     setClaimedCorrectSteps(updatedClaimed);
     setScore(totalScore);
-  };
-
-  // Function to play the target beat for sharing
-  const playTargetBeat = async () => {
-    await playPattern(targetGrid);
-  };
-
-  // Function to render the target beat to a .wav blob and set the URL
-  const renderTargetBeatToWav = async () => {
-    if (targetAudioUrl) return targetAudioUrl; // Already rendered
-    await Tone.start();
-    const recorder = new Tone.Recorder();
-    recorderRef.current = recorder;
-    const players = new Tone.Players({
-      kick: "/samples/kick.wav",
-      snare: "/samples/snare.wav",
-      closed_hihat: "/samples/closed_hihat.wav",
-      open_hihat: "/samples/open_hihat.wav",
-      clap: "/samples/clap.wav",
-      low_tom: "/samples/low_tom.wav",
-      high_tom: "/samples/high_tom.wav",
-    }).connect(recorder);
-    Tone.Transport.stop();
-    Tone.Transport.cancel();
-    Tone.Transport.bpm.value = bpm;
-    const seq = new Tone.Sequence(
-      (time, col) => {
-        targetGrid.forEach((row, rowIndex) => {
-          if (row[col]) {
-            players.player(instruments[rowIndex]).start(time);
-          }
-        });
-      },
-      [...Array(16).keys()],
-      "16n"
-    );
-    seq.loop = false;
-    seq.start(0);
-    recorder.start();
-    Tone.Transport.start();
-    // Wait for 1 bar (16 steps of 16n at bpm)
-    await new Promise((resolve) => setTimeout(resolve, (60 / bpm) * 16 * 1000));
-    Tone.Transport.stop();
-    Tone.Transport.cancel();
-    const recording = await recorder.stop();
-    const url = URL.createObjectURL(recording);
-    setTargetAudioUrl(url);
-    return url;
   };
 
   // Toggle Listen (Headphones) for target beat
