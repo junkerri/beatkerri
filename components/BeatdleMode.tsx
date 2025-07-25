@@ -664,7 +664,7 @@ export default function BeatdleMode() {
               className={`p-4 rounded-lg shadow transition-colors ${
                 isPlaying
                   ? "bg-red-600 hover:bg-red-500"
-                  : "bg-green-600 hover:bg-green-500"
+                  : "bg-blue-600 hover:bg-blue-500"
               }`}
             >
               {isPlaying ? <Square /> : <Play />}
@@ -682,7 +682,7 @@ export default function BeatdleMode() {
             </button>
             <button
               onClick={submitGuess}
-              className="p-4 bg-blue-600 hover:bg-blue-500 rounded-lg shadow transition-colors"
+              className="p-4 bg-green-600 hover:bg-green-500 rounded-lg shadow transition-colors"
               title="Submit Guess"
             >
               <Zap className="w-7 h-7" />

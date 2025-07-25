@@ -13,7 +13,7 @@ import {
   Square,
   Repeat,
   Trash2,
-  Send,
+  Zap,
   Wand2,
   Crosshair,
 } from "lucide-react";
@@ -627,8 +627,10 @@ export default function Home() {
           <div className="flex justify-center gap-2 mt-2 w-full">
             <button
               onClick={togglePlay}
-              className={`p-4 rounded-lg shadow ${
-                isPlaying ? "bg-red-600" : "bg-green-600"
+              className={`p-4 rounded-lg shadow transition-colors ${
+                isPlaying
+                  ? "bg-red-600 hover:bg-red-500"
+                  : "bg-blue-600 hover:bg-blue-500"
               }`}
               title={isPlaying ? "Stop" : "Play"}
             >
@@ -637,13 +639,6 @@ export default function Home() {
               ) : (
                 <Play className="w-7 h-7" />
               )}
-            </button>
-            <button
-              onClick={submitGuess}
-              className="p-4 bg-blue-600 hover:bg-blue-500 rounded-lg shadow"
-              title="Submit Guess"
-            >
-              <Send className="w-7 h-7" />
             </button>
             <button
               onClick={() => setIsLooping(!isLooping)}
@@ -655,6 +650,13 @@ export default function Home() {
               title="Toggle Looping"
             >
               <Repeat className="w-7 h-7" />
+            </button>
+            <button
+              onClick={submitGuess}
+              className="p-4 bg-green-600 hover:bg-green-500 rounded-lg shadow transition-colors"
+              title="Submit Guess"
+            >
+              <Zap className="w-7 h-7" />
             </button>
             <button
               onClick={clearGrid}
