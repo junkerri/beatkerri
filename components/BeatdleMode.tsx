@@ -211,16 +211,16 @@ export default function BeatdleMode() {
     );
 
     seq.loop = loop;
-    seq.start(0);
+    seq.start(undefined, 0);
 
-    Tone.Transport.start();
+    Tone.Transport.start("+0.1");
 
     if (!loop) {
       Tone.Transport.scheduleOnce(() => {
         setIsPlaying(false);
         setActiveStep(null);
         if (onDone) onDone();
-      }, `+${(16 * 60) / bpm}`);
+      }, `+${(16 * 60) / bpm}s`);
     }
   };
 
