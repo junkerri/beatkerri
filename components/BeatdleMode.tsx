@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import * as Tone from "tone";
 import seedrandom from "seedrandom";
 import { GameLayout } from "@/components/GameLayout";
 import { useAudioPlayback } from "@/hooks/useAudioPlayback";
@@ -57,16 +56,6 @@ const createDailyPattern = (beatNumber: number) => {
   return grid;
 };
 
-const instruments = [
-  "kick",
-  "snare",
-  "closed_hihat",
-  "open_hihat",
-  "low_tom",
-  "high_tom",
-  "clap",
-];
-
 // Add attempt history for Wordle-style sharing
 type Attempt = {
   grid: boolean[][];
@@ -117,7 +106,6 @@ export default function BeatdleMode() {
     setClaimedCorrectSteps,
     toggleStep: toggleStepGrid,
     clearGrid,
-    updateScore,
   } = useGameState();
 
   useEffect(() => {
@@ -143,7 +131,16 @@ export default function BeatdleMode() {
         if (parsed.gameOver) setGameOver(true);
       }
     }
-  }, [beatNumber]);
+  }, [
+    beatNumber,
+    setScore,
+    setHighestScore,
+    setBeatsCompleted,
+    setTotalAttempts,
+    setPerfectSolves,
+    setGameWon,
+    setGameOver,
+  ]);
 
   const togglePlay = async () => {
     if (isPlaying) {
