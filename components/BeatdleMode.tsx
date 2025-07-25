@@ -12,6 +12,13 @@ import {
   Send,
   Wand2,
   Crosshair,
+  Headphones,
+  Trophy,
+  Clock,
+  Target,
+  Music,
+  Share2,
+  Zap,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -108,9 +115,11 @@ export default function BeatdleMode() {
   const [perfectSolves, setPerfectSolves] = useState(0);
   const [attemptsLeft, setAttemptsLeft] = useState(3);
   const [attemptHistory, setAttemptHistory] = useState<Attempt[]>([]);
-
-  // Track if user has already played today's beat
   const [alreadyPlayed, setAlreadyPlayed] = useState(false);
+  // --- ADDED STATE FOR AUDIO SHARING ---
+  const [isTargetPlaying, setIsTargetPlaying] = useState(false);
+  const [targetAudioUrl, setTargetAudioUrl] = useState<string | null>(null);
+  const recorderRef = useRef<Tone.Recorder | null>(null);
 
   const padPlayers = useRef<Tone.Players | null>(null);
   useEffect(() => {
@@ -171,7 +180,11 @@ export default function BeatdleMode() {
     setIsPlaying(false);
   };
 
-  const playPattern = async (pattern: boolean[][]) => {
+  const playPattern = async (
+    pattern: boolean[][],
+    loop: boolean = isLooping,
+    onDone?: () => void
+  ) => {
     await Tone.start();
     Tone.Transport.stop();
     Tone.Transport.cancel();
@@ -200,16 +213,17 @@ export default function BeatdleMode() {
       "16n"
     );
 
-    seq.loop = isLooping;
+    seq.loop = loop;
     seq.start(0);
 
     Tone.Transport.start();
 
-    if (!isLooping) {
+    if (!loop) {
       Tone.Transport.scheduleOnce(() => {
         setIsPlaying(false);
         setActiveStep(null);
-      }, "+1m");
+        if (onDone) onDone();
+      }, `+${(16 * 60) / bpm}`);
     }
   };
 
@@ -277,17 +291,33 @@ export default function BeatdleMode() {
       .join("");
   }
 
+  // Visual squares for overlay
+  function getShareSquares() {
+    if (!attemptHistory.length) return null;
+    // Only show the last attempt visually
+    const last = attemptHistory[attemptHistory.length - 1];
+    return getShareRow(last.grid, last.feedback)
+      .split("")
+      .map((sq, i) => (
+        <span key={i} style={{ fontSize: "1.5rem", lineHeight: 1 }}>
+          {sq}
+        </span>
+      ));
+  }
+
   function getShareText() {
     const solved = gameWon;
     const attemptsUsed = attemptHistory.length;
     const maxAttempts = 3;
-    const header = solved
-      ? `Beatdle #${beatNumber} ${attemptsUsed}/${maxAttempts} 🎉`
-      : `Beatdle #${beatNumber} X/${maxAttempts} 😵`;
+    const attemptStr = solved
+      ? `${attemptsUsed}/${maxAttempts}`
+      : `X/${maxAttempts}`;
+    const header = `Beatdle #${beatNumber} ${attemptStr} 🎧`;
+    // All attempts' colored squares, each on a new line
     const rows = attemptHistory
       .map((a) => getShareRow(a.grid, a.feedback))
       .join("\n");
-    return `${header}\nScore: ${score}\n${rows}\nhttps://beatkerri.com/beatdle`;
+    return `${header}\n${rows}\nScore: ${score}\nCan you beat it?\nhttps://beatkerri.vercel.app/`;
   }
 
   const handleShare = async () => {
@@ -300,9 +330,33 @@ export default function BeatdleMode() {
         toast.error("Could not share.");
       }
     } else {
-      navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(text);
       toast.success("Results copied to clipboard!");
     }
+  };
+
+  // Share menu/modal state
+  const [showShareMenu, setShowShareMenu] = useState(false);
+  const handleShareMenu = async () => {
+    await renderTargetBeatToWav(); // Ensure audio is ready
+    setShowShareMenu(true);
+  };
+  const handleCopyShare = async () => {
+    await navigator.clipboard.writeText(getShareText());
+    toast.success("Results copied to clipboard!");
+    setShowShareMenu(false);
+  };
+  const handleShareFacebook = () => {
+    window.open(
+      `https://www.facebook.com/sharer/sharer.php?u=https://beatkerri.vercel.app/`,
+      "_blank"
+    );
+    setShowShareMenu(false);
+  };
+  const handleShareTwitter = () => {
+    const text = encodeURIComponent(getShareText());
+    window.open(`https://twitter.com/intent/tweet?text=${text}`, "_blank");
+    setShowShareMenu(false);
   };
 
   const submitGuess = () => {
@@ -449,13 +503,7 @@ export default function BeatdleMode() {
           true // gameOver
         );
 
-        toast.error("👻 Game Over! Try again.", {
-          style: {
-            background: "#b91c1c",
-            color: "#fff",
-          },
-          duration: 4000,
-        });
+        // Removed toast notification for game over since we have overlay
       } else {
         setAttemptsLeft(remaining);
 
@@ -478,6 +526,67 @@ export default function BeatdleMode() {
     setScore(totalScore);
   };
 
+  // Function to play the target beat for sharing
+  const playTargetBeat = async () => {
+    await playPattern(targetGrid);
+  };
+
+  // Function to render the target beat to a .wav blob and set the URL
+  const renderTargetBeatToWav = async () => {
+    if (targetAudioUrl) return targetAudioUrl; // Already rendered
+    await Tone.start();
+    const recorder = new Tone.Recorder();
+    recorderRef.current = recorder;
+    const players = new Tone.Players({
+      kick: "/samples/kick.wav",
+      snare: "/samples/snare.wav",
+      closed_hihat: "/samples/closed_hihat.wav",
+      open_hihat: "/samples/open_hihat.wav",
+      clap: "/samples/clap.wav",
+      low_tom: "/samples/low_tom.wav",
+      high_tom: "/samples/high_tom.wav",
+    }).connect(recorder);
+    Tone.Transport.stop();
+    Tone.Transport.cancel();
+    Tone.Transport.bpm.value = bpm;
+    const seq = new Tone.Sequence(
+      (time, col) => {
+        targetGrid.forEach((row, rowIndex) => {
+          if (row[col]) {
+            players.player(instruments[rowIndex]).start(time);
+          }
+        });
+      },
+      [...Array(16).keys()],
+      "16n"
+    );
+    seq.loop = false;
+    seq.start(0);
+    recorder.start();
+    Tone.Transport.start();
+    // Wait for 1 bar (16 steps of 16n at bpm)
+    await new Promise((resolve) => setTimeout(resolve, (60 / bpm) * 16 * 1000));
+    Tone.Transport.stop();
+    Tone.Transport.cancel();
+    const recording = await recorder.stop();
+    const url = URL.createObjectURL(recording);
+    setTargetAudioUrl(url);
+    return url;
+  };
+
+  // Toggle Listen (Headphones) for target beat
+  const toggleTargetBeat = async () => {
+    if (isTargetPlaying) {
+      Tone.Transport.stop();
+      Tone.Transport.cancel();
+      setActiveStep(null);
+      setIsTargetPlaying(false);
+    } else {
+      setIsTargetPlaying(true);
+      await playPattern(targetGrid, false, () => setIsTargetPlaying(false));
+    }
+  };
+
   // If already played, show message and block game UI
   if (alreadyPlayed) {
     return (
@@ -487,7 +596,8 @@ export default function BeatdleMode() {
             🕐 ALREADY PLAYED TODAY 🕐
           </div>
           <p className="text-yellow-400 font-mono text-lg">
-            ⭐ Final Score: {score}
+            <Trophy className="inline w-5 h-5 mr-2" />
+            Final Score: {score}
           </p>
           <div className="mb-4">
             <SequencerGrid
@@ -496,22 +606,32 @@ export default function BeatdleMode() {
               activeStep={activeStep}
             />
             <p className="text-center text-gray-400 mt-2 font-mono text-sm">
+              <Target className="inline w-4 h-4 mr-1" />
               Solution
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={toggleTargetBeat}
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded flex items-center space-x-2 transition-colors"
+              title="Play Beat"
+            >
+              <Headphones size={18} className="text-white" />
+              <span>Listen</span>
+            </button>
             <button
               onClick={handleShare}
-              className="px-4 py-2 bg-blue-600 text-white rounded flex items-center space-x-2"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded flex items-center space-x-2 transition-colors"
             >
-              <Send size={18} className="text-white" />
+              <Share2 size={18} className="text-white" />
               <span>Share Results</span>
             </button>
           </div>
           <p className="text-gray-400 font-mono text-center mt-4">
             Come back tomorrow for a new beat!
           </p>
-          <p className="text-gray-500 font-mono text-center text-xs">
+          <p className="text-gray-500 font-mono text-center text-xs flex items-center justify-center">
+            <Clock className="w-3 h-3 mr-1" />
             Next beat available in {getTimeUntilNextBeat()}
           </p>
         </div>
@@ -522,7 +642,8 @@ export default function BeatdleMode() {
   return (
     <main className="relative flex flex-col items-center justify-center min-h-screen bg-black text-white p-4">
       <p className="text-center text-sm text-gray-400 mt-4 mb-2 font-mono">
-        🧩 Beatdle #{beatNumber} — Listen & Recreate
+        <Music className="inline w-4 h-4 mr-1" />
+        Beatdle #{beatNumber} — Listen & Recreate
       </p>
       <div
         className="
@@ -608,8 +729,10 @@ export default function BeatdleMode() {
           <div className="flex justify-center gap-2 mt-2 w-full">
             <button
               onClick={togglePlay}
-              className={`p-4 rounded-lg shadow ${
-                isPlaying ? "bg-red-600" : "bg-green-600"
+              className={`p-4 rounded-lg shadow transition-colors ${
+                isPlaying
+                  ? "bg-red-600 hover:bg-red-500"
+                  : "bg-green-600 hover:bg-green-500"
               }`}
             >
               {isPlaying ? <Square /> : <Play />}
@@ -627,17 +750,17 @@ export default function BeatdleMode() {
             </button>
             <button
               onClick={submitGuess}
-              className="p-4 bg-blue-600 hover:bg-blue-500 rounded-lg shadow"
+              className="p-4 bg-blue-600 hover:bg-blue-500 rounded-lg shadow transition-colors"
               title="Submit Guess"
             >
-              <Send className="w-7 h-7" />
+              <Zap className="w-7 h-7" />
             </button>
             <button
               onClick={() => {
                 setGrid(createEmptyGrid());
                 stopPlayback();
               }}
-              className="p-4 bg-gray-700 rounded-lg shadow"
+              className="p-4 bg-gray-700 hover:bg-gray-600 rounded-lg shadow transition-colors"
             >
               <Trash2 />
             </button>
@@ -668,34 +791,142 @@ export default function BeatdleMode() {
           >
             {gameOver ? "👻 GAME OVER 👻" : "🎉 CONGRATULATIONS! 🎉"}
           </div>
-          <p className="text-yellow-400 font-mono text-lg">⭐ Score: {score}</p>
+          <p className="text-yellow-400 font-mono text-lg">
+            <Trophy className="inline w-5 h-5 mr-2" />
+            {gameWon
+              ? `Congratulations! You scored ${score} points!`
+              : `Final Score: ${score}`}
+          </p>
           <div className="mb-4">
-            {/* Show the solution grid visually, but not in share */}
+            {/* Show the solution grid visually, as before */}
             <SequencerGrid
               grid={targetGrid}
               toggleStep={() => {}}
               activeStep={activeStep}
             />
             <p className="text-center text-gray-400 mt-2 font-mono text-sm">
+              <Target className="inline w-4 h-4 mr-1" />
               Solution
             </p>
           </div>
-          {/* Removed Wordle-style squares from overlay */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={toggleTargetBeat}
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded flex items-center space-x-2 transition-colors"
+              title="Play Beat"
+            >
+              <Headphones size={22} className="text-white" />
+              <span>{isTargetPlaying ? "Stop" : "Listen"}</span>
+            </button>
             <button
               onClick={handleShare}
-              className="px-4 py-2 bg-blue-600 text-white rounded flex items-center space-x-2"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded flex items-center space-x-2 transition-colors"
             >
-              <Send size={18} className="text-white" />
+              <Share2 size={18} className="text-white" />
               <span>Share Results</span>
             </button>
           </div>
           <p className="text-gray-400 font-mono text-center mt-4">
             Come back tomorrow for a new beat!
           </p>
-          <p className="text-gray-500 font-mono text-center text-xs">
+          <p className="text-gray-500 font-mono text-center text-xs flex items-center justify-center">
+            <Clock className="w-3 h-3 mr-1" />
             Next beat available in {getTimeUntilNextBeat()}
           </p>
+        </div>
+      )}
+      {showShareMenu && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-80 flex flex-col items-center justify-center">
+          <div className="bg-gray-900 rounded-lg p-6 flex flex-col gap-4 items-center w-80">
+            <button
+              onClick={handleShareFacebook}
+              className="w-full flex items-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="lucide lucide-facebook"
+              >
+                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+              </svg>{" "}
+              Facebook
+            </button>
+            <button
+              onClick={handleShareTwitter}
+              className="w-full flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="lucide lucide-twitter"
+              >
+                <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z" />
+              </svg>{" "}
+              Twitter/X
+            </button>
+            <div className="w-full flex items-center gap-2 px-4 py-2 bg-pink-600 text-white rounded opacity-80 cursor-not-allowed">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="lucide lucide-instagram"
+              >
+                <path d="M15 6v8h-3V6h3z" />
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19 5h-2a3 3 0 0 0-3 3v7a3 3 0 0 0 3 3h7a3 3 0 0 0 3-3v-7a3 3 0 0 0-3-3h-2" />
+              </svg>{" "}
+              Instagram (screenshot & share!)
+            </div>
+            <button
+              onClick={handleCopyShare}
+              className="w-full flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="lucide lucide-copy"
+              >
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                <rect x="9" y="3" width="6" height="4" />
+                <path d="M9 17h6" />
+                <path d="M9 21h6" />
+              </svg>{" "}
+              Copy
+            </button>
+            <button
+              onClick={() => setShowShareMenu(false)}
+              className="mt-2 text-gray-400 hover:text-white"
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       )}
     </main>
