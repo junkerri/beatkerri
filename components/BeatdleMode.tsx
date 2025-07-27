@@ -41,14 +41,24 @@ const createDailyPattern = (beatNumber: number) => {
   const grid = createEmptyGrid();
 
   const activeRows = [0, 1, 2];
-  const targetNotes = 8 + Math.floor(rng() * 8); // 8–15 notes
+  const targetNotes = 6 + Math.floor(rng() * 7); // 6–12 notes (max 12)
 
-  let count = 0;
+  // Ensure we always have a note on the first beat (column 0)
+  const firstBeatRow = activeRows[Math.floor(rng() * activeRows.length)];
+  grid[firstBeatRow][0] = true;
+  let count = 1;
+
+  // Track which columns already have notes to prevent stacking
+  const usedColumns = new Set([0]);
+
   while (count < targetNotes) {
     const row = activeRows[Math.floor(rng() * activeRows.length)];
     const col = Math.floor(rng() * 16);
-    if (!grid[row][col]) {
+
+    // Only add note if this column doesn't already have a note (no stacking)
+    if (!usedColumns.has(col)) {
       grid[row][col] = true;
+      usedColumns.add(col);
       count++;
     }
   }
