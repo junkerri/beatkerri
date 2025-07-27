@@ -33,6 +33,22 @@ export default function Home() {
         </Link>
       </div>
 
+      {/* Navigation Links */}
+      <div className="mt-8 flex justify-center gap-6 text-sm">
+        <Link
+          href="/about"
+          className="text-gray-400 hover:text-amber-400 transition-colors font-mono"
+        >
+          About
+        </Link>
+        <Link
+          href="/how-to-play"
+          className="text-gray-400 hover:text-amber-400 transition-colors font-mono"
+        >
+          How to Play
+        </Link>
+      </div>
+
       <footer className="mt-12 text-gray-500 text-xs font-mono">
         © {new Date().getFullYear()} Junkerri
       </footer>
