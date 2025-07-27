@@ -13,6 +13,9 @@ import {
   Upload,
   Save,
   Music,
+  Puzzle,
+  Trophy,
+  Settings,
 } from "lucide-react";
 
 export default function HowToPlay() {
@@ -116,7 +119,8 @@ export default function HowToPlay() {
           {/* Beatdle Mode Instructions */}
           <section className="bg-gradient-to-br from-purple-900 to-pink-900 p-6 rounded-lg border border-purple-600">
             <h2 className="text-2xl font-bold font-mono text-purple-300 mb-6">
-              🧩 Beatdle Mode
+              <Puzzle className="inline w-6 h-6 mr-2" />
+              Beatdle Mode
             </h2>
             <div className="space-y-4 text-gray-300">
               <div>
@@ -169,7 +173,8 @@ export default function HowToPlay() {
           {/* Challenge Mode Instructions */}
           <section className="bg-gradient-to-br from-green-900 to-emerald-900 p-6 rounded-lg border border-green-600">
             <h2 className="text-2xl font-bold font-mono text-green-300 mb-6">
-              🎯 Challenge Mode
+              <Trophy className="inline w-6 h-6 mr-2" />
+              Challenge Mode
             </h2>
             <div className="space-y-4 text-gray-300">
               <div>
@@ -225,7 +230,8 @@ export default function HowToPlay() {
           {/* Jam Mode Instructions */}
           <section className="bg-gradient-to-br from-blue-900 to-indigo-900 p-6 rounded-lg border border-blue-600">
             <h2 className="text-2xl font-bold font-mono text-blue-300 mb-6">
-              🎛️ Jam Mode
+              <Settings className="inline w-6 h-6 mr-2" />
+              Jam Mode
             </h2>
             <div className="space-y-4 text-gray-300">
               <div>

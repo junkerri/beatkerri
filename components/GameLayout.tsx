@@ -206,8 +206,8 @@ export const GameLayout = ({
 
       <p className="text-center text-sm text-gray-400 mt-4 mb-2 font-mono">
         {mode === "jam"
-          ? "🎛️ Jam Mode: Create your own groove!"
-          : "🎧 Listen to the target beat and recreate it."}
+          ? "Jam Mode: Create your own groove!"
+          : "Listen to the target beat and recreate it."}
       </p>
 
       <div

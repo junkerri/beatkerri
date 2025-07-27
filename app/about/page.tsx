@@ -1,7 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Music, Target, Zap, Download } from "lucide-react";
+import {
+  ArrowLeft,
+  Music,
+  Target,
+  Zap,
+  Download,
+  User,
+  Puzzle,
+  Trophy,
+  Settings,
+} from "lucide-react";
 
 export default function About() {
   return (
@@ -26,6 +36,31 @@ export default function About() {
 
         {/* Main Content */}
         <div className="space-y-8">
+          {/* Creator Story */}
+          <section className="bg-gray-900 p-6 rounded-lg border border-gray-700">
+            <h2 className="text-2xl font-bold font-mono text-amber-400 mb-4">
+              <User className="inline w-6 h-6 mr-2" />
+              About the Creator
+            </h2>
+            <p className="text-gray-300 leading-relaxed mb-4">
+              Beatkerri 303 was developed by{" "}
+              <strong className="text-amber-400">Aastha Kumari Karki</strong>
+              (aka <strong className="text-amber-400">junkerri</strong>), a
+              musician who wanted to design and build an interactive game based
+              on drum machines to play with friends.
+            </p>
+            <p className="text-gray-300 leading-relaxed mb-4">
+              As a musician, I&apos;m inspired by how music, especially singing
+              and drumming, brings people together. It&apos;s more than art;
+              it&apos;s a way we connect and belong.
+            </p>
+            <p className="text-gray-300 leading-relaxed">
+              I created this beat-matching game to reflect that spirit. Rhythm
+              is universal. You don&apos;t need to be musical to feel it.
+              It&apos;s already in you.
+            </p>
+          </section>
+
           {/* What is Beatkerri */}
           <section className="bg-gray-900 p-6 rounded-lg border border-gray-700">
             <h2 className="text-2xl font-bold font-mono text-amber-400 mb-4">
@@ -53,7 +88,8 @@ export default function About() {
               {/* Beatdle Mode */}
               <div className="bg-gradient-to-br from-purple-900 to-pink-900 p-4 rounded-lg border border-purple-600">
                 <h3 className="text-xl font-bold font-mono text-purple-300 mb-2">
-                  🧩 Beatdle Mode
+                  <Puzzle className="inline w-5 h-5 mr-2" />
+                  Beatdle Mode
                 </h3>
                 <p className="text-gray-300 text-sm mb-3">
                   Daily beat challenges inspired by Wordle. Listen to a target
@@ -71,7 +107,8 @@ export default function About() {
               {/* Challenge Mode */}
               <div className="bg-gradient-to-br from-green-900 to-emerald-900 p-4 rounded-lg border border-green-600">
                 <h3 className="text-xl font-bold font-mono text-green-300 mb-2">
-                  🎯 Challenge Mode
+                  <Trophy className="inline w-5 h-5 mr-2" />
+                  Challenge Mode
                 </h3>
                 <p className="text-gray-300 text-sm mb-3">
                   Progressive difficulty levels that unlock new instruments and
@@ -88,7 +125,8 @@ export default function About() {
               {/* Jam Mode */}
               <div className="bg-gradient-to-br from-blue-900 to-indigo-900 p-4 rounded-lg border border-blue-600">
                 <h3 className="text-xl font-bold font-mono text-blue-300 mb-2">
-                  🎛️ Jam Mode
+                  <Settings className="inline w-5 h-5 mr-2" />
+                  Jam Mode
                 </h3>
                 <p className="text-gray-300 text-sm mb-3">
                   Free-form creative mode for making your own beats. Save, load,

@@ -294,7 +294,7 @@ export default function JamMode() {
   return (
     <main className="relative flex flex-col items-center justify-center min-h-screen bg-black text-white p-4">
       <p className="text-center text-sm text-gray-400 mt-4 mb-2 font-mono">
-        🎛️ Jam Mode: Create your own groove!
+        Jam Mode: Create your own groove!
       </p>
 
       <div
