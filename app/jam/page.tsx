@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { SequencerGrid } from "@/components/SequencerGrid";
 import { GameControls } from "@/components/GameControls";
 import { GameStats } from "@/components/GameStats";
 import { useAudioPlayback } from "@/hooks/useAudioPlayback";
 import { useGameState } from "@/hooks/useGameState";
-import { Download, Upload, Save } from "lucide-react";
+import { Download, Upload, Save, Music } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function JamMode() {
@@ -133,6 +133,152 @@ export default function JamMode() {
     input.click();
   };
 
+  // WAV Export functionality
+  const audioContextRef = useRef<AudioContext | null>(null);
+
+  const generateWav = async () => {
+    try {
+      // Initialize audio context if not already done
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext ||
+          (window as unknown as { webkitAudioContext: typeof AudioContext })
+            .webkitAudioContext)();
+      }
+
+      const audioContext = audioContextRef.current;
+      const sampleRate = audioContext.sampleRate;
+      const stepsPerBeat = 4;
+      const totalSteps = 16;
+      const secondsPerStep = 60 / bpm / stepsPerBeat;
+      const totalDuration = totalSteps * secondsPerStep;
+      const totalSamples = Math.floor(totalDuration * sampleRate);
+
+      // Create audio buffer
+      const audioBuffer = audioContext.createBuffer(
+        1,
+        totalSamples,
+        sampleRate
+      );
+      const channelData = audioBuffer.getChannelData(0);
+
+      // Load drum samples
+      const samples = await loadDrumSamples(audioContext);
+
+      // Generate audio for each step
+      for (let step = 0; step < totalSteps; step++) {
+        const stepTime = step * secondsPerStep;
+        const stepSample = Math.floor(stepTime * sampleRate);
+
+        // Check each instrument for this step
+        for (let instrument = 0; instrument < 7; instrument++) {
+          if (grid[instrument][step] && samples[instrument]) {
+            const sample = samples[instrument];
+            const sampleLength = sample.length;
+
+            // Add the sample to the audio buffer
+            for (
+              let i = 0;
+              i < sampleLength && stepSample + i < totalSamples;
+              i++
+            ) {
+              channelData[stepSample + i] += sample[i] * 0.3; // Reduce volume to prevent clipping
+            }
+          }
+        }
+      }
+
+      // Convert to WAV
+      const wavBlob = audioBufferToWav(audioBuffer);
+
+      // Download the file
+      const url = URL.createObjectURL(wavBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `beat-${Date.now()}.wav`;
+      link.click();
+
+      URL.revokeObjectURL(url);
+      toast.success("WAV file exported!");
+    } catch (error) {
+      console.error("Error generating WAV:", error);
+      toast.error("Failed to generate WAV file");
+    }
+  };
+
+  const loadDrumSamples = async (audioContext: AudioContext) => {
+    const sampleUrls = [
+      "/samples/kick.wav",
+      "/samples/snare.wav",
+      "/samples/closed_hihat.wav",
+      "/samples/open_hihat.wav",
+      "/samples/low_tom.wav",
+      "/samples/high_tom.wav",
+      "/samples/clap.wav",
+    ];
+
+    const samples: Float32Array[] = [];
+
+    for (const url of sampleUrls) {
+      try {
+        const response = await fetch(url);
+        const arrayBuffer = await response.arrayBuffer();
+        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        samples.push(audioBuffer.getChannelData(0));
+      } catch (error) {
+        console.error(`Failed to load sample ${url}:`, error);
+        // Create a simple click sound as fallback
+        const clickLength = Math.floor(0.01 * audioContext.sampleRate);
+        const click = new Float32Array(clickLength);
+        for (let i = 0; i < clickLength; i++) {
+          click[i] = Math.sin(i * 0.1) * Math.exp(-i * 0.01);
+        }
+        samples.push(click);
+      }
+    }
+
+    return samples;
+  };
+
+  const audioBufferToWav = (audioBuffer: AudioBuffer): Blob => {
+    const numChannels = audioBuffer.numberOfChannels;
+    const sampleRate = audioBuffer.sampleRate;
+    const length = audioBuffer.length;
+    const buffer = audioBuffer.getChannelData(0);
+
+    // WAV file header
+    const wavHeader = new ArrayBuffer(44);
+    const view = new DataView(wavHeader);
+
+    // RIFF chunk descriptor
+    view.setUint32(0, 0x52494646, false); // "RIFF"
+    view.setUint32(4, 36 + length * 2, true); // File size
+    view.setUint32(8, 0x57415645, false); // "WAVE"
+
+    // fmt sub-chunk
+    view.setUint32(12, 0x666d7420, false); // "fmt "
+    view.setUint32(16, 16, true); // Subchunk1Size
+    view.setUint16(20, 1, true); // AudioFormat (PCM)
+    view.setUint16(22, numChannels, true); // NumChannels
+    view.setUint32(24, sampleRate, true); // SampleRate
+    view.setUint32(28, sampleRate * numChannels * 2, true); // ByteRate
+    view.setUint16(32, numChannels * 2, true); // BlockAlign
+    view.setUint16(34, 16, true); // BitsPerSample
+
+    // data sub-chunk
+    view.setUint32(36, 0x64617461, false); // "data"
+    view.setUint32(40, length * 2, true); // Subchunk2Size
+
+    // Combine header with audio data
+    const audioData = new Int16Array(length);
+    for (let i = 0; i < length; i++) {
+      const sample = Math.max(-1, Math.min(1, buffer[i]));
+      audioData[i] = sample < 0 ? sample * 0x8000 : sample * 0x7fff;
+    }
+
+    const wavBlob = new Blob([wavHeader, audioData], { type: "audio/wav" });
+    return wavBlob;
+  };
+
   // Load saved beats on mount
   useEffect(() => {
     const saved = localStorage.getItem("jam_saved_beats");
@@ -247,7 +393,14 @@ export default function JamMode() {
               className="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded flex items-center gap-2 text-sm transition-colors"
             >
               <Download size={16} />
-              Export
+              Export JSON
+            </button>
+            <button
+              onClick={generateWav}
+              className="px-3 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded flex items-center gap-2 text-sm transition-colors"
+            >
+              <Music size={16} />
+              Export WAV
             </button>
             <button
               onClick={importBeat}
