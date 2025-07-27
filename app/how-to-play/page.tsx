@@ -17,8 +17,13 @@ import {
   Trophy,
   Settings,
 } from "lucide-react";
+import { playNavigationClick } from "@/utils/clickSounds";
 
 export default function HowToPlay() {
+  const handleNavigationClick = () => {
+    playNavigationClick();
+  };
+
   return (
     <main className="min-h-screen bg-black text-white p-6">
       <div className="max-w-4xl mx-auto">
@@ -26,6 +31,7 @@ export default function HowToPlay() {
         <div className="mb-8">
           <Link
             href="/"
+            onClick={handleNavigationClick}
             className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-4"
           >
             <ArrowLeft size={20} />
@@ -389,6 +395,7 @@ export default function HowToPlay() {
           <p className="mt-2">
             <Link
               href="/about"
+              onClick={handleNavigationClick}
               className="text-amber-400 hover:text-amber-300 transition-colors"
             >
               About Beatkerri →

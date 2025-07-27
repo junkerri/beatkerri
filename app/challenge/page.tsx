@@ -17,6 +17,12 @@ import {
   Wand2,
   Crosshair,
 } from "lucide-react";
+import {
+  playButtonClick,
+  playToggleClick,
+  playSubmitClick,
+  playClearClick,
+} from "@/utils/clickSounds";
 
 export default function Home() {
   const createEmptyGrid = () =>
@@ -231,6 +237,7 @@ export default function Home() {
   );
 
   const togglePlay = async () => {
+    playButtonClick();
     if (isPlaying) {
       stopPlayback();
       setIsPlaying(false);
@@ -332,6 +339,7 @@ export default function Home() {
   }, [gameOver, gameWon, targetGrid, playTargetGrid]);
 
   const submitGuess = () => {
+    playSubmitClick();
     const newFeedback = grid.map((row, rowIndex) =>
       row.map((step, colIndex) => {
         if (step) {
@@ -479,6 +487,7 @@ export default function Home() {
   };
 
   const clearGrid = () => {
+    playClearClick();
     setGrid(createEmptyGrid());
     setFeedbackGrid(null);
     stopPlayback();
@@ -523,6 +532,7 @@ export default function Home() {
 
   const handleTabClick = (tab: "target" | "recreate") => {
     if (gameOver || gameWon) return;
+    playToggleClick();
     setMode(tab);
     stopPlayback();
     if (tab === "target") {
