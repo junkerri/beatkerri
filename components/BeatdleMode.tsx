@@ -499,7 +499,7 @@ export default function BeatdleMode() {
   return (
     <GameLayout
       mode="beatdle"
-      beatLabel={`Beatdle #${beatNumber} — Listen & Recreate`}
+      beatLabel={`Beatdle #${beatNumber}`}
       bpm={bpm}
       grid={grid}
       targetGrid={targetGrid}

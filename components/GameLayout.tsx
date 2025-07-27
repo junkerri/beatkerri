@@ -98,11 +98,11 @@ export const GameLayout = ({
       case "challenge":
         return "BEATKERRI 303";
       case "beatdle":
-        return "🧩 Beatdle";
+        return "BEATKERRI 303";
       case "jam":
-        return "🎛️ Jam Mode";
+        return "BEATKERRI 303";
       default:
-        return "Beatkerri";
+        return "BEATKERRI 303";
     }
   };
 

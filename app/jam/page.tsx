@@ -171,7 +171,7 @@ export default function JamMode() {
         }}
       >
         <h1 className="text-2xl font-extrabold mb-4 font-mono text-center tracking-widest text-amber-400 drop-shadow">
-          🎛️ Jam Mode
+          BEATKERRI 303
         </h1>
         <p className="text-gray-400 font-mono text-center mb-2">
           Jam Mode — BPM: {bpm}
