@@ -173,31 +173,27 @@ export default function JamMode() {
         <h1 className="text-2xl font-extrabold mb-4 font-mono text-center tracking-widest text-amber-400 drop-shadow">
           BEATKERRI 303
         </h1>
-        <p className="text-gray-400 font-mono text-center mb-2">
-          Jam Mode — BPM: {bpm}
-        </p>
+        <p className="text-gray-400 font-mono text-center mb-2">Jam Mode</p>
 
-        {/* BPM Control */}
-        <div className="w-full mb-4 bg-gray-800 p-3 rounded-lg">
-          <h3 className="text-white font-mono text-sm mb-2">BPM Control</h3>
-          <div className="flex items-center gap-4">
-            <input
-              type="range"
-              min="60"
-              max="200"
-              value={bpm}
-              onChange={(e) => handleBpmChange(parseInt(e.target.value))}
-              className="flex-1"
-            />
-            <span className="text-white font-mono text-lg min-w-[3rem] text-center">
-              {bpm}
-            </span>
-          </div>
-        </div>
-
-        {/* Stats */}
+        {/* Stats with Interactive BPM */}
         <div className="flex justify-end mb-4 w-full">
-          <GameStats bpm={bpm} />
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleBpmChange(bpm - 1)}
+              className="w-6 h-6 bg-gray-700 hover:bg-gray-600 text-white rounded flex items-center justify-center text-sm font-mono transition-colors"
+              disabled={bpm <= 60}
+            >
+              -
+            </button>
+            <GameStats bpm={bpm} />
+            <button
+              onClick={() => handleBpmChange(bpm + 1)}
+              className="w-6 h-6 bg-gray-700 hover:bg-gray-600 text-white rounded flex items-center justify-center text-sm font-mono transition-colors"
+              disabled={bpm >= 200}
+            >
+              +
+            </button>
+          </div>
         </div>
 
         {/* Sequencer */}

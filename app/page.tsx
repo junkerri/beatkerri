@@ -13,21 +13,21 @@ export default function Home() {
       <div className="space-y-6 w-full max-w-md text-center">
         <Link
           href="/beatdle"
-          className="block bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white py-6 px-8 rounded-xl font-mono text-xl shadow-lg hover:shadow-purple-500/25 transition-all duration-200 border border-purple-400"
+          className="block bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white py-6 px-8 rounded-xl font-mono text-xl shadow-lg hover:shadow-purple-500/25 transition-all duration-200 border border-purple-400 h-24 flex items-center justify-center"
         >
           Beatdle - Daily Beat Challenge
         </Link>
 
         <Link
           href="/challenge"
-          className="block bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white py-6 px-8 rounded-xl font-mono text-xl shadow-lg hover:shadow-green-500/25 transition-all duration-200 border border-green-400"
+          className="block bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white py-6 px-8 rounded-xl font-mono text-xl shadow-lg hover:shadow-green-500/25 transition-all duration-200 border border-green-400 h-24 flex items-center justify-center"
         >
-          Challenge Mode
+          Challenge Mode - Level Up Your Beats
         </Link>
 
         <Link
           href="/jam"
-          className="block bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white py-6 px-8 rounded-xl font-mono text-xl shadow-lg hover:shadow-blue-500/25 transition-all duration-200 border border-blue-400"
+          className="block bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white py-6 px-8 rounded-xl font-mono text-xl shadow-lg hover:shadow-blue-500/25 transition-all duration-200 border border-blue-400 h-24 flex items-center justify-center"
         >
           Jam Mode - Create Your Own Beats
         </Link>
