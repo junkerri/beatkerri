@@ -27,9 +27,9 @@ export default function Home() {
 
         <Link
           href="/jam"
-          className="block bg-gradient-to-r from-gray-700 to-gray-600 text-white py-6 px-8 rounded-xl font-mono text-xl shadow-lg opacity-50 cursor-not-allowed border border-gray-500"
+          className="block bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white py-6 px-8 rounded-xl font-mono text-xl shadow-lg hover:shadow-orange-500/25 transition-all duration-200 border border-orange-400"
         >
-          Jam Mode
+          Jam Mode - Create Your Own Beats
         </Link>
       </div>
 
