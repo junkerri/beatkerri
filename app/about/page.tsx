@@ -7,7 +7,6 @@ import {
   Target,
   Zap,
   Download,
-  User,
   Puzzle,
   Trophy,
   Settings,
@@ -36,36 +35,18 @@ export default function About() {
 
         {/* Main Content */}
         <div className="space-y-8">
-          {/* Creator Story */}
-          <section className="bg-gray-900 p-6 rounded-lg border border-gray-700">
-            <h2 className="text-2xl font-bold font-mono text-amber-400 mb-4">
-              <User className="inline w-6 h-6 mr-2" />
-              About the Creator
-            </h2>
-            <p className="text-gray-300 leading-relaxed mb-4">
-              Beatkerri 303 was developed by{" "}
-              <strong className="text-amber-400">Aastha Kumari Karki</strong>
-              (aka <strong className="text-amber-400">junkerri</strong>), a
-              musician who wanted to design and build an interactive game based
-              on drum machines to play with friends.
-            </p>
-            <p className="text-gray-300 leading-relaxed mb-4">
-              As a musician, I&apos;m inspired by how music, especially singing
-              and drumming, brings people together. It&apos;s more than art;
-              it&apos;s a way we connect and belong.
-            </p>
-            <p className="text-gray-300 leading-relaxed">
-              I created this beat-matching game to reflect that spirit. Rhythm
-              is universal. You don&apos;t need to be musical to feel it.
-              It&apos;s already in you.
-            </p>
-          </section>
-
           {/* What is Beatkerri */}
           <section className="bg-gray-900 p-6 rounded-lg border border-gray-700">
             <h2 className="text-2xl font-bold font-mono text-amber-400 mb-4">
               What is Beatkerri 303?
             </h2>
+            <p className="text-gray-300 leading-relaxed mb-4">
+              Beatkerri 303 was developed by{" "}
+              <strong className="text-amber-400">Aastha Kumari Karki</strong>{" "}
+              (aka <strong className="text-amber-400">junkerri</strong>), a
+              musician who wanted to design and build an interactive game based
+              on drum machines to play with friends.
+            </p>
             <p className="text-gray-300 leading-relaxed mb-4">
               Beatkerri 303 is an interactive web-based drum machine that
               combines the classic TR-303 aesthetic with modern web

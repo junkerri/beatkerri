@@ -46,70 +46,126 @@ export default function HowToPlay() {
             <h2 className="text-2xl font-bold font-mono text-amber-400 mb-6">
               Basic Controls
             </h2>
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-6">
+              {/* Control Buttons */}
               <div>
                 <h3 className="text-xl font-bold text-white mb-4">
-                  Step Sequencer
+                  Control Buttons
                 </h3>
-                <div className="space-y-3 text-sm">
-                  <div className="flex items-center gap-3">
-                    <div className="w-6 h-6 bg-amber-500 rounded border-2 border-amber-500"></div>
-                    <span className="text-gray-300">
-                      Active step (note is playing)
-                    </span>
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="flex items-center gap-3 p-3 bg-gray-800 rounded-lg">
+                    <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                      <Play className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <div className="text-white font-semibold">Play/Stop</div>
+                      <div className="text-gray-400 text-sm">
+                        Start or stop playback
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-6 h-6 bg-gray-700 rounded border-2 border-gray-600"></div>
-                    <span className="text-gray-300">
-                      Inactive step (no note)
-                    </span>
+                  <div className="flex items-center gap-3 p-3 bg-gray-800 rounded-lg">
+                    <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+                      <Repeat className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <div className="text-white font-semibold">Loop</div>
+                      <div className="text-gray-400 text-sm">
+                        Toggle continuous playback
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-6 h-6 bg-amber-500 rounded border-2 border-green-400"></div>
-                    <span className="text-gray-300">
-                      Correct guess (green border)
-                    </span>
+                  <div className="flex items-center gap-3 p-3 bg-gray-800 rounded-lg">
+                    <div className="w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center">
+                      <Trash2 className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <div className="text-white font-semibold">Clear</div>
+                      <div className="text-gray-400 text-sm">
+                        Reset the grid
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-6 h-6 bg-amber-500 rounded border-2 border-red-400"></div>
-                    <span className="text-gray-300">
-                      Incorrect guess (red border)
-                    </span>
+                  <div className="flex items-center gap-3 p-3 bg-gray-800 rounded-lg">
+                    <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+                      <Zap className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <div className="text-white font-semibold">Submit</div>
+                      <div className="text-gray-400 text-sm">
+                        Check your guess (Beatdle/Challenge)
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div>
-                <h3 className="text-xl font-bold text-white mb-4">
-                  Instruments
-                </h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center gap-2">
-                    <span className="text-purple-400 font-mono">BD</span>
-                    <span className="text-gray-300">Bass Drum</span>
+
+              {/* Step Sequencer and Instruments */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="text-xl font-bold text-white mb-4">
+                    Step Sequencer
+                  </h3>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 bg-amber-500 rounded border-2 border-amber-500"></div>
+                      <span className="text-gray-300">
+                        Active step (note is playing)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 bg-gray-700 rounded border-2 border-gray-600"></div>
+                      <span className="text-gray-300">
+                        Inactive step (no note)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 bg-amber-500 rounded border-2 border-green-400"></div>
+                      <span className="text-gray-300">
+                        Correct guess (green border)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 bg-amber-500 rounded border-2 border-red-400"></div>
+                      <span className="text-gray-300">
+                        Incorrect guess (red border)
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-purple-400 font-mono">SN</span>
-                    <span className="text-gray-300">Snare Drum</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-purple-400 font-mono">HH</span>
-                    <span className="text-gray-300">Closed Hi-Hat</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-purple-400 font-mono">OH</span>
-                    <span className="text-gray-300">Open Hi-Hat</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-purple-400 font-mono">LT</span>
-                    <span className="text-gray-300">Low Tom</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-purple-400 font-mono">HT</span>
-                    <span className="text-gray-300">High Tom</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-purple-400 font-mono">CL</span>
-                    <span className="text-gray-300">Clap</span>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white mb-4">
+                    Instruments
+                  </h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="text-purple-400 font-mono">BD</span>
+                      <span className="text-gray-300">Bass Drum</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-purple-400 font-mono">SN</span>
+                      <span className="text-gray-300">Snare Drum</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-purple-400 font-mono">HH</span>
+                      <span className="text-gray-300">Closed Hi-Hat</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-purple-400 font-mono">OH</span>
+                      <span className="text-gray-300">Open Hi-Hat</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-purple-400 font-mono">LT</span>
+                      <span className="text-gray-300">Low Tom</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-purple-400 font-mono">HT</span>
+                      <span className="text-gray-300">High Tom</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-purple-400 font-mono">CL</span>
+                      <span className="text-gray-300">Clap</span>
+                    </div>
                   </div>
                 </div>
               </div>
