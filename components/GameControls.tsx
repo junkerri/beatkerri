@@ -1,4 +1,10 @@
 import { Play, Square, Repeat, Trash2, Zap } from "lucide-react";
+import {
+  playButtonClick,
+  playToggleClick,
+  playSubmitClick,
+  playClearClick,
+} from "@/utils/clickSounds";
 
 interface GameControlsProps {
   isPlaying: boolean;
@@ -21,10 +27,30 @@ export const GameControls: React.FC<GameControlsProps> = ({
   onClearGrid,
   disabled = false,
 }) => {
+  const handleTogglePlay = () => {
+    playButtonClick();
+    onTogglePlay();
+  };
+
+  const handleToggleLoop = () => {
+    playToggleClick();
+    onToggleLoop();
+  };
+
+  const handleSubmitGuess = () => {
+    playSubmitClick();
+    onSubmitGuess?.();
+  };
+
+  const handleClearGrid = () => {
+    playClearClick();
+    onClearGrid();
+  };
+
   return (
     <div className="flex justify-center gap-2 mt-2 w-full">
       <button
-        onClick={onTogglePlay}
+        onClick={handleTogglePlay}
         disabled={disabled}
         className={`p-4 rounded-lg shadow transition-colors ${
           isPlaying
@@ -41,7 +67,7 @@ export const GameControls: React.FC<GameControlsProps> = ({
       </button>
 
       <button
-        onClick={onToggleLoop}
+        onClick={handleToggleLoop}
         disabled={disabled}
         className={`p-4 rounded-lg shadow transition ${
           isLooping
@@ -55,7 +81,7 @@ export const GameControls: React.FC<GameControlsProps> = ({
 
       {canSubmit && onSubmitGuess && (
         <button
-          onClick={onSubmitGuess}
+          onClick={handleSubmitGuess}
           disabled={disabled}
           className={`p-4 bg-green-600 hover:bg-green-500 rounded-lg shadow transition-colors ${
             disabled ? "opacity-50 cursor-not-allowed" : ""
@@ -67,7 +93,7 @@ export const GameControls: React.FC<GameControlsProps> = ({
       )}
 
       <button
-        onClick={onClearGrid}
+        onClick={handleClearGrid}
         disabled={disabled}
         className={`p-4 bg-gray-700 hover:bg-gray-600 rounded-lg shadow transition-colors ${
           disabled ? "opacity-50 cursor-not-allowed" : ""

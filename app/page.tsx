@@ -2,7 +2,6 @@
 "use client";
 
 import Link from "next/link";
-import { SynthButtons } from "@/components/SynthButtons";
 
 export default function Home() {
   return (
@@ -10,8 +9,6 @@ export default function Home() {
       <h1 className="text-6xl md:text-8xl font-mono font-extrabold mb-8 text-center text-amber-400 drop-shadow-[0_0_20px_#fbbf24] tracking-widest">
         BEATKERRI
       </h1>
-
-      <SynthButtons />
 
       <div className="space-y-6 w-full max-w-md text-center">
         <Link
