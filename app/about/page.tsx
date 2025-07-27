@@ -49,7 +49,7 @@ export default function About() {
             </p>
             <p className="text-gray-300 leading-relaxed mb-4">
               Beatkerri 303 is an interactive web-based drum machine that
-              combines the classic TR-303 aesthetic with modern web
+              combines the classic TB-303 aesthetic with modern web
               technologies. It features three distinct game modes that challenge
               your rhythm skills, creativity, and musical intuition.
             </p>
