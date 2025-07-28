@@ -64,18 +64,18 @@ export default function Home() {
       </div>
 
       {/* Navigation Links */}
-      <div className="mt-8 flex justify-center gap-6 text-sm">
+      <div className="mt-8 flex justify-center gap-8 text-lg">
         <Link
           href="/about"
           onClick={handleNavigationClick}
-          className="text-gray-400 hover:text-amber-400 transition-colors font-mono"
+          className="text-amber-400 hover:text-amber-300 transition-colors font-mono font-semibold tracking-wide drop-shadow-[0_0_10px_#fbbf24] hover:drop-shadow-[0_0_15px_#fbbf24]"
         >
           About
         </Link>
         <Link
           href="/how-to-play"
           onClick={handleNavigationClick}
-          className="text-gray-400 hover:text-amber-400 transition-colors font-mono"
+          className="text-amber-400 hover:text-amber-300 transition-colors font-mono font-semibold tracking-wide drop-shadow-[0_0_10px_#fbbf24] hover:drop-shadow-[0_0_15px_#fbbf24]"
         >
           How to Play
         </Link>
