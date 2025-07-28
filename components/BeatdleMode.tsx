@@ -8,6 +8,7 @@ import { useGameState } from "@/hooks/useGameState";
 import { createEmptyGrid, PlayMode } from "@/utils/gameUtils";
 import { Headphones, Clock, Share2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { playToggleClick } from "@/utils/clickSounds";
 
 const getTodayBeatNumber = () => {
   const epoch = new Date("2024-01-01");
@@ -174,6 +175,7 @@ export default function BeatdleMode() {
   };
 
   const handleTabClick = (tab: PlayMode) => {
+    playToggleClick();
     setMode(tab);
     stopPlaybackAudio();
     if (tab === "target") {

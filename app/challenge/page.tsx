@@ -651,7 +651,10 @@ export default function Home() {
               )}
             </button>
             <button
-              onClick={() => setIsLooping(!isLooping)}
+              onClick={() => {
+                playToggleClick();
+                setIsLooping(!isLooping);
+              }}
               className={`p-4 rounded-lg shadow transition ${
                 isLooping
                   ? "bg-purple-600 hover:bg-purple-500"
