@@ -154,7 +154,7 @@ export default function HowToPlay() {
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-white mb-4">
-                    Mode Toggle
+                    Beat Toggle
                   </h3>
                   <div className="space-y-3 text-sm">
                     <div className="flex items-center gap-3 p-3 bg-gray-800 rounded-lg">
@@ -163,7 +163,7 @@ export default function HowToPlay() {
                       </div>
                       <div>
                         <div className="text-white font-semibold text-sm">
-                          Target Mode
+                          Target Beat
                         </div>
                         <div className="text-gray-400 text-xs">
                           Listen to target beat
@@ -176,7 +176,7 @@ export default function HowToPlay() {
                       </div>
                       <div>
                         <div className="text-white font-semibold text-sm">
-                          Recreate Mode
+                          Recreate
                         </div>
                         <div className="text-gray-400 text-xs">
                           Place notes to recreate
