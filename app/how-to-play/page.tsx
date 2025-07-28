@@ -179,7 +179,10 @@ export default function HowToPlay() {
           </section>
 
           {/* Beatdle Mode Instructions */}
-          <section className="bg-gradient-to-br from-purple-900 to-pink-900 p-6 rounded-lg border border-purple-600">
+          <section
+            id="beatdle-mode"
+            className="bg-gradient-to-br from-purple-900 to-pink-900 p-6 rounded-lg border border-purple-600"
+          >
             <h2 className="text-2xl font-bold font-mono text-purple-300 mb-6">
               <Puzzle className="inline w-6 h-6 mr-2" />
               Beatdle Mode
@@ -233,7 +236,10 @@ export default function HowToPlay() {
           </section>
 
           {/* Challenge Mode Instructions */}
-          <section className="bg-gradient-to-br from-green-900 to-emerald-900 p-6 rounded-lg border border-green-600">
+          <section
+            id="challenge-mode"
+            className="bg-gradient-to-br from-green-900 to-emerald-900 p-6 rounded-lg border border-green-600"
+          >
             <h2 className="text-2xl font-bold font-mono text-green-300 mb-6">
               <Trophy className="inline w-6 h-6 mr-2" />
               Challenge Mode
@@ -290,7 +296,10 @@ export default function HowToPlay() {
           </section>
 
           {/* Jam Mode Instructions */}
-          <section className="bg-gradient-to-br from-blue-900 to-indigo-900 p-6 rounded-lg border border-blue-600">
+          <section
+            id="jam-mode"
+            className="bg-gradient-to-br from-blue-900 to-indigo-900 p-6 rounded-lg border border-blue-600"
+          >
             <h2 className="text-2xl font-bold font-mono text-blue-300 mb-6">
               <Settings className="inline w-6 h-6 mr-2" />
               Jam Mode

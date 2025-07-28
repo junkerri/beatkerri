@@ -73,8 +73,12 @@ export default function About() {
             </h2>
             <div className="grid md:grid-cols-3 gap-6">
               {/* Beatdle Mode */}
-              <div className="bg-gradient-to-br from-purple-900 to-pink-900 p-4 rounded-lg border border-purple-600">
-                <h3 className="text-xl font-bold font-mono text-purple-300 mb-2">
+              <Link
+                href="/how-to-play#beatdle-mode"
+                onClick={handleNavigationClick}
+                className="block bg-gradient-to-br from-purple-900 to-pink-900 p-4 rounded-lg border border-purple-600 hover:from-purple-800 hover:to-pink-800 hover:border-purple-500 transition-all duration-200 cursor-pointer group"
+              >
+                <h3 className="text-xl font-bold font-mono text-purple-300 mb-2 group-hover:text-purple-200">
                   <Puzzle className="inline w-5 h-5 mr-2" />
                   Beatdle Mode
                 </h3>
@@ -89,11 +93,18 @@ export default function About() {
                   <li>• Progress tracking</li>
                   <li>• Score system</li>
                 </ul>
-              </div>
+                <div className="mt-3 text-purple-300 text-xs font-mono opacity-0 group-hover:opacity-100 transition-opacity">
+                  Click to learn more →
+                </div>
+              </Link>
 
               {/* Challenge Mode */}
-              <div className="bg-gradient-to-br from-green-900 to-emerald-900 p-4 rounded-lg border border-green-600">
-                <h3 className="text-xl font-bold font-mono text-green-300 mb-2">
+              <Link
+                href="/how-to-play#challenge-mode"
+                onClick={handleNavigationClick}
+                className="block bg-gradient-to-br from-green-900 to-emerald-900 p-4 rounded-lg border border-green-600 hover:from-green-800 hover:to-emerald-800 hover:border-green-500 transition-all duration-200 cursor-pointer group"
+              >
+                <h3 className="text-xl font-bold font-mono text-green-300 mb-2 group-hover:text-green-200">
                   <Trophy className="inline w-5 h-5 mr-2" />
                   Challenge Mode
                 </h3>
@@ -107,11 +118,18 @@ export default function About() {
                   <li>• Advanced stacking rules</li>
                   <li>• Score tracking</li>
                 </ul>
-              </div>
+                <div className="mt-3 text-green-300 text-xs font-mono opacity-0 group-hover:opacity-100 transition-opacity">
+                  Click to learn more →
+                </div>
+              </Link>
 
               {/* Jam Mode */}
-              <div className="bg-gradient-to-br from-blue-900 to-indigo-900 p-4 rounded-lg border border-blue-600">
-                <h3 className="text-xl font-bold font-mono text-blue-300 mb-2">
+              <Link
+                href="/how-to-play#jam-mode"
+                onClick={handleNavigationClick}
+                className="block bg-gradient-to-br from-blue-900 to-indigo-900 p-4 rounded-lg border border-blue-600 hover:from-blue-800 hover:to-indigo-800 hover:border-blue-500 transition-all duration-200 cursor-pointer group"
+              >
+                <h3 className="text-xl font-bold font-mono text-blue-300 mb-2 group-hover:text-blue-200">
                   <Settings className="inline w-5 h-5 mr-2" />
                   Jam Mode
                 </h3>
@@ -125,7 +143,10 @@ export default function About() {
                   <li>• WAV export</li>
                   <li>• BPM control</li>
                 </ul>
-              </div>
+                <div className="mt-3 text-blue-300 text-xs font-mono opacity-0 group-hover:opacity-100 transition-opacity">
+                  Click to learn more →
+                </div>
+              </Link>
             </div>
           </section>
 
