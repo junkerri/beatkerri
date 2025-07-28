@@ -47,22 +47,22 @@ export default function About() {
               What is Beatkerri 303?
             </h2>
             <p className="text-gray-300 leading-relaxed mb-4">
-              Beatkerri 303 was developed by{" "}
-              <strong className="text-amber-400">Aastha Kumari Karki</strong>{" "}
-              (aka <strong className="text-amber-400">junkerri</strong>), a
-              musician who wanted to design and build an interactive game based
-              on drum machines to play with friends.
-            </p>
-            <p className="text-gray-300 leading-relaxed mb-4">
               Beatkerri 303 is an interactive web-based drum machine that
               combines the classic TB-303 aesthetic with modern web
               technologies. It features three distinct game modes that challenge
               your rhythm skills, creativity, and musical intuition.
             </p>
-            <p className="text-gray-300 leading-relaxed">
+            <p className="text-gray-300 leading-relaxed mb-4">
               Built with React, TypeScript, and Tone.js, Beatkerri 303 delivers
               high-quality audio synthesis and a responsive, professional
               interface that works seamlessly across all devices.
+            </p>
+            <p className="text-gray-300 leading-relaxed">
+              Beatkerri 303 was designed and developed by{" "}
+              <strong className="text-amber-400">Aastha Kumari Karki</strong>{" "}
+              (aka <strong className="text-amber-400">junkerri</strong>), a
+              musician who wanted to design and build an interactive game based
+              on drum machines to play with friends.
             </p>
           </section>
 
