@@ -175,11 +175,9 @@ class SoundscapeManager {
   async preloadSoundscapes() {
     const soundscapes = [
       "/audio/main-page-ambient.mp3",
-      "/audio/victory/beatdle-win.mp3",
-      "/audio/victory/challenge-win.mp3",
+      "/audio/victory/victory1.mp3",
       "/audio/victory/perfect-solve.mp3",
-      "/audio/loss/beatdle-loss.mp3",
-      "/audio/loss/challenge-loss.mp3",
+      "/audio/loss/loss1.mp3",
       "/audio/transitions/game-start.mp3",
       "/audio/transitions/mode-switch.mp3",
     ];
@@ -221,7 +219,7 @@ export const playVictorySoundscape = (
   mode: "beatdle" | "challenge",
   isPerfect: boolean = false
 ) => {
-  let path = `/audio/victory/${mode}-win.mp3`;
+  let path = "/audio/victory/victory1.mp3";
   if (isPerfect && mode === "beatdle") {
     path = "/audio/victory/perfect-solve.mp3";
   }
@@ -229,7 +227,7 @@ export const playVictorySoundscape = (
 };
 
 export const playLossSoundscape = (mode: "beatdle" | "challenge") =>
-  soundscapeManager.playSoundscape(`/audio/loss/${mode}-loss.mp3`, {
+  soundscapeManager.playSoundscape("/audio/loss/loss1.mp3", {
     fadeIn: true,
   });
 

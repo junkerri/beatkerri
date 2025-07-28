@@ -16,6 +16,8 @@ import {
   Puzzle,
   Trophy,
   Settings,
+  Crosshair,
+  Wand2,
 } from "lucide-react";
 import { playNavigationClick } from "@/utils/clickSounds";
 
@@ -106,8 +108,8 @@ export default function HowToPlay() {
                 </div>
               </div>
 
-              {/* Step Sequencer and Instruments */}
-              <div className="grid md:grid-cols-2 gap-6">
+              {/* Step Sequencer, Mode Toggle, and Instruments */}
+              <div className="grid md:grid-cols-3 gap-6">
                 <div>
                   <h3 className="text-xl font-bold text-white mb-4">
                     Step Sequencer
@@ -136,6 +138,39 @@ export default function HowToPlay() {
                       <span className="text-gray-300">
                         Incorrect guess (red border)
                       </span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white mb-4">
+                    Mode Toggle
+                  </h3>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex items-center gap-3 p-3 bg-gray-800 rounded-lg">
+                      <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
+                        <Crosshair className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-white font-semibold text-sm">
+                          Target Mode
+                        </div>
+                        <div className="text-gray-400 text-xs">
+                          Listen to target beat
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 bg-gray-800 rounded-lg">
+                      <div className="w-8 h-8 bg-gray-700 rounded-lg flex items-center justify-center">
+                        <Wand2 className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-white font-semibold text-sm">
+                          Recreate Mode
+                        </div>
+                        <div className="text-gray-400 text-xs">
+                          Place notes to recreate
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -202,12 +237,12 @@ export default function HowToPlay() {
                 </h3>
                 <ol className="text-sm space-y-2 list-decimal list-inside">
                   <li>
-                    Click the <Headphones className="inline w-4 h-4" /> Listen
+                    Click the <Crosshair className="inline w-4 h-4" /> Target
                     button to hear the target beat
                   </li>
                   <li>
-                    Switch to &quot;Recreate&quot; mode and click on the grid to
-                    place notes
+                    Switch to &quot;Recreate&quot; mode using the toggle and
+                    click on the grid to place notes
                   </li>
                   <li>
                     Click <Zap className="inline w-4 h-4" /> Submit to check
@@ -252,6 +287,30 @@ export default function HowToPlay() {
                   instruments and advanced stacking rules as you improve your
                   beat-making skills.
                 </p>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white mb-2">
+                  How to Play
+                </h3>
+                <ol className="text-sm space-y-2 list-decimal list-inside">
+                  <li>
+                    Click the <Crosshair className="inline w-4 h-4" /> Target
+                    button to hear the target beat
+                  </li>
+                  <li>
+                    Switch to &quot;Recreate&quot; mode using the toggle and
+                    click on the grid to place notes
+                  </li>
+                  <li>
+                    Click <Zap className="inline w-4 h-4" /> Submit to check
+                    your guess
+                  </li>
+                  <li>
+                    Green borders = correct notes, Red borders = incorrect notes
+                  </li>
+                  <li>You have 3 attempts to recreate the beat perfectly</li>
+                  <li>Progress to the next level when you succeed</li>
+                </ol>
               </div>
               <div>
                 <h3 className="text-lg font-bold text-white mb-2">

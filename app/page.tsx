@@ -16,6 +16,9 @@ export default function Home() {
 
   // Start ambient music when component mounts
   React.useEffect(() => {
+    // Stop any existing soundscapes first
+    stopAll();
+    // Start main page ambient
     playMainPage();
 
     // Stop ambient music when navigating away

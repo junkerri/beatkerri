@@ -156,7 +156,14 @@ export default function BeatdleMode() {
     setGameOver,
   ]);
 
-  // Cleanup soundscapes on unmount
+  // Cleanup soundscapes on unmount and when game state changes
+  useEffect(() => {
+    return () => {
+      stopAll();
+    };
+  }, [stopAll]);
+
+  // Stop all soundscapes when component unmounts
   useEffect(() => {
     return () => {
       stopAll();
@@ -466,13 +473,31 @@ export default function BeatdleMode() {
   // Toggle Listen (Headphones) for target beat
   const toggleTargetBeat = async () => {
     if (isTargetPlaying) {
+      // Stop the target audio
       stopPlaybackAudio();
       setIsTargetPlaying(false);
+      // Resume the appropriate soundscape
+      if (gameOver) {
+        playLoss("beatdle");
+      } else if (gameWon) {
+        const isPerfect = attemptsLeft === 3;
+        playVictory("beatdle", isPerfect);
+      }
     } else {
+      // Stop any playing soundscape before playing target
+      stopAll();
       setIsTargetPlaying(true);
-      await playPatternAudio(targetGrid, false, () =>
-        setIsTargetPlaying(false)
-      );
+      // Play target grid once (not looping)
+      await playPatternAudio(targetGrid, false, () => {
+        setIsTargetPlaying(false);
+        // Resume the appropriate soundscape after target finishes
+        if (gameOver) {
+          playLoss("beatdle");
+        } else if (gameWon) {
+          const isPerfect = attemptsLeft === 3;
+          playVictory("beatdle", isPerfect);
+        }
+      });
     }
   };
 

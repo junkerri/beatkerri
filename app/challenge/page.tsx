@@ -16,6 +16,7 @@ import {
   Zap,
   Wand2,
   Crosshair,
+  Headphones,
 } from "lucide-react";
 import {
   playButtonClick,
@@ -27,6 +28,35 @@ import { useSoundscapes } from "@/hooks/useSoundscapes";
 
 export default function Home() {
   const { playVictory, playLoss, stopAll } = useSoundscapes();
+
+  // Helper functions for attempt-based messages (like Beatdle mode)
+  const getAttemptEmoji = (attempts: number, gameWon: boolean) => {
+    if (!gameWon) return "💀"; // Dead emoji for X/3
+    switch (attempts) {
+      case 1:
+        return "🎯"; // Bullseye for 1/3
+      case 2:
+        return "🎩"; // Hat for 2/3
+      case 3:
+        return "🎉"; // Party hat for 3/3
+      default:
+        return "💀"; // Dead emoji for X/3
+    }
+  };
+
+  const getAttemptMessage = (attempts: number, gameWon: boolean) => {
+    if (!gameWon) return "Better luck next time!";
+    switch (attempts) {
+      case 1:
+        return "Perfect! You nailed it on the first try!";
+      case 2:
+        return "Good job! You got it on the second try!";
+      case 3:
+        return "You made it! Just in time on the third try!";
+      default:
+        return "Better luck next time!";
+    }
+  };
 
   const createEmptyGrid = () =>
     Array(7)
@@ -163,6 +193,8 @@ export default function Home() {
   const [attemptsLeft, setAttemptsLeft] = useState(3);
   const [gameOver, setGameOver] = useState(false);
   const [gameWon, setGameWon] = useState(false);
+  const [isTargetPlaying, setIsTargetPlaying] = useState(false);
+  const [attemptsUsed, setAttemptsUsed] = useState(0);
   const [activeStep, setActiveStep] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLooping, setIsLooping] = useState(true);
@@ -324,7 +356,12 @@ export default function Home() {
 
   const playGrid = () => playPattern(grid, beatNumber);
   const playTargetGrid = useCallback(
-    () => playPattern(targetGrid, beatNumber),
+    async (onComplete?: () => void) => {
+      await playPattern(targetGrid, beatNumber);
+      if (onComplete) {
+        onComplete();
+      }
+    },
     [targetGrid, beatNumber, playPattern]
   );
 
@@ -338,16 +375,17 @@ export default function Home() {
     setIsPlaying(false);
   };
 
+  // Removed automatic playback of target grid on game over/won
+  // Now it will only play when user clicks the Listen button
+
+  // Cleanup soundscapes on unmount and when game state changes
   useEffect(() => {
-    const isReady =
-      targetGrid && targetGrid.length > 0 && targetGrid[0].length > 0;
+    return () => {
+      stopAll();
+    };
+  }, [stopAll]);
 
-    if (isReady && (gameOver || gameWon)) {
-      playTargetGrid();
-    }
-  }, [gameOver, gameWon, targetGrid, playTargetGrid]);
-
-  // Cleanup soundscapes on unmount
+  // Stop all soundscapes when component unmounts
   useEffect(() => {
     return () => {
       stopAll();
@@ -412,8 +450,10 @@ export default function Home() {
     }
 
     const newTotalAttempts = totalAttempts + 1;
+    const attemptsUsedForThisBeat = 3 - attemptsLeft + 1; // Calculate attempts used for current beat
 
     if (allCorrect) {
+      setAttemptsUsed(attemptsUsedForThisBeat);
       totalScore += 10;
       const updatedHighest = Math.max(highestScore, totalScore);
       setHighestScore(updatedHighest);
@@ -465,6 +505,7 @@ export default function Home() {
       );
 
       if (remaining <= 0) {
+        setAttemptsUsed(3); // Used all 3 attempts
         setGameOver(true);
         stopPlayback();
 
@@ -518,6 +559,8 @@ export default function Home() {
   };
 
   const resetGame = () => {
+    // Stop any playing soundscapes (victory/loss music)
+    stopAll();
     setGameOver(false);
     setGameWon(false);
     setGrid(createEmptyGrid());
@@ -528,11 +571,14 @@ export default function Home() {
     setScore(0); // Reset score when retrying
     setClaimedCorrectSteps(createEmptyGrid());
     setTargetGrid(createPatternForBeat(beatNumber));
+    setAttemptsUsed(0); // Reset attempts used
     stopPlayback();
   };
 
   const nextBeat = () => {
     const next = beatNumber + 1;
+    // Stop any playing soundscapes (victory music)
+    stopAll();
     setGameWon(false);
     setBeatNumber(next);
     setGrid(createEmptyGrid());
@@ -543,6 +589,7 @@ export default function Home() {
     // ❌ Do NOT reset score here—so it keeps accumulating
     setClaimedCorrectSteps(createEmptyGrid());
     setTargetGrid(createPatternForBeat(next));
+    setAttemptsUsed(0); // Reset attempts used for new beat
     stopPlayback();
     saveProgress(
       next,
@@ -561,6 +608,37 @@ export default function Home() {
     stopPlayback();
     if (tab === "target") {
       playTargetGrid();
+    }
+  };
+
+  // Toggle Listen (Headphones) for target beat
+  const toggleTargetBeat = async () => {
+    if (isTargetPlaying) {
+      // Stop the target audio
+      stopPlayback();
+      setIsTargetPlaying(false);
+      // Resume the appropriate soundscape
+      if (gameOver) {
+        playLoss("challenge");
+      } else if (gameWon) {
+        const isPerfect = attemptsLeft === 3;
+        playVictory("challenge", isPerfect);
+      }
+    } else {
+      // Stop any playing soundscape before playing target
+      stopAll();
+      setIsTargetPlaying(true);
+      // Play target grid once (not looping)
+      await playTargetGrid(() => {
+        setIsTargetPlaying(false);
+        // Resume the appropriate soundscape after target finishes
+        if (gameOver) {
+          playLoss("challenge");
+        } else if (gameWon) {
+          const isPerfect = attemptsLeft === 3;
+          playVictory("challenge", isPerfect);
+        }
+      });
     }
   };
 
@@ -738,7 +816,13 @@ export default function Home() {
                 👻 GAME OVER 👻
               </div>
               <p className="text-yellow-400 font-mono text-lg">
+                <span className="mr-2 text-2xl">
+                  {getAttemptEmoji(attemptsUsed, gameWon)}
+                </span>
                 ⭐ Score: {score}
+              </p>
+              <p className="text-green-400 font-mono text-center">
+                {getAttemptMessage(attemptsUsed, gameWon)}
               </p>
               <SequencerGrid
                 grid={targetGrid}
@@ -746,13 +830,23 @@ export default function Home() {
                 activeStep={activeStep}
               />
 
-              <button
-                onClick={resetGame}
-                className="mt-4 px-4 py-2 bg-red-600 text-white rounded flex items-center space-x-2"
-              >
-                <Repeat size={18} className="text-white" />
-                <span>Retry This Beat</span>
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={toggleTargetBeat}
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded flex items-center space-x-2 transition-colors"
+                  title="Play Beat"
+                >
+                  <Headphones size={18} className="text-white" />
+                  <span>{isTargetPlaying ? "Stop" : "Listen"}</span>
+                </button>
+                <button
+                  onClick={resetGame}
+                  className="px-4 py-2 bg-red-600 text-white rounded flex items-center space-x-2"
+                >
+                  <Repeat size={18} className="text-white" />
+                  <span>Retry This Beat</span>
+                </button>
+              </div>
             </>
           )}
           {gameWon && (
@@ -761,7 +855,13 @@ export default function Home() {
                 🎉 CONGRATULATIONS! 🎉
               </div>
               <p className="text-yellow-400 font-mono text-lg">
+                <span className="mr-2 text-2xl">
+                  {getAttemptEmoji(attemptsUsed, gameWon)}
+                </span>
                 ⭐ Score: {score}
+              </p>
+              <p className="text-green-400 font-mono text-center">
+                {getAttemptMessage(attemptsUsed, gameWon)}
               </p>
               <SequencerGrid
                 grid={targetGrid}
@@ -769,12 +869,22 @@ export default function Home() {
                 activeStep={activeStep}
               />
 
-              <button
-                onClick={nextBeat}
-                className="mt-4 px-4 py-2 bg-green-600 text-white rounded animate-bounce"
-              >
-                ✅ Next Beat
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={toggleTargetBeat}
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded flex items-center space-x-2 transition-colors"
+                  title="Play Beat"
+                >
+                  <Headphones size={18} className="text-white" />
+                  <span>{isTargetPlaying ? "Stop" : "Listen"}</span>
+                </button>
+                <button
+                  onClick={nextBeat}
+                  className="px-4 py-2 bg-green-600 text-white rounded animate-bounce"
+                >
+                  ✅ Next Beat
+                </button>
+              </div>
             </>
           )}
         </div>
