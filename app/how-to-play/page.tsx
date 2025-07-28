@@ -7,7 +7,6 @@ import {
   Repeat,
   Trash2,
   Zap,
-  Headphones,
   Share2,
   Download,
   Upload,
