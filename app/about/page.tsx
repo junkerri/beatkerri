@@ -16,7 +16,7 @@ import { playNavigationClick } from "@/utils/clickSounds";
 import { useSoundscapes } from "@/hooks/useSoundscapes";
 
 export default function About() {
-  const { playMainPage, stopAll } = useSoundscapes();
+  const { playMainPage } = useSoundscapes();
 
   const handleNavigationClick = () => {
     playNavigationClick();

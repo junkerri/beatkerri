@@ -227,10 +227,7 @@ export default function BeatdleMode() {
   };
 
   // Wordle-style share logic - show only the number of notes in the target beat
-  function getShareRow(
-    grid: boolean[][],
-    feedback: ("correct" | "incorrect" | null)[][]
-  ) {
+  function getShareRow(grid: boolean[][]) {
     // Count total notes in the target beat
     const targetNoteCount = targetGrid.flat().filter(Boolean).length;
 
@@ -291,9 +288,7 @@ export default function BeatdleMode() {
     const attemptEmoji = getAttemptEmoji(attemptsUsed, gameWon);
     const header = `Beatdle #${beatNumber} ${attemptStr} ${attemptEmoji} 🎧`;
     // All attempts' colored squares, each on a new line
-    const rows = attemptHistory
-      .map((a) => getShareRow(a.grid, a.feedback))
-      .join("\n");
+    const rows = attemptHistory.map((a) => getShareRow(a.grid)).join("\n");
     return `${header}\n${rows}\nScore: ${score}\nCan you beat it?\nhttps://beatkerri.vercel.app/`;
   }
 
