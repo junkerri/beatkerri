@@ -8,8 +8,11 @@ import { useAudioPlayback } from "@/hooks/useAudioPlayback";
 import { useGameState } from "@/hooks/useGameState";
 import { Download, Upload, Save, Music } from "lucide-react";
 import toast from "react-hot-toast";
+import { useSoundscapes } from "@/hooks/useSoundscapes";
 
 export default function JamMode() {
+  const { stopAll } = useSoundscapes();
+
   const [bpm, setBpm] = useState(120);
   const [isLooping, setIsLooping] = useState(true);
   const [savedBeats, setSavedBeats] = useState<
@@ -38,6 +41,11 @@ export default function JamMode() {
     toggleStep: toggleStepGrid,
     clearGrid,
   } = useGameState();
+
+  // Stop all soundscapes when component mounts
+  useEffect(() => {
+    stopAll();
+  }, [stopAll]);
 
   const togglePlay = async () => {
     if (isPlaying) {

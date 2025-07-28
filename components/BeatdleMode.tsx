@@ -226,21 +226,41 @@ export default function BeatdleMode() {
     );
   };
 
-  // Wordle-style share logic
+  // Wordle-style share logic - show only the number of notes in the target beat
   function getShareRow(
     grid: boolean[][],
     feedback: ("correct" | "incorrect" | null)[][]
   ) {
-    return Array(16)
+    // Count total notes in the target beat
+    const targetNoteCount = targetGrid.flat().filter(Boolean).length;
+
+    // Create array of the same length as target notes
+    return Array(targetNoteCount)
       .fill(0)
-      .map((_, col) => {
-        const guessed = grid.some((row) => row[col]);
-        if (!guessed) return "⬛";
-        const correct = feedback.some((row) => row[col] === "correct");
-        if (correct) return "🟩";
-        const incorrect = feedback.some((row) => row[col] === "incorrect");
-        if (incorrect) return "🟥";
-        return "⬛";
+      .map((_, noteIndex) => {
+        // Find target notes ordered by column position (left to right)
+        const targetNotes = [];
+        for (let col = 0; col < 16; col++) {
+          for (let row = 0; row < 7; row++) {
+            if (targetGrid[row][col]) {
+              targetNotes.push({ row, col, position: row * 16 + col });
+            }
+          }
+        }
+
+        // Get the nth target note (ordered by column)
+        if (noteIndex >= targetNotes.length) return "🟥"; // Shouldn't happen, but show red
+        const targetNote = targetNotes[noteIndex];
+
+        // Check if user placed a note at this target position
+        const userPlacedNote = grid[targetNote.row][targetNote.col];
+
+        // Simple logic: if user placed a note in target position, it's green, otherwise red
+        if (userPlacedNote && targetGrid[targetNote.row][targetNote.col]) {
+          return "🟩"; // User correctly placed a note in target position
+        } else {
+          return "🟥"; // User either didn't place a note or placed it in wrong position
+        }
       })
       .join("");
   }

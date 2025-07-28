@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -12,11 +13,22 @@ import {
   Settings,
 } from "lucide-react";
 import { playNavigationClick } from "@/utils/clickSounds";
+import { useSoundscapes } from "@/hooks/useSoundscapes";
 
 export default function About() {
+  const { playMainPage, stopAll } = useSoundscapes();
+
   const handleNavigationClick = () => {
     playNavigationClick();
   };
+
+  // Start ambient music when component mounts (only if not already playing)
+  React.useEffect(() => {
+    // Start main page ambient (will only start if not already playing)
+    playMainPage();
+
+    // Don't stop music when navigating away - let it continue
+  }, [playMainPage]);
 
   return (
     <main className="min-h-screen bg-black text-white p-6">
