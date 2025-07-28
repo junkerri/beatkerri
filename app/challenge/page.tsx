@@ -23,8 +23,11 @@ import {
   playSubmitClick,
   playClearClick,
 } from "@/utils/clickSounds";
+import { useSoundscapes } from "@/hooks/useSoundscapes";
 
 export default function Home() {
+  const { playVictory, playLoss, stopAll } = useSoundscapes();
+
   const createEmptyGrid = () =>
     Array(7)
       .fill(null)
@@ -338,6 +341,13 @@ export default function Home() {
     }
   }, [gameOver, gameWon, targetGrid, playTargetGrid]);
 
+  // Cleanup soundscapes on unmount
+  useEffect(() => {
+    return () => {
+      stopAll();
+    };
+  }, [stopAll]);
+
   const submitGuess = () => {
     playSubmitClick();
     const newFeedback = grid.map((row, rowIndex) =>
@@ -404,9 +414,13 @@ export default function Home() {
 
       setGameWon(true);
       setBeatsCompleted(beatsCompleted + 1);
-      if (attemptsLeft === 3) {
+      const isPerfect = attemptsLeft === 3;
+      if (isPerfect) {
         setPerfectSolves(perfectSolves + 1);
       }
+
+      // Play victory soundscape
+      playVictory("challenge", isPerfect);
       saveProgress(
         beatNumber, // ✅ Correct here
         totalScore,
@@ -447,6 +461,10 @@ export default function Home() {
       if (remaining <= 0) {
         setGameOver(true);
         stopPlayback();
+
+        // Play loss soundscape
+        playLoss("challenge");
+
         saveProgress(
           beatNumber,
           0,

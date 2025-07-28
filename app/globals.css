@@ -24,3 +24,37 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Custom slider styles */
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  height: 12px;
+  width: 12px;
+  border-radius: 50%;
+  background: #fbbf24;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(251, 191, 36, 0.5);
+}
+
+.slider::-moz-range-thumb {
+  height: 12px;
+  width: 12px;
+  border-radius: 50%;
+  background: #fbbf24;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 6px rgba(251, 191, 36, 0.5);
+}
+
+.slider::-webkit-slider-track {
+  background: #374151;
+  border-radius: 0.5rem;
+  height: 4px;
+}
+
+.slider::-moz-range-track {
+  background: #374151;
+  border-radius: 0.5rem;
+  height: 4px;
+  border: none;
+}

@@ -9,6 +9,7 @@ import { createEmptyGrid, PlayMode } from "@/utils/gameUtils";
 import { Headphones, Clock, Share2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { playToggleClick } from "@/utils/clickSounds";
+import { useSoundscapes } from "@/hooks/useSoundscapes";
 
 const getTodayBeatNumber = () => {
   const epoch = new Date("2024-01-01");
@@ -74,6 +75,8 @@ type Attempt = {
 };
 
 export default function BeatdleMode() {
+  const { playVictory, playLoss, stopAll } = useSoundscapes();
+
   const beatNumber = getTodayBeatNumber();
   const bpm = getDailyBPM(beatNumber);
   const targetGrid = createDailyPattern(beatNumber);
@@ -152,6 +155,13 @@ export default function BeatdleMode() {
     setGameWon,
     setGameOver,
   ]);
+
+  // Cleanup soundscapes on unmount
+  useEffect(() => {
+    return () => {
+      stopAll();
+    };
+  }, [stopAll]);
 
   const togglePlay = async () => {
     if (isPlaying) {
@@ -363,9 +373,13 @@ export default function BeatdleMode() {
 
       setGameWon(true);
       setBeatsCompleted(beatsCompleted + 1);
-      if (attemptsLeft === 3) {
+      const isPerfect = attemptsLeft === 3;
+      if (isPerfect) {
         setPerfectSolves(perfectSolves + 1);
       }
+
+      // Play victory soundscape
+      playVictory("beatdle", isPerfect);
       saveProgress(
         beatNumber,
         totalScore,
@@ -410,6 +424,10 @@ export default function BeatdleMode() {
       if (remaining <= 0) {
         setGameOver(true);
         stopPlaybackAudio();
+
+        // Play loss soundscape
+        playLoss("beatdle");
+
         saveProgress(
           beatNumber,
           0,

@@ -1,0 +1,56 @@
+import React from "react";
+import { Volume2, VolumeX, Volume1 } from "lucide-react";
+import { useSoundscapes } from "@/hooks/useSoundscapes";
+
+interface AudioControlsProps {
+  className?: string;
+  showVolumeSlider?: boolean;
+}
+
+export const AudioControls: React.FC<AudioControlsProps> = ({
+  className = "",
+  showVolumeSlider = true,
+}) => {
+  const { isMuted, volume, toggleMute, updateVolume } = useSoundscapes();
+
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newVolume = parseFloat(e.target.value);
+    updateVolume(newVolume);
+  };
+
+  const getVolumeIcon = () => {
+    if (isMuted || volume === 0) return <VolumeX className="w-4 h-4" />;
+    if (volume < 0.5) return <Volume1 className="w-4 h-4" />;
+    return <Volume2 className="w-4 h-4" />;
+  };
+
+  return (
+    <div className={`flex items-center gap-2 ${className}`}>
+      <button
+        onClick={toggleMute}
+        className="p-2 text-gray-400 hover:text-white transition-colors"
+        title={isMuted ? "Unmute" : "Mute"}
+      >
+        {getVolumeIcon()}
+      </button>
+
+      {showVolumeSlider && (
+        <div className="flex items-center gap-2">
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.1"
+            value={isMuted ? 0 : volume}
+            onChange={handleVolumeChange}
+            className="w-16 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
+            title="Volume"
+          />
+          <span className="text-xs text-gray-400 font-mono w-8">
+            {Math.round((isMuted ? 0 : volume) * 100)}%
+          </span>
+        </div>
+      )}
+    </div>
+  );
+};

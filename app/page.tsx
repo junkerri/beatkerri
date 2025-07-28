@@ -1,16 +1,35 @@
 // app/page.tsx
 "use client";
 
+import React from "react";
 import Link from "next/link";
 import { playNavigationClick } from "@/utils/clickSounds";
+import { useSoundscapes } from "@/hooks/useSoundscapes";
+import { AudioControls } from "@/components/AudioControls";
 
 export default function Home() {
+  const { playMainPage, stopAll } = useSoundscapes();
+
   const handleNavigationClick = () => {
     playNavigationClick();
   };
 
+  // Start ambient music when component mounts
+  React.useEffect(() => {
+    playMainPage();
+
+    // Stop ambient music when navigating away
+    return () => {
+      stopAll();
+    };
+  }, [playMainPage, stopAll]);
+
   return (
     <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6">
+      <div className="absolute top-4 right-4">
+        <AudioControls />
+      </div>
+
       <h1 className="text-6xl md:text-8xl font-mono font-extrabold mb-8 text-center text-amber-400 drop-shadow-[0_0_20px_#fbbf24] tracking-widest">
         BEATKERRI
       </h1>
