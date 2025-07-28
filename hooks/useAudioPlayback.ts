@@ -47,9 +47,12 @@ export const useAudioPlayback = ({ bpm, isLooping }: UseAudioPlaybackProps) => {
       );
 
       seq.loop = loop;
-      seq.start(undefined, 0);
 
-      Tone.Transport.start("+0.1");
+      // Start the sequence with a small delay to ensure proper initialization
+      seq.start("+0.1", 0);
+
+      // Start transport with a slightly longer delay to ensure sequence is ready
+      Tone.Transport.start("+0.2");
 
       if (!loop) {
         Tone.Transport.scheduleOnce(() => {
@@ -63,8 +66,11 @@ export const useAudioPlayback = ({ bpm, isLooping }: UseAudioPlaybackProps) => {
   );
 
   const stopPlayback = useCallback(() => {
+    // Stop transport immediately
     Tone.Transport.stop();
     Tone.Transport.cancel();
+
+    // Reset state
     setActiveStep(null);
     setIsPlaying(false);
   }, []);

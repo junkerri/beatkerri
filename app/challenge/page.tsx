@@ -305,7 +305,9 @@ export default function Home() {
       );
 
       seq.loop = isLooping;
-      seq.start(undefined, 0);
+
+      // Start the sequence with a small delay to ensure proper initialization
+      seq.start("+0.1", 0);
 
       // Only auto-reset when not looping
       Tone.Transport.scheduleOnce(() => {
@@ -313,7 +315,8 @@ export default function Home() {
         setActiveStep(null);
       }, `+${isLooping ? 1000 : "1m"}`);
 
-      Tone.Transport.start("+0.1");
+      // Start transport with a slightly longer delay to ensure sequence is ready
+      Tone.Transport.start("+0.2");
       setIsPlaying(true);
     },
     [instruments, isLooping]
@@ -326,8 +329,11 @@ export default function Home() {
   );
 
   const stopPlayback = () => {
+    // Stop transport immediately
     Tone.Transport.stop();
     Tone.Transport.cancel();
+
+    // Reset state
     setActiveStep(null);
     setIsPlaying(false);
   };
