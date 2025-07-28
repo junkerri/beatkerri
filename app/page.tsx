@@ -14,6 +14,16 @@ export default function Home() {
     playNavigationClick();
   };
 
+  const handlePageTouch = () => {
+    // Ensure audio context is initialized on first touch (mobile requirement)
+    if (typeof window !== "undefined" && window.AudioContext) {
+      const audioContext = new AudioContext();
+      if (audioContext.state === "suspended") {
+        audioContext.resume();
+      }
+    }
+  };
+
   // Start ambient music when component mounts
   React.useEffect(() => {
     // Stop any existing soundscapes first
@@ -28,7 +38,10 @@ export default function Home() {
   }, [playMainPage, stopAll]);
 
   return (
-    <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6">
+    <main
+      className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6"
+      onTouchStart={handlePageTouch}
+    >
       <div className="absolute top-4 right-4">
         <AudioControls />
       </div>

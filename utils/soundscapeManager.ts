@@ -19,6 +19,17 @@ class SoundscapeManager {
     }
   }
 
+  // Ensure audio context is resumed (required for mobile)
+  private async ensureAudioContextResumed() {
+    if (this.audioContext && this.audioContext.state === "suspended") {
+      try {
+        await this.audioContext.resume();
+      } catch (error) {
+        console.warn("Could not resume audio context:", error);
+      }
+    }
+  }
+
   // Load and cache audio files
   private async loadAudio(path: string): Promise<HTMLAudioElement> {
     if (this.listeners[path]) {
@@ -47,11 +58,7 @@ class SoundscapeManager {
   ) {
     try {
       this.initAudioContext();
-
-      // Resume audio context if suspended
-      if (this.audioContext && this.audioContext.state === "suspended") {
-        await this.audioContext.resume();
-      }
+      await this.ensureAudioContextResumed();
 
       const audio = await this.loadAudio(path);
 

@@ -18,6 +18,12 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
     updateVolume(newVolume);
   };
 
+  const handleMuteClick = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleMute();
+  };
+
   const getVolumeIcon = () => {
     if (isMuted || volume === 0) return <VolumeX className="w-4 h-4" />;
     if (volume < 0.5) return <Volume1 className="w-4 h-4" />;
@@ -27,9 +33,11 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <button
-        onClick={toggleMute}
-        className="p-2 text-gray-400 hover:text-white transition-colors"
+        onClick={handleMuteClick}
+        onTouchEnd={handleMuteClick}
+        className="p-2 text-gray-400 hover:text-white active:text-white transition-colors touch-manipulation"
         title={isMuted ? "Unmute" : "Mute"}
+        style={{ WebkitTapHighlightColor: "transparent" }}
       >
         {getVolumeIcon()}
       </button>
@@ -43,8 +51,12 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
             step="0.1"
             value={isMuted ? 0 : volume}
             onChange={handleVolumeChange}
-            className="w-16 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
+            onTouchStart={(e) => e.stopPropagation()}
+            onTouchMove={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
+            className="w-16 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer slider touch-manipulation"
             title="Volume"
+            style={{ WebkitTapHighlightColor: "transparent" }}
           />
           <span className="text-xs text-gray-400 font-mono w-8">
             {Math.round((isMuted ? 0 : volume) * 100)}%
