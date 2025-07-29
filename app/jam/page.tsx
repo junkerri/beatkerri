@@ -6,9 +6,12 @@ import { GameControls } from "@/components/GameControls";
 import { GameStats } from "@/components/GameStats";
 import { useAudioPlayback } from "@/hooks/useAudioPlayback";
 import { useGameState } from "@/hooks/useGameState";
-import { Download, Upload, Save, Music } from "lucide-react";
+import { Download, Upload, Save, Music, HelpCircle } from "lucide-react";
+import Link from "next/link";
+import { playSubmitClick } from "@/utils/clickSounds";
 import toast from "react-hot-toast";
 import { useSoundscapes } from "@/hooks/useSoundscapes";
+import * as Tone from "tone";
 
 export default function JamMode() {
   const { stopAllImmediately } = useSoundscapes();
@@ -45,10 +48,21 @@ export default function JamMode() {
     onGridChange: updatePattern, // Connect the real-time update callback
   });
 
-  // Stop all soundscapes when component mounts
+  // Stop all soundscapes when component mounts and cleanup on unmount
   useEffect(() => {
     stopAllImmediately();
-  }, [stopAllImmediately]);
+
+    // Cleanup function to stop any playing audio when component unmounts
+    return () => {
+      stopAllImmediately();
+      stopPlaybackAudio();
+      setIsPlaying(false);
+
+      // Force stop Tone.js transport
+      Tone.Transport.stop();
+      Tone.Transport.cancel();
+    };
+  }, [stopAllImmediately, stopPlaybackAudio]);
 
   const togglePlay = async () => {
     if (isPlaying) {
@@ -385,9 +399,15 @@ export default function JamMode() {
           <div className="w-3 h-3 rounded-full bg-yellow-400 border-2 border-gray-800 shadow-inner"></div>
           <div className="w-3 h-3 rounded-full bg-green-600 border-2 border-gray-800 shadow-inner"></div>
         </div>
-        <div className="absolute bottom-2 right-2 flex gap-2">
-          <div className="w-4 h-4 rounded-full bg-gray-700 border-2 border-gray-900"></div>
-          <div className="w-4 h-4 rounded-full bg-gray-700 border-2 border-gray-900"></div>
+        <div className="absolute bottom-2 right-2">
+          <Link
+            href="/how-to-play#jam-mode"
+            className="w-6 h-6 rounded-full bg-amber-400 hover:bg-amber-300 border-2 border-gray-900 flex items-center justify-center transition-colors shadow-lg"
+            onClick={() => playSubmitClick()}
+            title="How To Play Jam Mode"
+          >
+            <HelpCircle size={16} className="text-gray-900" />
+          </Link>
         </div>
       </div>
 

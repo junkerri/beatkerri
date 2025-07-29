@@ -91,3 +91,68 @@ body {
   -ms-user-select: none;
   user-select: none;
 }
+
+/* Ghost Animation */
+.ghost-animation {
+  animation: ghostFloat 2s ease-in-out infinite;
+}
+
+@keyframes ghostFloat {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Ghost Body */
+.ghost-body {
+  width: 80px;
+  height: 120px;
+  background: #e0e0e0;
+  border-radius: 40px 40px 40px 40px;
+  position: relative;
+  margin: 0 auto;
+}
+
+.ghost-body::before {
+  content: "";
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background: #e0e0e0;
+  border-radius: 0 0 40px 40px;
+}
+
+/* Ghost Eyes */
+.ghost-eyes {
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 20px;
+}
+
+.ghost-eye {
+  width: 15px;
+  height: 15px;
+  background: #333;
+  border-radius: 50%;
+}
+
+/* Ghost Mouth */
+.ghost-mouth {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 8px;
+  background: #333;
+  border-radius: 0 0 10px 10px;
+}

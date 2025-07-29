@@ -18,13 +18,20 @@ import {
   Wand2,
   Crosshair,
   Headphones,
+  HelpCircle,
 } from "lucide-react";
+import Lottie from "lottie-react";
+import Confetti from "react-confetti";
+import confettiAnimation from "@/public/animations/confetti.json";
+import ghostAnimation from "@/public/animations/ghost.json";
+import Link from "next/link";
 import {
   playButtonClick,
   playToggleClick,
   playSubmitClick,
 } from "@/utils/clickSounds";
 import { useSoundscapes } from "@/hooks/useSoundscapes";
+import * as Tone from "tone";
 
 export default function Home() {
   const { playVictory, playLoss, stopAllImmediately } = useSoundscapes();
@@ -203,6 +210,20 @@ export default function Home() {
     playStep,
     updatePattern,
   } = useAudioPlayback({ bpm: getBpmForBeat(beatNumber), isLooping });
+
+  // Stop target beat when component unmounts
+  useEffect(() => {
+    return () => {
+      // Force stop all audio when component unmounts
+      stopPlayback();
+      setIsTargetPlaying(false);
+      stopAllImmediately();
+
+      // Force stop Tone.js transport
+      Tone.Transport.stop();
+      Tone.Transport.cancel();
+    };
+  }, [stopPlayback, stopAllImmediately]);
 
   const {
     grid,
@@ -535,19 +556,21 @@ export default function Home() {
       // Stop the target audio
       stopPlayback();
       setIsTargetPlaying(false);
-      // Resume the appropriate soundscape
-      if (gameOver) {
-        playLoss("challenge");
-      } else if (gameWon) {
-        const isPerfect = attemptsLeft === 3;
-        playVictory("challenge", isPerfect);
-      }
+      // Wait a moment for audio to fully stop before resuming soundscape
+      setTimeout(() => {
+        if (gameOver) {
+          playLoss("challenge");
+        } else if (gameWon) {
+          const isPerfect = attemptsLeft === 3;
+          playVictory("challenge", isPerfect);
+        }
+      }, 100);
     } else {
       // Stop any playing soundscape before playing target
       stopAllImmediately();
       setIsTargetPlaying(true);
       // Play target grid once (not looping)
-      await playTargetGrid(() => {
+      await playPattern(targetGrid, false, () => {
         setIsTargetPlaying(false);
         // Resume the appropriate soundscape after target finishes
         if (gameOver) {
@@ -709,9 +732,15 @@ export default function Home() {
           <div className="w-3 h-3 rounded-full bg-yellow-400 border-2 border-gray-800 shadow-inner"></div>
           <div className="w-3 h-3 rounded-full bg-green-600 border-2 border-gray-800 shadow-inner"></div>
         </div>
-        <div className="absolute bottom-2 right-2 flex gap-2">
-          <div className="w-4 h-4 rounded-full bg-gray-700 border-2 border-gray-900"></div>
-          <div className="w-4 h-4 rounded-full bg-gray-700 border-2 border-gray-900"></div>
+        <div className="absolute bottom-2 right-2">
+          <Link
+            href="/how-to-play#challenge-mode"
+            className="w-6 h-6 rounded-full bg-amber-400 hover:bg-amber-300 border-2 border-gray-900 flex items-center justify-center transition-colors shadow-lg"
+            onClick={() => playSubmitClick()}
+            title="How To Play Challenge Mode"
+          >
+            <HelpCircle size={16} className="text-gray-900" />
+          </Link>
         </div>
       </div>
 
@@ -730,8 +759,19 @@ export default function Home() {
         <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex flex-col items-center justify-center space-y-4">
           {gameOver && (
             <>
+              <div className="w-32 h-32 mx-auto mb-4 flex items-center justify-center">
+                <div className="ghost-animation">
+                  <div className="ghost-body">
+                    <div className="ghost-eyes">
+                      <div className="ghost-eye"></div>
+                      <div className="ghost-eye"></div>
+                    </div>
+                    <div className="ghost-mouth"></div>
+                  </div>
+                </div>
+              </div>
               <div className="text-red-500 text-4xl font-extrabold animate-pulse font-mono">
-                👻 GAME OVER 👻
+                GAME OVER
               </div>
               <p className="text-yellow-400 font-mono text-lg">
                 <span className="mr-2 text-2xl">
@@ -769,8 +809,14 @@ export default function Home() {
           )}
           {gameWon && (
             <>
+              <Confetti
+                width={window.innerWidth}
+                height={window.innerHeight}
+                recycle={false}
+                numberOfPieces={100}
+              />
               <div className="text-green-400 text-4xl font-extrabold animate-pulse font-mono">
-                🎉 CONGRATULATIONS! 🎉
+                CONGRATULATIONS!
               </div>
               <p className="text-yellow-400 font-mono text-lg">
                 <span className="mr-2 text-2xl">

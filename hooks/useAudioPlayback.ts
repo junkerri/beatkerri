@@ -85,6 +85,15 @@ export const useAudioPlayback = ({ bpm, isLooping }: UseAudioPlaybackProps) => {
     Tone.Transport.stop();
     Tone.Transport.cancel();
 
+    // Stop all scheduled events
+    Tone.Transport.clear();
+
+    // Stop any currently playing sequences
+    if (sequenceRef.current) {
+      sequenceRef.current.stop();
+      sequenceRef.current.dispose();
+    }
+
     // Clear references
     sequenceRef.current = null;
     playersRef.current = null;

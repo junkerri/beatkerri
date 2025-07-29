@@ -10,6 +10,7 @@ import { Headphones, Clock, Share2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { playToggleClick } from "@/utils/clickSounds";
 import { useSoundscapes } from "@/hooks/useSoundscapes";
+import * as Tone from "tone";
 
 const getTodayBeatNumber = () => {
   const epoch = new Date("2024-01-01");
@@ -102,6 +103,20 @@ export default function BeatdleMode() {
     playStep,
     updatePattern, // Add the new updatePattern function
   } = useAudioPlayback({ bpm, isLooping });
+
+  // Stop target beat when component unmounts
+  useEffect(() => {
+    return () => {
+      // Force stop all audio when component unmounts
+      stopPlaybackAudio();
+      setIsTargetPlaying(false);
+      stopAllImmediately();
+
+      // Force stop Tone.js transport
+      Tone.Transport.stop();
+      Tone.Transport.cancel();
+    };
+  }, [stopPlaybackAudio, stopAllImmediately]);
 
   const {
     grid,
@@ -494,13 +509,15 @@ export default function BeatdleMode() {
       // Stop the target audio
       stopPlaybackAudio();
       setIsTargetPlaying(false);
-      // Resume the appropriate soundscape
-      if (gameOver) {
-        playLoss("beatdle");
-      } else if (gameWon) {
-        const isPerfect = attemptsLeft === 3;
-        playVictory("beatdle", isPerfect);
-      }
+      // Wait a moment for audio to fully stop before resuming soundscape
+      setTimeout(() => {
+        if (gameOver) {
+          playLoss("beatdle");
+        } else if (gameWon) {
+          const isPerfect = attemptsLeft === 3;
+          playVictory("beatdle", isPerfect);
+        }
+      }, 100);
     } else {
       // Stop any playing soundscape before playing target
       stopAllImmediately();

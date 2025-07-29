@@ -166,7 +166,7 @@ export default function HowToPlay() {
                           Target Beat
                         </div>
                         <div className="text-gray-400 text-xs">
-                          Listen to target beat
+                          Listen to target beat (grid is read-only)
                         </div>
                       </div>
                     </div>
@@ -183,6 +183,15 @@ export default function HowToPlay() {
                         </div>
                       </div>
                     </div>
+                  </div>
+                  <div className="mt-3 p-3 bg-gray-800 rounded-lg border-l-4 border-amber-400">
+                    <p className="text-xs text-gray-300">
+                      <strong>Note:</strong> In Target mode, the sequencer grid
+                      is read-only. You can see the play head moving through the
+                      pattern, but you cannot edit the grid. Switch to Recreate
+                      mode to place your own notes and attempt to match the
+                      target beat.
+                    </p>
                   </div>
                 </div>
                 <div>
