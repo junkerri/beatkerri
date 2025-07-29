@@ -54,7 +54,6 @@ interface GameLayoutProps {
   alreadyPlayed?: boolean;
   timeUntilNextBeat?: string;
   totalAttempts?: number;
-
   // Stats (optional)
   score?: number;
   highestScore?: number;
