@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import * as Tone from "tone";
+import { useState, useEffect, useCallback } from "react";
 import seedrandom from "seedrandom";
 import { SequencerGrid } from "@/components/SequencerGrid";
 import { useAudioPlayback } from "@/hooks/useAudioPlayback";
@@ -24,7 +23,6 @@ import {
   playButtonClick,
   playToggleClick,
   playSubmitClick,
-  playClearClick,
 } from "@/utils/clickSounds";
 import { useSoundscapes } from "@/hooks/useSoundscapes";
 
@@ -240,7 +238,15 @@ export default function Home() {
       setAttemptsLeft(data.attemptsLeft ?? 3); // 👈 Restore attempts
       setTargetGrid(createPatternForBeat(data.beatNumber || 1));
     }
-  }, [createPatternForBeat]);
+  }, [
+    createPatternForBeat,
+    setScore,
+    setHighestScore,
+    setAttemptsLeft,
+    setBeatsCompleted,
+    setTotalAttempts,
+    setPerfectSolves,
+  ]);
 
   const saveProgress = (
     newBeatNumber = beatNumber,
