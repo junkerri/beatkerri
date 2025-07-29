@@ -366,30 +366,28 @@ export const GameLayout = ({
                 </div>
               )}
 
-              {/* Beatdle-specific buttons for game over */}
-              {mode === "beatdle" && (
-                <div className="flex items-center gap-3">
-                  {onListenTarget && (
-                    <button
-                      onClick={onListenTarget}
-                      className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded flex items-center space-x-2 transition-colors"
-                      title="Play Beat"
-                    >
-                      <Headphones size={22} className="text-white" />
-                      <span>{isTargetPlaying ? "Stop" : "Listen"}</span>
-                    </button>
-                  )}
-                  {onShare && (
-                    <button
-                      onClick={onShare}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded flex items-center space-x-2 transition-colors"
-                    >
-                      <Share2 size={18} className="text-white" />
-                      <span>Share Results</span>
-                    </button>
-                  )}
-                </div>
-              )}
+              {/* Listen and action buttons for game over */}
+              <div className="flex items-center gap-3">
+                {onListenTarget && (
+                  <button
+                    onClick={onListenTarget}
+                    className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded flex items-center space-x-2 transition-colors"
+                    title="Play Beat"
+                  >
+                    <Headphones size={22} className="text-white" />
+                    <span>{isTargetPlaying ? "Stop" : "Listen"}</span>
+                  </button>
+                )}
+                {mode === "beatdle" && onShare && (
+                  <button
+                    onClick={onShare}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded flex items-center space-x-2 transition-colors"
+                  >
+                    <Share2 size={18} className="text-white" />
+                    <span>Share Results</span>
+                  </button>
+                )}
+              </div>
 
               {/* Countdown timer for Beatdle mode */}
               {mode === "beatdle" && timeUntilNextBeat && (
@@ -450,30 +448,28 @@ export const GameLayout = ({
                 </div>
               )}
 
-              {/* Beatdle-specific buttons */}
-              {mode === "beatdle" && (
-                <div className="flex items-center gap-3">
-                  {onListenTarget && (
-                    <button
-                      onClick={onListenTarget}
-                      className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded flex items-center space-x-2 transition-colors"
-                      title="Play Beat"
-                    >
-                      <Headphones size={22} className="text-white" />
-                      <span>{isTargetPlaying ? "Stop" : "Listen"}</span>
-                    </button>
-                  )}
-                  {onShare && (
-                    <button
-                      onClick={onShare}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded flex items-center space-x-2 transition-colors"
-                    >
-                      <Share2 size={18} className="text-white" />
-                      <span>Share Results</span>
-                    </button>
-                  )}
-                </div>
-              )}
+              {/* Listen and action buttons */}
+              <div className="flex items-center gap-3">
+                {onListenTarget && (
+                  <button
+                    onClick={onListenTarget}
+                    className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded flex items-center space-x-2 transition-colors"
+                    title="Play Beat"
+                  >
+                    <Headphones size={22} className="text-white" />
+                    <span>{isTargetPlaying ? "Stop" : "Listen"}</span>
+                  </button>
+                )}
+                {mode === "beatdle" && onShare && (
+                  <button
+                    onClick={onShare}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded flex items-center space-x-2 transition-colors"
+                  >
+                    <Share2 size={18} className="text-white" />
+                    <span>Share Results</span>
+                  </button>
+                )}
+              </div>
 
               {onNextBeat && (
                 <button
