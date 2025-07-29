@@ -4,6 +4,8 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import * as Tone from "tone";
 import seedrandom from "seedrandom";
 import { SequencerGrid } from "@/components/SequencerGrid";
+import { useAudioPlayback } from "@/hooks/useAudioPlayback";
+import { useGameState } from "@/hooks/useGameState";
 
 import toast from "react-hot-toast";
 import "@/app/globals.css";
@@ -27,7 +29,7 @@ import {
 import { useSoundscapes } from "@/hooks/useSoundscapes";
 
 export default function Home() {
-  const { playVictory, playLoss, stopAll } = useSoundscapes();
+  const { playVictory, playLoss, stopAllImmediately } = useSoundscapes();
 
   // Helper functions for attempt-based messages (like Beatdle mode)
   const getAttemptEmoji = (attempts: number, gameWon: boolean) => {
@@ -183,30 +185,48 @@ export default function Home() {
     return grid;
   }, []);
 
-  const [grid, setGrid] = useState(createEmptyGrid());
   const [beatNumber, setBeatNumber] = useState(1);
   const [targetGrid, setTargetGrid] = useState(createPatternForBeat(1));
-  const [feedbackGrid, setFeedbackGrid] = useState<
-    ("correct" | "incorrect" | null)[][] | null
-  >(null);
   const [mode, setMode] = useState<"target" | "recreate">("recreate");
-  const [attemptsLeft, setAttemptsLeft] = useState(3);
-  const [gameOver, setGameOver] = useState(false);
-  const [gameWon, setGameWon] = useState(false);
   const [isTargetPlaying, setIsTargetPlaying] = useState(false);
   const [attemptsUsed, setAttemptsUsed] = useState(0);
-  const [activeStep, setActiveStep] = useState<number | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [isLooping, setIsLooping] = useState(true);
-
-  const [score, setScore] = useState(0);
-  const [highestScore, setHighestScore] = useState(0);
-  const [claimedCorrectSteps, setClaimedCorrectSteps] = useState<boolean[][]>(
-    createEmptyGrid()
-  );
   const [beatsCompleted, setBeatsCompleted] = useState(0);
   const [totalAttempts, setTotalAttempts] = useState(0);
   const [perfectSolves, setPerfectSolves] = useState(0);
+
+  // Use shared hooks for audio and game state
+  const {
+    activeStep,
+    isPlaying,
+    setIsPlaying,
+    playPattern,
+    stopPlayback,
+    playStep,
+    updatePattern,
+  } = useAudioPlayback({ bpm: getBpmForBeat(beatNumber), isLooping });
+
+  const {
+    grid,
+    feedbackGrid,
+    score,
+    highestScore,
+    attemptsLeft,
+    gameWon,
+    gameOver,
+    claimedCorrectSteps,
+    setFeedbackGrid,
+    setScore,
+    setHighestScore,
+    setAttemptsLeft,
+    setGameWon,
+    setGameOver,
+    setClaimedCorrectSteps,
+    toggleStep: toggleStepGrid,
+    clearGrid,
+  } = useGameState({
+    onGridChange: updatePattern,
+  });
   useEffect(() => {
     const saved = localStorage.getItem("beatkerri_progress");
     if (saved) {
@@ -245,32 +265,6 @@ export default function Home() {
     );
   };
 
-  const padPlayers = useRef<Tone.Players | null>(null);
-  useEffect(() => {
-    padPlayers.current = new Tone.Players({
-      kick: "/samples/kick.wav",
-      snare: "/samples/snare.wav",
-      closed_hihat: "/samples/closed_hihat.wav",
-      open_hihat: "/samples/open_hihat.wav",
-      clap: "/samples/clap.wav",
-      low_tom: "/samples/low_tom.wav",
-      high_tom: "/samples/high_tom.wav",
-    }).toDestination();
-  }, []);
-
-  const instruments = useMemo(
-    () => [
-      "kick",
-      "snare",
-      "closed_hihat",
-      "open_hihat",
-      "low_tom",
-      "high_tom",
-      "clap",
-    ],
-    []
-  );
-
   const togglePlay = async () => {
     playButtonClick();
     if (isPlaying) {
@@ -288,92 +282,21 @@ export default function Home() {
 
   const toggleStep = async (row: number, col: number) => {
     if (mode === "recreate" && !gameOver && !gameWon) {
-      const newGrid = grid.map((r, i) =>
-        i === row ? r.map((s, j) => (j === col ? !s : s)) : r
-      );
-      setGrid(newGrid);
-
-      await Tone.start();
-      padPlayers.current?.player(instruments[row]).start();
+      toggleStepGrid(row, col);
+      await playStep(row);
     }
   };
 
-  const playPattern = useCallback(
-    async (pattern: boolean[][], beatNumber: number) => {
-      await Tone.start();
-      console.log("🔍 Playing pattern:", pattern);
-      // 🛠 Step 2 validation
-      pattern.forEach((row, rowIndex) => {
-        if (row.length !== 16 || rowIndex >= instruments.length) {
-          console.warn(`⚠️ Row ${rowIndex} may be invalid`, row);
-        }
-      });
-      Tone.Transport.stop();
-      Tone.Transport.cancel();
-
-      Tone.Transport.bpm.value = getBpmForBeat(beatNumber);
-
-      const players = new Tone.Players({
-        kick: "/samples/kick.wav",
-        snare: "/samples/snare.wav",
-        closed_hihat: "/samples/closed_hihat.wav",
-        open_hihat: "/samples/open_hihat.wav",
-        clap: "/samples/clap.wav",
-        low_tom: "/samples/low_tom.wav",
-        high_tom: "/samples/high_tom.wav",
-      }).toDestination();
-
-      const seq = new Tone.Sequence(
-        (time, col) => {
-          setActiveStep(col);
-          pattern.forEach((row, rowIndex) => {
-            if (row[col] && instruments[rowIndex]) {
-              players.player(instruments[rowIndex]).start(time);
-            }
-          });
-        },
-        [...Array(16).keys()],
-        "16n"
-      );
-
-      seq.loop = isLooping;
-
-      // Start the sequence with a small delay to ensure proper initialization
-      seq.start("+0.1", 0);
-
-      // Only auto-reset when not looping
-      Tone.Transport.scheduleOnce(() => {
-        setIsPlaying(false);
-        setActiveStep(null);
-      }, `+${isLooping ? 1000 : "1m"}`);
-
-      // Start transport with a slightly longer delay to ensure sequence is ready
-      Tone.Transport.start("+0.2");
-      setIsPlaying(true);
-    },
-    [instruments, isLooping]
-  );
-
-  const playGrid = () => playPattern(grid, beatNumber);
+  const playGrid = () => playPattern(grid);
   const playTargetGrid = useCallback(
     async (onComplete?: () => void) => {
-      await playPattern(targetGrid, beatNumber);
+      await playPattern(targetGrid);
       if (onComplete) {
         onComplete();
       }
     },
-    [targetGrid, beatNumber, playPattern]
+    [targetGrid, playPattern]
   );
-
-  const stopPlayback = () => {
-    // Stop transport immediately
-    Tone.Transport.stop();
-    Tone.Transport.cancel();
-
-    // Reset state
-    setActiveStep(null);
-    setIsPlaying(false);
-  };
 
   // Removed automatic playback of target grid on game over/won
   // Now it will only play when user clicks the Listen button
@@ -381,16 +304,16 @@ export default function Home() {
   // Cleanup soundscapes on unmount and when game state changes
   useEffect(() => {
     return () => {
-      stopAll();
+      stopAllImmediately();
     };
-  }, [stopAll]);
+  }, [stopAllImmediately]);
 
   // Stop all soundscapes when component unmounts
   useEffect(() => {
     return () => {
-      stopAll();
+      stopAllImmediately();
     };
-  }, [stopAll]);
+  }, [stopAllImmediately]);
 
   const submitGuess = () => {
     playSubmitClick();
@@ -551,23 +474,14 @@ export default function Home() {
     setScore(totalScore);
   };
 
-  const clearGrid = () => {
-    playClearClick();
-    setGrid(createEmptyGrid());
-    setFeedbackGrid(null);
-    stopPlayback();
-  };
-
   const resetGame = () => {
     // Stop any playing soundscapes (victory/loss music)
-    stopAll();
+    stopAllImmediately();
     setGameOver(false);
     setGameWon(false);
-    setGrid(createEmptyGrid());
     setFeedbackGrid(null);
     setAttemptsLeft(3);
     setMode("recreate");
-    setActiveStep(null);
     setScore(0); // Reset score when retrying
     setClaimedCorrectSteps(createEmptyGrid());
     setTargetGrid(createPatternForBeat(beatNumber));
@@ -578,14 +492,12 @@ export default function Home() {
   const nextBeat = () => {
     const next = beatNumber + 1;
     // Stop any playing soundscapes (victory music)
-    stopAll();
+    stopAllImmediately();
     setGameWon(false);
     setBeatNumber(next);
-    setGrid(createEmptyGrid());
     setFeedbackGrid(null);
     setAttemptsLeft(3);
     setMode("recreate");
-    setActiveStep(null);
     // ❌ Do NOT reset score here—so it keeps accumulating
     setClaimedCorrectSteps(createEmptyGrid());
     setTargetGrid(createPatternForBeat(next));
@@ -626,7 +538,7 @@ export default function Home() {
       }
     } else {
       // Stop any playing soundscape before playing target
-      stopAll();
+      stopAllImmediately();
       setIsTargetPlaying(true);
       // Play target grid once (not looping)
       await playTargetGrid(() => {

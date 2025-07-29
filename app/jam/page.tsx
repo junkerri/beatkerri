@@ -11,7 +11,7 @@ import toast from "react-hot-toast";
 import { useSoundscapes } from "@/hooks/useSoundscapes";
 
 export default function JamMode() {
-  const { stopAll } = useSoundscapes();
+  const { stopAllImmediately } = useSoundscapes();
 
   const [bpm, setBpm] = useState(120);
   const [isLooping, setIsLooping] = useState(true);
@@ -33,6 +33,7 @@ export default function JamMode() {
     playPattern: playPatternAudio,
     stopPlayback: stopPlaybackAudio,
     playStep,
+    updatePattern, // Add the new updatePattern function
   } = useAudioPlayback({ bpm, isLooping });
 
   const {
@@ -40,12 +41,14 @@ export default function JamMode() {
     setGrid,
     toggleStep: toggleStepGrid,
     clearGrid,
-  } = useGameState();
+  } = useGameState({
+    onGridChange: updatePattern, // Connect the real-time update callback
+  });
 
   // Stop all soundscapes when component mounts
   useEffect(() => {
-    stopAll();
-  }, [stopAll]);
+    stopAllImmediately();
+  }, [stopAllImmediately]);
 
   const togglePlay = async () => {
     if (isPlaying) {
@@ -87,6 +90,8 @@ export default function JamMode() {
   const loadBeat = (beat: (typeof savedBeats)[0]) => {
     setGrid(beat.grid);
     setBpm(beat.bpm);
+    // Update the pattern in real-time if currently playing
+    updatePattern(beat.grid);
     toast.success(`Loaded "${beat.name}"`);
   };
 
@@ -131,6 +136,8 @@ export default function JamMode() {
           const beatData = JSON.parse(e.target?.result as string);
           setGrid(beatData.grid);
           setBpm(beatData.bpm || 120);
+          // Update the pattern in real-time if currently playing
+          updatePattern(beatData.grid);
           toast.success("Beat imported!");
         } catch {
           toast.error("Invalid beat file!");

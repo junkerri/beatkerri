@@ -75,7 +75,7 @@ type Attempt = {
 };
 
 export default function BeatdleMode() {
-  const { playVictory, playLoss, stopAll } = useSoundscapes();
+  const { playVictory, playLoss, stopAllImmediately } = useSoundscapes();
 
   const beatNumber = getTodayBeatNumber();
   const bpm = getDailyBPM(beatNumber);
@@ -100,6 +100,7 @@ export default function BeatdleMode() {
     playPattern: playPatternAudio,
     stopPlayback: stopPlaybackAudio,
     playStep,
+    updatePattern, // Add the new updatePattern function
   } = useAudioPlayback({ bpm, isLooping });
 
   const {
@@ -120,7 +121,9 @@ export default function BeatdleMode() {
     setClaimedCorrectSteps,
     toggleStep: toggleStepGrid,
     clearGrid,
-  } = useGameState();
+  } = useGameState({
+    onGridChange: updatePattern, // Connect the real-time update callback
+  });
 
   useEffect(() => {
     const progress = localStorage.getItem("beatdle_progress");
@@ -159,16 +162,16 @@ export default function BeatdleMode() {
   // Cleanup soundscapes on unmount and when game state changes
   useEffect(() => {
     return () => {
-      stopAll();
+      stopAllImmediately();
     };
-  }, [stopAll]);
+  }, [stopAllImmediately]);
 
   // Stop all soundscapes when component unmounts
   useEffect(() => {
     return () => {
-      stopAll();
+      stopAllImmediately();
     };
-  }, [stopAll]);
+  }, [stopAllImmediately]);
 
   const togglePlay = async () => {
     if (isPlaying) {
@@ -500,7 +503,7 @@ export default function BeatdleMode() {
       }
     } else {
       // Stop any playing soundscape before playing target
-      stopAll();
+      stopAllImmediately();
       setIsTargetPlaying(true);
       // Play target grid once (not looping)
       await playPatternAudio(targetGrid, false, () => {

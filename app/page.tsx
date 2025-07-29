@@ -8,7 +8,7 @@ import { useSoundscapes } from "@/hooks/useSoundscapes";
 import { AudioControls } from "@/components/AudioControls";
 
 export default function Home() {
-  const { playMainPage, stopAll } = useSoundscapes();
+  const { playMainPage, stopAllImmediately } = useSoundscapes();
 
   const handleNavigationClick = () => {
     playNavigationClick();
@@ -26,16 +26,16 @@ export default function Home() {
 
   // Start ambient music when component mounts
   React.useEffect(() => {
-    // Stop any existing soundscapes first
-    stopAll();
+    // Stop any existing soundscapes immediately to prevent audio chaos
+    stopAllImmediately();
     // Start main page ambient
     playMainPage();
 
     // Stop ambient music when navigating away
     return () => {
-      stopAll();
+      stopAllImmediately();
     };
-  }, [playMainPage, stopAll]);
+  }, [playMainPage, stopAllImmediately]);
 
   return (
     <main

@@ -28,33 +28,66 @@ body {
 /* Custom slider styles */
 .slider::-webkit-slider-thumb {
   appearance: none;
-  height: 12px;
-  width: 12px;
+  height: 16px;
+  width: 16px;
   border-radius: 50%;
   background: #fbbf24;
   cursor: pointer;
   box-shadow: 0 0 6px rgba(251, 191, 36, 0.5);
+  border: 2px solid #fbbf24;
 }
 
 .slider::-moz-range-thumb {
-  height: 12px;
-  width: 12px;
+  height: 16px;
+  width: 16px;
   border-radius: 50%;
   background: #fbbf24;
   cursor: pointer;
-  border: none;
+  border: 2px solid #fbbf24;
   box-shadow: 0 0 6px rgba(251, 191, 36, 0.5);
 }
 
 .slider::-webkit-slider-track {
   background: #374151;
   border-radius: 0.5rem;
-  height: 4px;
+  height: 6px;
 }
 
 .slider::-moz-range-track {
   background: #374151;
   border-radius: 0.5rem;
-  height: 4px;
+  height: 6px;
   border: none;
+}
+
+/* Mobile-specific slider improvements */
+@media (max-width: 768px) {
+  .slider::-webkit-slider-thumb {
+    height: 20px;
+    width: 20px;
+  }
+
+  .slider::-moz-range-thumb {
+    height: 20px;
+    width: 20px;
+  }
+
+  .slider::-webkit-slider-track {
+    height: 8px;
+  }
+
+  .slider::-moz-range-track {
+    height: 8px;
+  }
+}
+
+/* Prevent text selection on mobile */
+.touch-manipulation {
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }

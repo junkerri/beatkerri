@@ -15,9 +15,17 @@ export const useAudioPlayback = ({ bpm, isLooping }: UseAudioPlaybackProps) => {
   const [activeStep, setActiveStep] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const padPlayers = useRef<Tone.Players | null>(null);
+  const currentPattern = useRef<boolean[][]>([]);
+  const sequenceRef = useRef<Tone.Sequence | null>(null);
+  const playersRef = useRef<Tone.Players | null>(null);
 
   useEffect(() => {
     padPlayers.current = createPadPlayers();
+  }, []);
+
+  // Update the current pattern reference when it changes
+  const updatePattern = useCallback((pattern: boolean[][]) => {
+    currentPattern.current = pattern;
   }, []);
 
   const playPattern = useCallback(
@@ -31,14 +39,20 @@ export const useAudioPlayback = ({ bpm, isLooping }: UseAudioPlaybackProps) => {
       Tone.Transport.cancel();
       Tone.Transport.bpm.value = bpm;
 
-      const players = createPlayers();
+      // Store the pattern reference for real-time updates
+      currentPattern.current = pattern;
+
+      // Create players and store reference
+      playersRef.current = createPlayers();
 
       const seq = new Tone.Sequence(
         (time, col) => {
           setActiveStep(col);
-          pattern.forEach((row, rowIndex) => {
+          // Use the current pattern reference for real-time updates
+          const currentGrid = currentPattern.current;
+          currentGrid.forEach((row, rowIndex) => {
             if (row[col]) {
-              players.player(instruments[rowIndex]).start(time);
+              playersRef.current?.player(instruments[rowIndex]).start(time);
             }
           });
         },
@@ -47,6 +61,7 @@ export const useAudioPlayback = ({ bpm, isLooping }: UseAudioPlaybackProps) => {
       );
 
       seq.loop = loop;
+      sequenceRef.current = seq;
 
       // Start the sequence with a small delay to ensure proper initialization
       seq.start("+0.1", 0);
@@ -70,6 +85,10 @@ export const useAudioPlayback = ({ bpm, isLooping }: UseAudioPlaybackProps) => {
     Tone.Transport.stop();
     Tone.Transport.cancel();
 
+    // Clear references
+    sequenceRef.current = null;
+    playersRef.current = null;
+
     // Reset state
     setActiveStep(null);
     setIsPlaying(false);
@@ -87,5 +106,6 @@ export const useAudioPlayback = ({ bpm, isLooping }: UseAudioPlaybackProps) => {
     playPattern,
     stopPlayback,
     playStep,
+    updatePattern, // New function to update pattern in real-time
   };
 };

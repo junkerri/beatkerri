@@ -5,6 +5,7 @@ class SoundscapeManager {
   private isMuted = false;
   private volume = 0.3; // Default volume (30%)
   private listeners: { [key: string]: HTMLAudioElement } = {};
+  private fadeOutTimeout: NodeJS.Timeout | null = null;
 
   private initAudioContext() {
     if (this.isInitialized) return;
@@ -54,15 +55,29 @@ class SoundscapeManager {
       fadeIn?: boolean;
       fadeOut?: boolean;
       crossfade?: boolean;
+      forceStop?: boolean; // New option to force stop current audio
     } = {}
   ) {
     try {
       this.initAudioContext();
       await this.ensureAudioContextResumed();
 
+      // Clear any existing fade out timeout
+      if (this.fadeOutTimeout) {
+        clearTimeout(this.fadeOutTimeout);
+        this.fadeOutTimeout = null;
+      }
+
+      // Stop current audio immediately if forceStop is true
+      if (options.forceStop && this.currentAudio) {
+        this.currentAudio.pause();
+        this.currentAudio.currentTime = 0;
+        this.currentAudio = null;
+      }
+
       const audio = await this.loadAudio(path);
 
-      // Stop current audio if crossfading
+      // Stop current audio if crossfading or if we have existing audio
       if (options.crossfade && this.currentAudio) {
         this.fadeOutAudio(this.currentAudio);
       } else if (this.currentAudio) {
@@ -127,6 +142,11 @@ class SoundscapeManager {
 
   // Stop current soundscape
   stopSoundscape(fadeOut: boolean = true) {
+    if (this.fadeOutTimeout) {
+      clearTimeout(this.fadeOutTimeout);
+      this.fadeOutTimeout = null;
+    }
+
     if (this.currentAudio) {
       if (fadeOut) {
         this.fadeOutAudio(this.currentAudio);
@@ -136,6 +156,28 @@ class SoundscapeManager {
       }
       this.currentAudio = null;
     }
+  }
+
+  // Stop all soundscapes immediately (no fade)
+  stopAllImmediately() {
+    if (this.fadeOutTimeout) {
+      clearTimeout(this.fadeOutTimeout);
+      this.fadeOutTimeout = null;
+    }
+
+    if (this.currentAudio) {
+      this.currentAudio.pause();
+      this.currentAudio.currentTime = 0;
+      this.currentAudio = null;
+    }
+
+    // Also stop any cached audio that might be playing
+    Object.values(this.listeners).forEach((audio) => {
+      if (!audio.paused) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+    });
   }
 
   // Set volume (0.0 to 1.0)
@@ -178,6 +220,11 @@ class SoundscapeManager {
     return this.volume;
   }
 
+  // Check if any audio is currently playing
+  isPlaying(): boolean {
+    return this.currentAudio ? !this.currentAudio.paused : false;
+  }
+
   // Preload all soundscapes
   async preloadSoundscapes() {
     const soundscapes = [
@@ -200,6 +247,9 @@ class SoundscapeManager {
   // Clean up resources
   dispose() {
     this.stopSoundscape(false);
+    if (this.fadeOutTimeout) {
+      clearTimeout(this.fadeOutTimeout);
+    }
     Object.values(this.listeners).forEach((audio) => {
       audio.pause();
       audio.src = "";
@@ -220,6 +270,7 @@ export const playMainPageAmbient = () =>
   soundscapeManager.playSoundscape("/audio/main-page-ambient.mp3", {
     loop: true,
     fadeIn: true,
+    forceStop: true, // Force stop any existing audio
   });
 
 export const playVictorySoundscape = (
@@ -230,18 +281,30 @@ export const playVictorySoundscape = (
   if (isPerfect && mode === "beatdle") {
     path = "/audio/victory/perfect-solve.mp3";
   }
-  return soundscapeManager.playSoundscape(path, { fadeIn: true });
+  return soundscapeManager.playSoundscape(path, {
+    fadeIn: true,
+    forceStop: true, // Force stop any existing audio
+  });
 };
 
 export const playLossSoundscape = (mode: "beatdle" | "challenge") =>
   soundscapeManager.playSoundscape("/audio/loss/loss1.mp3", {
     fadeIn: true,
+    forceStop: true, // Force stop any existing audio
   });
 
 export const playGameStart = () =>
-  soundscapeManager.playSoundscape("/audio/transitions/game-start.mp3");
+  soundscapeManager.playSoundscape("/audio/transitions/game-start.mp3", {
+    forceStop: true,
+  });
 
 export const playModeSwitch = () =>
-  soundscapeManager.playSoundscape("/audio/transitions/mode-switch.mp3");
+  soundscapeManager.playSoundscape("/audio/transitions/mode-switch.mp3", {
+    forceStop: true,
+  });
 
 export const stopAllSoundscapes = () => soundscapeManager.stopSoundscape(true);
+
+// New function to stop all soundscapes immediately
+export const stopAllSoundscapesImmediately = () =>
+  soundscapeManager.stopAllImmediately();

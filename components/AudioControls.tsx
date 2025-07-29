@@ -51,14 +51,30 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
             step="0.1"
             value={isMuted ? 0 : volume}
             onChange={handleVolumeChange}
-            onTouchStart={(e) => e.stopPropagation()}
-            onTouchMove={(e) => e.stopPropagation()}
-            onTouchEnd={(e) => e.stopPropagation()}
-            className="w-16 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer slider touch-manipulation"
+            onInput={handleVolumeChange} // Add onInput for better mobile support
+            onTouchStart={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+            }}
+            onTouchMove={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+            }}
+            onTouchEnd={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+            }}
+            className="w-16 h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer slider touch-manipulation"
             title="Volume"
-            style={{ WebkitTapHighlightColor: "transparent" }}
+            style={{
+              WebkitTapHighlightColor: "transparent",
+              WebkitAppearance: "none",
+              appearance: "none",
+              background: "transparent",
+              cursor: "pointer",
+            }}
           />
-          <span className="text-xs text-gray-400 font-mono w-8">
+          <span className="text-xs text-gray-400 font-mono w-8 select-none">
             {Math.round((isMuted ? 0 : volume) * 100)}%
           </span>
         </div>

@@ -7,6 +7,7 @@ import {
   playGameStart,
   playModeSwitch,
   stopAllSoundscapes,
+  stopAllSoundscapesImmediately,
 } from "@/utils/soundscapeManager";
 
 export const useSoundscapes = () => {
@@ -96,9 +97,14 @@ export const useSoundscapes = () => {
     }
   }, [isMuted]);
 
-  // Stop all soundscapes
+  // Stop all soundscapes with fade
   const stopAll = useCallback(() => {
     stopAllSoundscapes();
+  }, []);
+
+  // Stop all soundscapes immediately (no fade)
+  const stopAllImmediately = useCallback(() => {
+    stopAllSoundscapesImmediately();
   }, []);
 
   return {
@@ -118,6 +124,7 @@ export const useSoundscapes = () => {
     playStart,
     playSwitch,
     stopAll,
+    stopAllImmediately,
 
     // Direct access to manager
     manager: soundscapeManager,

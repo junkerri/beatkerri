@@ -4,11 +4,13 @@ import { createEmptyGrid, Feedback } from "@/utils/gameUtils";
 interface UseGameStateProps {
   initialScore?: number;
   initialAttempts?: number;
+  onGridChange?: (grid: boolean[][]) => void; // New callback for real-time updates
 }
 
 export const useGameState = ({
   initialScore = 0,
   initialAttempts = 3,
+  onGridChange,
 }: UseGameStateProps = {}) => {
   const [grid, setGrid] = useState(createEmptyGrid());
   const [feedbackGrid, setFeedbackGrid] = useState<Feedback[][] | null>(null);
@@ -21,27 +23,39 @@ export const useGameState = ({
     createEmptyGrid()
   );
 
-  const toggleStep = useCallback((row: number, col: number) => {
-    setGrid((prev) =>
-      prev.map((r, i) =>
-        i === row ? r.map((s, j) => (j === col ? !s : s)) : r
-      )
-    );
-  }, []);
+  const toggleStep = useCallback(
+    (row: number, col: number) => {
+      setGrid((prev) => {
+        const newGrid = prev.map((r, i) =>
+          i === row ? r.map((s, j) => (j === col ? !s : s)) : r
+        );
+        // Call the callback to update the pattern in real-time
+        onGridChange?.(newGrid);
+        return newGrid;
+      });
+    },
+    [onGridChange]
+  );
 
   const clearGrid = useCallback(() => {
-    setGrid(createEmptyGrid());
+    const emptyGrid = createEmptyGrid();
+    setGrid(emptyGrid);
     setFeedbackGrid(null);
-  }, []);
+    // Call the callback to update the pattern in real-time
+    onGridChange?.(emptyGrid);
+  }, [onGridChange]);
 
   const resetGame = useCallback(() => {
-    setGrid(createEmptyGrid());
+    const emptyGrid = createEmptyGrid();
+    setGrid(emptyGrid);
     setFeedbackGrid(null);
     setGameWon(false);
     setGameOver(false);
     setAttemptsLeft(initialAttempts);
     setClaimedCorrectSteps(createEmptyGrid());
-  }, [initialAttempts]);
+    // Call the callback to update the pattern in real-time
+    onGridChange?.(emptyGrid);
+  }, [initialAttempts, onGridChange]);
 
   const updateScore = useCallback((newScore: number) => {
     setScore(newScore);
