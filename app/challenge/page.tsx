@@ -20,10 +20,7 @@ import {
   Headphones,
   HelpCircle,
 } from "lucide-react";
-import Lottie from "lottie-react";
 import Confetti from "react-confetti";
-import confettiAnimation from "@/public/animations/confetti.json";
-import ghostAnimation from "@/public/animations/ghost.json";
 import Link from "next/link";
 import {
   playButtonClick,

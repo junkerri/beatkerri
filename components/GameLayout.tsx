@@ -2,27 +2,15 @@
 
 import React from "react";
 import {
-  Play,
-  Square,
   Repeat,
-  Trash2,
-  Zap,
   Share2,
-  Download,
-  Upload,
-  Save,
-  Music,
   Headphones,
-  Wand2,
   Crosshair,
   Trophy,
   Clock,
   HelpCircle,
 } from "lucide-react";
-import Lottie from "lottie-react";
 import Confetti from "react-confetti";
-import confettiAnimation from "@/public/animations/confetti.json";
-import ghostAnimation from "@/public/animations/ghost.json";
 import { playSubmitClick } from "@/utils/clickSounds";
 import Link from "next/link";
 import { SequencerGrid } from "./SequencerGrid";

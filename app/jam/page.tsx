@@ -62,7 +62,7 @@ export default function JamMode() {
       Tone.Transport.stop();
       Tone.Transport.cancel();
     };
-  }, [stopAllImmediately, stopPlaybackAudio]);
+  }, [stopAllImmediately, stopPlaybackAudio, setIsPlaying]);
 
   const togglePlay = async () => {
     if (isPlaying) {
