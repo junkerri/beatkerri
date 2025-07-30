@@ -464,6 +464,7 @@ export default function Home() {
     setFeedbackGrid(null);
     setMode("recreate");
     setScore(0); // Reset score when retrying
+    setAttemptsLeft(3); // Reset attempts to 3
     setClaimedCorrectSteps(createEmptyGrid());
     setTargetGrid(createPatternForBeat(beatNumber));
 
@@ -538,7 +539,7 @@ export default function Home() {
   };
 
   return (
-    <main className="relative flex flex-col items-center justify-center min-h-screen bg-black text-white p-4">
+    <main className="relative flex flex-col items-center justify-center min-h-screen bg-black text-white p-2 sm:p-4">
       <GameLayout
         mode="challenge"
         beatLabel={`Beat ${beatNumber}`}

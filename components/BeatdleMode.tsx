@@ -539,18 +539,18 @@ export default function BeatdleMode() {
   // If already played, show message and block game UI
   if (alreadyPlayed) {
     return (
-      <main className="relative flex flex-col items-center justify-center min-h-screen bg-black text-white p-4">
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex flex-col items-center justify-center space-y-4">
+      <main className="relative flex flex-col items-center justify-center min-h-screen bg-black text-white p-2 sm:p-4">
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex flex-col items-center justify-start space-y-4 overflow-y-auto p-4 pt-8 pb-8">
           <div className="text-4xl font-extrabold animate-pulse font-mono text-red-500">
             🕐 ALREADY PLAYED TODAY 🕐
           </div>
           <p className="text-yellow-400 font-mono text-lg">
             Final Score: {score}
           </p>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-center gap-3">
             <button
               onClick={toggleTargetBeat}
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded flex items-center space-x-2 transition-colors"
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded flex items-center justify-center space-x-2 transition-colors w-full sm:w-auto max-w-xs"
               title="Play Beat"
             >
               <Headphones size={18} className="text-white" />
@@ -558,7 +558,7 @@ export default function BeatdleMode() {
             </button>
             <button
               onClick={handleShare}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded flex items-center space-x-2 transition-colors"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded flex items-center justify-center space-x-2 transition-colors w-full sm:w-auto max-w-xs"
             >
               <Share2 size={18} className="text-white" />
               <span>Share Results</span>

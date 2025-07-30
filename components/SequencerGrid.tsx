@@ -14,10 +14,10 @@ export const SequencerGrid: React.FC<SequencerGridProps> = ({
   feedbackGrid,
   activeStep,
 }) => (
-  <div className="space-y-2">
+  <div className="space-y-1 sm:space-y-2">
     {grid.map((row, rowIndex) => (
       <div key={rowIndex} className="flex items-center space-x-0.5">
-        <div className="w-6 text-xs text-gray-300 text-center font-mono">
+        <div className="w-5 sm:w-6 text-xs text-gray-300 text-center font-mono">
           {instrumentNames[rowIndex]}
         </div>
         {row.map((step, colIndex) => {
@@ -36,7 +36,7 @@ export const SequencerGrid: React.FC<SequencerGridProps> = ({
           return (
             <button
               key={colIndex}
-              className={`w-6 h-6 sm:w-8 sm:h-8 rounded border-2 flex items-center justify-center relative
+              className={`w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 rounded border-2 flex items-center justify-center relative
                 ${
                   step
                     ? "bg-amber-500 border-amber-500"

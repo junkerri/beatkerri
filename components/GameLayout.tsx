@@ -201,7 +201,7 @@ export const GameLayout = ({
   }
 
   return (
-    <main className="relative flex flex-col items-center justify-center min-h-screen bg-black text-white p-4">
+    <main className="relative flex flex-col items-center justify-center min-h-screen bg-black text-white p-2 sm:p-4">
       {title && (
         <h2 className="text-xl font-bold font-mono mb-4 text-center">
           {title}
@@ -222,7 +222,7 @@ export const GameLayout = ({
           rounded-2xl
           shadow-2xl
           w-full max-w-2xl
-          p-6
+          p-3 sm:p-6
           flex flex-col items-center
           drum-machine-outline
         "
@@ -322,10 +322,10 @@ export const GameLayout = ({
 
       {/* Game Over / Victory Overlay */}
       {(gameOver || gameWon) && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex flex-col items-center justify-center space-y-4">
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex flex-col items-center justify-start space-y-4 overflow-y-auto p-4 pt-8 pb-8">
           {gameOver && (
             <>
-              <div className="w-32 h-32 mx-auto mb-4 flex items-center justify-center">
+              <div className="w-32 h-32 mx-auto mb-4 flex items-center justify-center flex-shrink-0">
                 <div className="ghost-animation">
                   <div className="ghost-body">
                     <div className="ghost-eyes">
@@ -367,7 +367,7 @@ export const GameLayout = ({
               )}
 
               {/* Listen and action buttons for game over */}
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-center gap-3">
                 {onListenTarget && (
                   <button
                     onClick={onListenTarget}
@@ -400,7 +400,7 @@ export const GameLayout = ({
               {onRetry && (
                 <button
                   onClick={onRetry}
-                  className="mt-4 px-4 py-2 bg-red-600 text-white rounded flex items-center space-x-2"
+                  className="mt-4 px-4 py-2 bg-red-600 text-white rounded flex items-center justify-center space-x-2 w-full sm:w-auto max-w-xs"
                 >
                   <Repeat size={18} />
                   <span>Retry</span>
@@ -449,7 +449,7 @@ export const GameLayout = ({
               )}
 
               {/* Listen and action buttons */}
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-center gap-3">
                 {onListenTarget && (
                   <button
                     onClick={onListenTarget}
@@ -474,7 +474,7 @@ export const GameLayout = ({
               {onNextBeat && (
                 <button
                   onClick={onNextBeat}
-                  className="mt-4 px-4 py-2 bg-green-600 text-white rounded animate-bounce"
+                  className="mt-4 px-4 py-2 bg-green-600 text-white rounded animate-bounce w-full sm:w-auto max-w-xs"
                 >
                   ✅ Next Beat
                 </button>
