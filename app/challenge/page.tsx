@@ -80,6 +80,35 @@ export default function Home() {
     return 100 + extra;
   };
 
+  // Attempt-based messaging functions for Challenge mode
+  const getAttemptEmoji = (attempts: number, gameWon: boolean) => {
+    if (!gameWon) return "💀"; // Dead emoji for X/3
+    switch (attempts) {
+      case 1:
+        return "🎯"; // Bullseye for 1/3
+      case 2:
+        return "🎩"; // Hat for 2/3
+      case 3:
+        return "🎉"; // Party hat for 3/3
+      default:
+        return "💀"; // Dead emoji for X/3
+    }
+  };
+
+  const getAttemptMessage = (attempts: number, gameWon: boolean) => {
+    if (!gameWon) return "Better luck next time!";
+    switch (attempts) {
+      case 1:
+        return "Perfect! You recreated the beat on the first try!";
+      case 2:
+        return "Good job! You recreated the beat on the second try!";
+      case 3:
+        return "You made it! Just in time on the third try!";
+      default:
+        return "Better luck next time!";
+    }
+  };
+
   const createPatternForBeat = useCallback((beatNumber: number) => {
     const grid = createEmptyGrid();
     const rng = seedrandom(`Beat${beatNumber}`);
@@ -159,6 +188,7 @@ export default function Home() {
   const [beatsCompleted, setBeatsCompleted] = useState(0);
   const [totalAttempts, setTotalAttempts] = useState(0);
   const [perfectSolves, setPerfectSolves] = useState(0);
+  const [attemptsUsed, setAttemptsUsed] = useState(0); // Track attempts used for current beat
 
   // Use shared hooks for audio and game state
   const {
@@ -361,6 +391,7 @@ export default function Home() {
     }
 
     const newTotalAttempts = totalAttempts + 1;
+    const currentAttemptsUsed = 3 - attemptsLeft + 1; // Calculate attempts used for this beat
 
     if (allCorrect) {
       totalScore += 10;
@@ -369,6 +400,7 @@ export default function Home() {
 
       setGameWon(true);
       setBeatsCompleted(beatsCompleted + 1);
+      setAttemptsUsed(currentAttemptsUsed); // Set attempts used for this beat
       if (attemptsLeft === 3) {
         setPerfectSolves(perfectSolves + 1);
       }
@@ -386,8 +418,12 @@ export default function Home() {
         3 // reset attempts for next beat
       );
 
+      const attemptsUsed = 3 - attemptsLeft + 1; // Calculate attempts used
+      const attemptEmoji = getAttemptEmoji(attemptsUsed, true);
+      const attemptMessage = getAttemptMessage(attemptsUsed, true);
+
       toast.success(
-        `🎉 Perfect! You recreated the beat and earned ${
+        `${attemptEmoji} ${attemptMessage} You earned ${
           newlyCorrect * pointsPerCorrect + 10
         } total points!`,
         {
@@ -413,6 +449,7 @@ export default function Home() {
 
       if (remaining <= 0) {
         setGameOver(true);
+        setAttemptsUsed(3); // Set attempts used to 3 for game over
 
         // Play loss soundscape
         playLoss("challenge");
@@ -427,7 +464,10 @@ export default function Home() {
           3 // reset to 3 for retry
         );
 
-        toast.error("👻 Game Over! Try again.", {
+        const attemptEmoji = getAttemptEmoji(3, false); // 3 attempts used, didn't win
+        const attemptMessage = getAttemptMessage(3, false);
+
+        toast.error(`${attemptEmoji} ${attemptMessage}`, {
           style: {
             background: "#b91c1c",
             color: "#fff",
@@ -465,6 +505,7 @@ export default function Home() {
     setMode("recreate");
     setScore(0); // Reset score when retrying
     setAttemptsLeft(3); // Reset attempts to 3
+    setAttemptsUsed(0); // Reset attempts used
     setClaimedCorrectSteps(createEmptyGrid());
     setTargetGrid(createPatternForBeat(beatNumber));
 
@@ -480,6 +521,7 @@ export default function Home() {
     setBeatNumber(next);
     setFeedbackGrid(null);
     setAttemptsLeft(3);
+    setAttemptsUsed(0); // Reset attempts used for new beat
     setMode("recreate");
     // ❌ Do NOT reset score here—so it keeps accumulating
     setClaimedCorrectSteps(createEmptyGrid());
@@ -568,7 +610,7 @@ export default function Home() {
         highestScore={highestScore}
         beatsCompleted={beatsCompleted}
         perfectSolves={perfectSolves}
-        totalAttempts={totalAttempts}
+        totalAttempts={attemptsUsed}
       />
     </main>
   );

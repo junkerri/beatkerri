@@ -340,18 +340,20 @@ export const GameLayout = ({
                 GAME OVER
               </div>
               <p className="text-yellow-400 font-mono text-lg">
-                {mode === "beatdle" && totalAttempts && (
-                  <span className="mr-2 text-2xl">
-                    {getAttemptEmoji(totalAttempts, gameWon)}
-                  </span>
-                )}
+                {(mode === "beatdle" || mode === "challenge") &&
+                  totalAttempts && (
+                    <span className="mr-2 text-2xl">
+                      {getAttemptEmoji(totalAttempts, gameWon)}
+                    </span>
+                  )}
                 Final Score: {score}
               </p>
-              {mode === "beatdle" && totalAttempts && (
-                <p className="text-green-400 font-mono text-center">
-                  {getAttemptMessage(totalAttempts, gameWon)}
-                </p>
-              )}
+              {(mode === "beatdle" || mode === "challenge") &&
+                totalAttempts && (
+                  <p className="text-green-400 font-mono text-center">
+                    {getAttemptMessage(totalAttempts, gameWon)}
+                  </p>
+                )}
               {targetGrid && (
                 <div className="mb-4">
                   <SequencerGrid
@@ -421,19 +423,21 @@ export const GameLayout = ({
                 CONGRATULATIONS!
               </div>
               <p className="text-yellow-400 font-mono text-lg">
-                {mode === "beatdle" && totalAttempts && (
-                  <span className="mr-2 text-2xl">
-                    {getAttemptEmoji(totalAttempts, gameWon)}
-                  </span>
-                )}
+                {(mode === "beatdle" || mode === "challenge") &&
+                  totalAttempts && (
+                    <span className="mr-2 text-2xl">
+                      {getAttemptEmoji(totalAttempts, gameWon)}
+                    </span>
+                  )}
                 <Trophy className="inline w-5 h-5 mr-2" />
                 You scored {score} points!
               </p>
-              {mode === "beatdle" && totalAttempts && (
-                <p className="text-green-400 font-mono text-center">
-                  {getAttemptMessage(totalAttempts, gameWon)}
-                </p>
-              )}
+              {(mode === "beatdle" || mode === "challenge") &&
+                totalAttempts && (
+                  <p className="text-green-400 font-mono text-center">
+                    {getAttemptMessage(totalAttempts, gameWon)}
+                  </p>
+                )}
               {targetGrid && (
                 <div className="mb-4">
                   <SequencerGrid
