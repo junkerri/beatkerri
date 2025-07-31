@@ -1099,47 +1099,50 @@ const weeklyBeats: CustomBeat[] = [
 // In-memory storage for custom beats (in production, this would be a database)
 let customBeats: CustomBeat[] = [];
 
-// Initialize with weekly beats
-const initializeWeeklyBeats = () => {
-  // Only add weekly beats if they don't already exist
-  weeklyBeats.forEach((weeklyBeat) => {
-    if (!customBeats.some((beat) => beat.date === weeklyBeat.date)) {
-      customBeats.push(weeklyBeat);
-    }
-  });
-  // Save to localStorage to ensure custom beats are persisted
-  saveCustomBeats();
-};
-
-// Load custom beats from localStorage on initialization
-if (typeof window !== "undefined") {
+// Initialize custom beats system
+const initializeCustomBeats = () => {
+  if (typeof window === "undefined") return; // Skip on server-side
+  
   try {
     const stored = localStorage.getItem("beatkerri_custom_beats");
     if (stored) {
       customBeats = JSON.parse(stored);
     }
-    // Initialize weekly beats
-    initializeWeeklyBeats();
+    
+    // Add weekly beats if they don't already exist
+    weeklyBeats.forEach((weeklyBeat) => {
+      if (!customBeats.some((beat) => beat.date === weeklyBeat.date)) {
+        customBeats.push(weeklyBeat);
+      }
+    });
+    
+    // Save to localStorage to ensure custom beats are persisted
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(
+          "beatkerri_custom_beats",
+          JSON.stringify(customBeats)
+        );
+      } catch (error) {
+        console.error("Failed to save custom beats:", error);
+      }
+    }
   } catch (error) {
     console.error("Failed to load custom beats:", error);
     // Initialize with weekly beats even if localStorage fails
-    initializeWeeklyBeats();
-  }
-}
-
-// Save custom beats to localStorage
-const saveCustomBeats = () => {
-  if (typeof window !== "undefined") {
-    try {
-      localStorage.setItem(
-        "beatkerri_custom_beats",
-        JSON.stringify(customBeats)
-      );
-    } catch (error) {
-      console.error("Failed to save custom beats:", error);
-    }
+    weeklyBeats.forEach((weeklyBeat) => {
+      if (!customBeats.some((beat) => beat.date === weeklyBeat.date)) {
+        customBeats.push(weeklyBeat);
+      }
+    });
   }
 };
+
+// Initialize on client-side only
+if (typeof window !== "undefined") {
+  // Use setTimeout to avoid blocking the main thread
+  setTimeout(initializeCustomBeats, 0);
+}
 
 // Get custom beat for a specific date
 export const getCustomBeat = (date: string): CustomBeat | null => {
@@ -1155,13 +1158,31 @@ export const addCustomBeat = (beat: CustomBeat): void => {
   customBeats.push(beat);
 
   // Save to localStorage
-  saveCustomBeats();
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem(
+        "beatkerri_custom_beats",
+        JSON.stringify(customBeats)
+      );
+    } catch (error) {
+      console.error("Failed to save custom beats:", error);
+    }
+  }
 };
 
 // Remove a custom beat
 export const removeCustomBeat = (date: string): void => {
   customBeats = customBeats.filter((b) => b.date !== date);
-  saveCustomBeats();
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem(
+        "beatkerri_custom_beats",
+        JSON.stringify(customBeats)
+      );
+    } catch (error) {
+      console.error("Failed to save custom beats:", error);
+    }
+  }
 };
 
 // Get all custom beats
@@ -1189,15 +1210,6 @@ export const getBeatForDate = (
   category?: string;
 } => {
   const customBeat = getCustomBeat(date);
-
-  // Debug logging
-  console.log("getBeatForDate:", {
-    date,
-    hasCustomBeat: !!customBeat,
-    customBeatDate: customBeat?.date,
-    totalCustomBeats: customBeats.length,
-    customBeatDates: customBeats.map(b => b.date)
-  });
 
   if (customBeat) {
     return {
