@@ -87,22 +87,28 @@ export default function BeatdleMode() {
   const today = new Date().toISOString().split("T")[0];
 
   // Get beat for today (custom or generated)
-  const { grid: targetGrid, bpm } = getBeatForDate(
-    today,
-    generatedGrid,
-    generatedBpm
-  );
+  const beatResult = getBeatForDate(today, generatedGrid, generatedBpm);
+  const { grid: targetGrid, bpm, isCustom } = beatResult;
+
+  // Debug: Log what we got from getBeatForDate
+  console.log("Beat result from getBeatForDate:", {
+    date: today,
+    isCustom,
+    targetGridLength: targetGrid?.flat().filter(Boolean).length,
+    bpm,
+    targetGridStructure: targetGrid?.map((row) => row.filter(Boolean).length),
+  });
 
   // Safety check - ensure targetGrid is properly initialized
   let safeTargetGrid: boolean[][];
   let safeBpm: number;
-  
+
   if (!targetGrid || !Array.isArray(targetGrid) || targetGrid.length !== 7) {
     console.error("targetGrid is not properly initialized:", targetGrid);
     // Fallback to generated grid if targetGrid is invalid
     safeTargetGrid = generatedGrid;
     safeBpm = generatedBpm;
-    
+
     // Debug: Log the beat being used
     console.log("Beat for today (fallback):", {
       date: today,
@@ -114,14 +120,14 @@ export default function BeatdleMode() {
   } else {
     safeTargetGrid = targetGrid;
     safeBpm = bpm;
-    
+
     // Debug: Log the beat being used
     console.log("Beat for today:", {
       date: today,
       beatNumber,
       targetGrid: safeTargetGrid.flat().filter(Boolean).length,
       bpm: safeBpm,
-      isCustom: getBeatForDate(today, generatedGrid, generatedBpm).isCustom,
+      isCustom: isCustom,
     });
   }
 
@@ -373,8 +379,16 @@ export default function BeatdleMode() {
 
   const submitGuess = () => {
     // Safety check - ensure grid and targetGrid are properly initialized
-    if (!grid || !safeTargetGrid || !Array.isArray(grid) || !Array.isArray(safeTargetGrid)) {
-      console.error("Grid or targetGrid is not properly initialized:", { grid, targetGrid: safeTargetGrid });
+    if (
+      !grid ||
+      !safeTargetGrid ||
+      !Array.isArray(grid) ||
+      !Array.isArray(safeTargetGrid)
+    ) {
+      console.error("Grid or targetGrid is not properly initialized:", {
+        grid,
+        targetGrid: safeTargetGrid,
+      });
       return;
     }
 
@@ -405,8 +419,10 @@ export default function BeatdleMode() {
       row.map((claimed, colIndex) => {
         if (
           !claimed &&
-          grid[rowIndex] && grid[rowIndex][colIndex] &&
-          safeTargetGrid[rowIndex] && safeTargetGrid[rowIndex][colIndex]
+          grid[rowIndex] &&
+          grid[rowIndex][colIndex] &&
+          safeTargetGrid[rowIndex] &&
+          safeTargetGrid[rowIndex][colIndex]
         ) {
           newlyCorrect++;
           return true;
@@ -432,7 +448,11 @@ export default function BeatdleMode() {
     let allCorrect = true;
     for (let row = 0; row < 7; row++) {
       for (let col = 0; col < 16; col++) {
-        if (!grid[row] || !safeTargetGrid[row] || grid[row][col] !== safeTargetGrid[row][col]) {
+        if (
+          !grid[row] ||
+          !safeTargetGrid[row] ||
+          grid[row][col] !== safeTargetGrid[row][col]
+        ) {
           allCorrect = false;
           break;
         }
@@ -618,7 +638,7 @@ export default function BeatdleMode() {
     <GameLayout
       mode="beatdle"
       beatLabel={`Beatdle #${beatNumber}`}
-      bpm={bpm}
+      bpm={safeBpm}
       grid={grid}
       targetGrid={safeTargetGrid}
       feedbackGrid={feedbackGrid || undefined}

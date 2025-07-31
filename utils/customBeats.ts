@@ -1102,20 +1102,20 @@ let customBeats: CustomBeat[] = [];
 // Initialize custom beats system
 const initializeCustomBeats = () => {
   if (typeof window === "undefined") return; // Skip on server-side
-  
+
   try {
     const stored = localStorage.getItem("beatkerri_custom_beats");
     if (stored) {
       customBeats = JSON.parse(stored);
     }
-    
+
     // Add weekly beats if they don't already exist
     weeklyBeats.forEach((weeklyBeat) => {
       if (!customBeats.some((beat) => beat.date === weeklyBeat.date)) {
         customBeats.push(weeklyBeat);
       }
     });
-    
+
     // Save to localStorage to ensure custom beats are persisted
     if (typeof window !== "undefined") {
       try {
@@ -1127,6 +1127,11 @@ const initializeCustomBeats = () => {
         console.error("Failed to save custom beats:", error);
       }
     }
+
+    console.log("Custom beats initialized:", {
+      totalBeats: customBeats.length,
+      dates: customBeats.map((b) => b.date),
+    });
   } catch (error) {
     console.error("Failed to load custom beats:", error);
     // Initialize with weekly beats even if localStorage fails
@@ -1140,8 +1145,8 @@ const initializeCustomBeats = () => {
 
 // Initialize on client-side only
 if (typeof window !== "undefined") {
-  // Use setTimeout to avoid blocking the main thread
-  setTimeout(initializeCustomBeats, 0);
+  // Initialize immediately to avoid race conditions
+  initializeCustomBeats();
 }
 
 // Get custom beat for a specific date
