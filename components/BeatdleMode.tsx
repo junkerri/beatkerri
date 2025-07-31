@@ -6,7 +6,7 @@ import { GameLayout } from "@/components/GameLayout";
 import { useAudioPlayback } from "@/hooks/useAudioPlayback";
 import { useGameState } from "@/hooks/useGameState";
 import { createEmptyGrid, PlayMode } from "@/utils/gameUtils";
-import { getBeatForDate } from "@/utils/customBeats";
+import { getBeatForDate } from "../utils/customBeats";
 import { Headphones, Clock, Share2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { playToggleClick } from "@/utils/clickSounds";
@@ -90,7 +90,6 @@ export default function BeatdleMode() {
   const {
     grid: targetGrid,
     bpm,
-    isCustom,
   } = getBeatForDate(today, generatedGrid, generatedBpm);
 
   const [mode, setMode] = useState<PlayMode>("recreate");
