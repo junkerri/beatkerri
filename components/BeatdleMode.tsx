@@ -101,12 +101,14 @@ export default function BeatdleMode() {
 
   // If we're not getting a custom beat but we should have one, log more details
   if (!isCustom) {
-    console.log("Expected custom beat but got generated beat. Checking localStorage...");
+    console.log(
+      "Expected custom beat but got generated beat. Checking localStorage..."
+    );
     try {
       const stored = localStorage.getItem("beatkerri_custom_beats");
       if (stored) {
         const storedBeats = JSON.parse(stored);
-        const todayBeat = storedBeats.find((b: any) => b.date === today);
+        const todayBeat = storedBeats.find((b: { date: string }) => b.date === today);
         console.log("Today's beat in localStorage:", todayBeat);
       }
     } catch (error) {

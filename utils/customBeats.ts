@@ -1158,11 +1158,11 @@ if (typeof window !== "undefined") {
   
   // Force a small delay to ensure custom beats are loaded before any components try to use them
   setTimeout(() => {
-    console.log("Custom beats loaded:", {
-      totalBeats: customBeats.length,
-      dates: customBeats.map(b => b.date),
-      todayBeat: customBeats.find(b => b.date === new Date().toISOString().split('T')[0])
-    });
+          console.log("Custom beats loaded:", {
+        totalBeats: customBeats.length,
+        dates: customBeats.map((b) => b.date),
+        todayBeat: customBeats.find((b) => b.date === new Date().toISOString().split('T')[0])
+      });
   }, 100);
 }
 
