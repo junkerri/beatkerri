@@ -93,14 +93,37 @@ export default function BeatdleMode() {
     generatedBpm
   );
 
-  // Debug: Log the beat being used
-  console.log("Beat for today:", {
-    date: today,
-    beatNumber,
-    targetGrid: targetGrid.flat().filter(Boolean).length,
-    bpm,
-    isCustom: getBeatForDate(today, generatedGrid, generatedBpm).isCustom,
-  });
+  // Safety check - ensure targetGrid is properly initialized
+  let safeTargetGrid: boolean[][];
+  let safeBpm: number;
+  
+  if (!targetGrid || !Array.isArray(targetGrid) || targetGrid.length !== 7) {
+    console.error("targetGrid is not properly initialized:", targetGrid);
+    // Fallback to generated grid if targetGrid is invalid
+    safeTargetGrid = generatedGrid;
+    safeBpm = generatedBpm;
+    
+    // Debug: Log the beat being used
+    console.log("Beat for today (fallback):", {
+      date: today,
+      beatNumber,
+      targetGrid: safeTargetGrid.flat().filter(Boolean).length,
+      bpm: safeBpm,
+      isCustom: false,
+    });
+  } else {
+    safeTargetGrid = targetGrid;
+    safeBpm = bpm;
+    
+    // Debug: Log the beat being used
+    console.log("Beat for today:", {
+      date: today,
+      beatNumber,
+      targetGrid: safeTargetGrid.flat().filter(Boolean).length,
+      bpm: safeBpm,
+      isCustom: getBeatForDate(today, generatedGrid, generatedBpm).isCustom,
+    });
+  }
 
   const [mode, setMode] = useState<PlayMode>("recreate");
   const [isLooping, setIsLooping] = useState(true);
@@ -122,7 +145,7 @@ export default function BeatdleMode() {
     stopPlayback: stopPlaybackAudio,
     playStep,
     updatePattern, // Add the new updatePattern function
-  } = useAudioPlayback({ bpm, isLooping });
+  } = useAudioPlayback({ bpm: safeBpm, isLooping });
 
   // Stop target beat when component unmounts
   useEffect(() => {
@@ -277,7 +300,7 @@ export default function BeatdleMode() {
         const targetNotes = [];
         for (let col = 0; col < 16; col++) {
           for (let row = 0; row < 7; row++) {
-            if (targetGrid[row][col]) {
+            if (safeTargetGrid[row][col]) {
               targetNotes.push({ row, col, position: row * 16 + col });
             }
           }
@@ -291,7 +314,7 @@ export default function BeatdleMode() {
         const userPlacedNote = grid[targetNote.row][targetNote.col];
 
         // Simple logic: if user placed a note in target position, it's green, otherwise red
-        if (userPlacedNote && targetGrid[targetNote.row][targetNote.col]) {
+        if (userPlacedNote && safeTargetGrid[targetNote.row][targetNote.col]) {
           return "🟩"; // User correctly placed a note in target position
         } else {
           return "🟥"; // User either didn't place a note or placed it in wrong position
@@ -349,11 +372,17 @@ export default function BeatdleMode() {
   };
 
   const submitGuess = () => {
+    // Safety check - ensure grid and targetGrid are properly initialized
+    if (!grid || !safeTargetGrid || !Array.isArray(grid) || !Array.isArray(safeTargetGrid)) {
+      console.error("Grid or targetGrid is not properly initialized:", { grid, targetGrid: safeTargetGrid });
+      return;
+    }
+
     playSubmitClick();
     const newFeedback = grid.map((row, rowIndex) =>
       row.map((step, colIndex) => {
         if (step) {
-          if (targetGrid[rowIndex][colIndex]) {
+          if (safeTargetGrid[rowIndex] && safeTargetGrid[rowIndex][colIndex]) {
             return "correct";
           } else {
             return "incorrect";
@@ -376,8 +405,8 @@ export default function BeatdleMode() {
       row.map((claimed, colIndex) => {
         if (
           !claimed &&
-          grid[rowIndex][colIndex] &&
-          targetGrid[rowIndex][colIndex]
+          grid[rowIndex] && grid[rowIndex][colIndex] &&
+          safeTargetGrid[rowIndex] && safeTargetGrid[rowIndex][colIndex]
         ) {
           newlyCorrect++;
           return true;
@@ -392,18 +421,18 @@ export default function BeatdleMode() {
     else pointsPerCorrect = 1;
 
     let totalScore = score + newlyCorrect * pointsPerCorrect;
-    const targetNoteCount = targetGrid.flat().filter(Boolean).length;
+    const targetNoteCount = safeTargetGrid.flat().filter(Boolean).length;
     const correctCount = grid.flat().filter((val, i) => {
       const row = Math.floor(i / 16);
       const col = i % 16;
-      return val && targetGrid[row][col];
+      return val && safeTargetGrid[row] && safeTargetGrid[row][col];
     }).length;
     const remainingNotes = targetNoteCount - correctCount;
 
     let allCorrect = true;
     for (let row = 0; row < 7; row++) {
       for (let col = 0; col < 16; col++) {
-        if (grid[row][col] !== targetGrid[row][col]) {
+        if (!grid[row] || !safeTargetGrid[row] || grid[row][col] !== safeTargetGrid[row][col]) {
           allCorrect = false;
           break;
         }
@@ -532,7 +561,7 @@ export default function BeatdleMode() {
       stopAllImmediately();
       setIsTargetPlaying(true);
       // Play target grid once (not looping)
-      await playPatternAudio(targetGrid, false, () => {
+      await playPatternAudio(safeTargetGrid, false, () => {
         setIsTargetPlaying(false);
         // Resume the appropriate soundscape after target finishes
         if (gameOver) {
@@ -591,7 +620,7 @@ export default function BeatdleMode() {
       beatLabel={`Beatdle #${beatNumber}`}
       bpm={bpm}
       grid={grid}
-      targetGrid={targetGrid}
+      targetGrid={safeTargetGrid}
       feedbackGrid={feedbackGrid || undefined}
       activeStep={activeStep}
       isLooping={isLooping}
