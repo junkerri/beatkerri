@@ -415,6 +415,15 @@ export default function BeatdleMode() {
       if (!allCorrect) break;
     }
 
+    // Debug logging
+    console.log("Victory check:", {
+      allCorrect,
+      targetNoteCount,
+      correctCount,
+      grid: grid.flat().filter(Boolean).length,
+      targetGrid: targetGrid.flat().filter(Boolean).length,
+    });
+
     const newTotalAttempts = totalAttempts + 1;
 
     if (allCorrect) {
@@ -425,6 +434,7 @@ export default function BeatdleMode() {
       setGameWon(true);
       setBeatsCompleted(beatsCompleted + 1);
       setTotalAttempts(newTotalAttempts);
+      setAttemptsLeft(attemptsLeft); // Ensure attempts are properly set
       const isPerfect = attemptsLeft === 3;
       if (isPerfect) {
         setPerfectSolves(perfectSolves + 1);
