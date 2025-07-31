@@ -87,11 +87,10 @@ export default function BeatdleMode() {
   const today = new Date().toISOString().split("T")[0];
 
   // Get beat for today (custom or generated)
-  const { grid: targetGrid, bpm } = getBeatForDate(
-    today,
-    generatedGrid,
-    generatedBpm
-  );
+  const {
+    grid: targetGrid,
+    bpm,
+  } = getBeatForDate(today, generatedGrid, generatedBpm);
 
   const [mode, setMode] = useState<PlayMode>("recreate");
   const [isLooping, setIsLooping] = useState(true);
