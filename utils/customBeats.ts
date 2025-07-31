@@ -1107,6 +1107,8 @@ const initializeWeeklyBeats = () => {
       customBeats.push(weeklyBeat);
     }
   });
+  // Save to localStorage to ensure custom beats are persisted
+  saveCustomBeats();
 };
 
 // Load custom beats from localStorage on initialization
@@ -1187,6 +1189,15 @@ export const getBeatForDate = (
   category?: string;
 } => {
   const customBeat = getCustomBeat(date);
+
+  // Debug logging
+  console.log("getBeatForDate:", {
+    date,
+    hasCustomBeat: !!customBeat,
+    customBeatDate: customBeat?.date,
+    totalCustomBeats: customBeats.length,
+    customBeatDates: customBeats.map(b => b.date)
+  });
 
   if (customBeat) {
     return {

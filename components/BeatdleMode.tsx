@@ -9,7 +9,7 @@ import { createEmptyGrid, PlayMode } from "@/utils/gameUtils";
 import { getBeatForDate } from "../utils/customBeats";
 import { Headphones, Clock, Share2 } from "lucide-react";
 import toast from "react-hot-toast";
-import { playToggleClick } from "@/utils/clickSounds";
+import { playToggleClick, playSubmitClick } from "@/utils/clickSounds";
 import { useSoundscapes } from "@/hooks/useSoundscapes";
 import * as Tone from "tone";
 
@@ -92,6 +92,15 @@ export default function BeatdleMode() {
     generatedGrid,
     generatedBpm
   );
+
+  // Debug: Log the beat being used
+  console.log("Beat for today:", {
+    date: today,
+    beatNumber,
+    targetGrid: targetGrid.flat().filter(Boolean).length,
+    bpm,
+    isCustom: getBeatForDate(today, generatedGrid, generatedBpm).isCustom,
+  });
 
   const [mode, setMode] = useState<PlayMode>("recreate");
   const [isLooping, setIsLooping] = useState(true);
@@ -340,6 +349,7 @@ export default function BeatdleMode() {
   };
 
   const submitGuess = () => {
+    playSubmitClick();
     const newFeedback = grid.map((row, rowIndex) =>
       row.map((step, colIndex) => {
         if (step) {
@@ -353,21 +363,7 @@ export default function BeatdleMode() {
         }
       })
     );
-    setFeedbackGrid((prev) => {
-      if (!prev) return newFeedback;
-
-      return newFeedback.map((row, rowIndex) =>
-        row.map((cell, colIndex) => {
-          const current = newFeedback[rowIndex][colIndex];
-          const previous = prev[rowIndex][colIndex];
-
-          if (current === "correct" || previous === "correct") return "correct";
-          if (current === "incorrect" || previous === "incorrect")
-            return "incorrect";
-          return null;
-        })
-      );
-    });
+    setFeedbackGrid(newFeedback);
 
     // Store attempt for sharing
     setAttemptHistory((prev) => [
@@ -414,15 +410,6 @@ export default function BeatdleMode() {
       }
       if (!allCorrect) break;
     }
-
-    // Debug logging
-    console.log("Victory check:", {
-      allCorrect,
-      targetNoteCount,
-      correctCount,
-      grid: grid.flat().filter(Boolean).length,
-      targetGrid: targetGrid.flat().filter(Boolean).length,
-    });
 
     const newTotalAttempts = totalAttempts + 1;
 
