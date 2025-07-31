@@ -1,6 +1,6 @@
 # BeatKerri
 
-A beat-matching game built with Next.js, TypeScript, and Tone.js.
+A beat-matching game built with Next.js 15, React 19, TypeScript, and Tone.js.
 
 ## Architecture
 
@@ -35,6 +35,15 @@ Manages common game state:
 - Attempt management
 - Game win/lose state
 - Feedback grid
+
+#### `useSoundscapes` (`hooks/useSoundscapes.ts`)
+
+Manages ambient audio and sound effects:
+
+- Background music
+- Transition sounds
+- Victory/loss audio
+- Audio context management
 
 ### Shared Components
 
@@ -81,16 +90,25 @@ Displays game statistics:
 
 Toggle between target and recreate modes
 
+#### `AudioControls` (`components/AudioControls.tsx`)
+
+Audio management interface:
+
+- Volume controls
+- Mute/unmute
+- Audio context initialization
+- Sound effect toggles
+
 ## Game Modes
 
 ### Beatdle Mode
 
 Daily challenge with:
 
-- Daily beat generation
+- Daily beat generation using seedrandom
 - 3 attempts per day
-- Score tracking
-- Social sharing
+- Score tracking with localStorage persistence
+- Social sharing capabilities
 
 ### Challenge Mode
 
@@ -98,7 +116,15 @@ Progressive difficulty with:
 
 - Unlocking instruments
 - Increasing complexity
-- Persistent progress
+- Persistent progress tracking
+
+### Jam Mode
+
+Creative mode for free-form beat creation:
+
+- Unlimited attempts
+- Pattern saving
+- Creative experimentation
 
 ## Usage Example
 
@@ -143,9 +169,65 @@ npm run dev
 
 ## Technologies
 
-- Next.js 14
-- TypeScript
-- Tone.js (audio)
-- Tailwind CSS
-- React Hot Toast
-- Lucide React (icons)
+### Core Framework
+- **Next.js 15.3.5** - React framework with App Router and Turbopack
+- **React 19.0.0** - Latest React with concurrent features
+- **TypeScript 5** - Type-safe JavaScript
+
+### Audio & Animation
+- **Tone.js 15.1.22** - Web Audio API wrapper for audio playback
+- **Lottie React 2.4.1** - Animation library for Lottie files
+- **React Confetti 6.4.0** - Confetti animation effects
+
+### Styling & UI
+- **Tailwind CSS 4** - Utility-first CSS framework
+- **Lucide React 0.525.0** - Beautiful icon library
+
+### Utilities & State
+- **React Hot Toast 2.5.2** - Toast notifications
+- **Seedrandom 3.0.5** - Deterministic random number generation
+- **Vercel Analytics 1.5.0** - Performance and usage analytics
+
+### Development Tools
+- **ESLint 9** - Code linting with Next.js config
+- **PostCSS 4** - CSS processing
+- **Turbopack** - Fast bundler for development
+
+## Project Structure
+
+```
+beatkerri/
+├── app/                    # Next.js App Router pages
+│   ├── about/             # About page
+│   ├── admin/             # Admin interface
+│   ├── beatdle/           # Daily challenge mode
+│   ├── challenge/         # Progressive difficulty mode
+│   ├── jam/               # Creative mode
+│   └── how-to-play/       # Game instructions
+├── components/            # Reusable React components
+├── hooks/                 # Custom React hooks
+├── utils/                 # Shared utilities and helpers
+├── public/                # Static assets
+│   ├── samples/           # Audio samples (WAV files)
+│   ├── audio/             # Game audio (MP3 files)
+│   └── animations/        # Lottie animation files
+└── README.md
+```
+
+## Audio System
+
+The game features a sophisticated audio system built with Tone.js:
+
+- **Sample Management**: WAV files for drum samples, MP3 for ambient audio
+- **Audio Context**: Proper initialization and cleanup
+- **Performance**: Optimized audio loading and caching
+- **Cross-browser**: Compatible with all modern browsers
+- **Mobile Support**: Handles mobile audio restrictions
+
+## Performance Features
+
+- **Turbopack**: Fast development builds
+- **Code Splitting**: Automatic route-based code splitting
+- **Image Optimization**: Next.js built-in image optimization
+- **Audio Optimization**: Efficient audio file loading and caching
+- **TypeScript**: Compile-time error checking
