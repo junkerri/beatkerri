@@ -6,6 +6,7 @@ import { GameLayout } from "@/components/GameLayout";
 import { useAudioPlayback } from "@/hooks/useAudioPlayback";
 import { useGameState } from "@/hooks/useGameState";
 import { createEmptyGrid, PlayMode } from "@/utils/gameUtils";
+import { getBeatForDate } from "@/utils/customBeats";
 import { Headphones, Clock, Share2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { playToggleClick } from "@/utils/clickSounds";
@@ -13,7 +14,7 @@ import { useSoundscapes } from "@/hooks/useSoundscapes";
 import * as Tone from "tone";
 
 const getTodayBeatNumber = () => {
-  const epoch = new Date("2024-01-01");
+  const epoch = new Date("2025-07-10"); // Initial commit date
   const today = new Date();
   const diffDays = Math.floor(
     (today.getTime() - epoch.getTime()) / (1000 * 60 * 60 * 24)
@@ -79,8 +80,18 @@ export default function BeatdleMode() {
   const { playVictory, playLoss, stopAllImmediately } = useSoundscapes();
 
   const beatNumber = getTodayBeatNumber();
-  const bpm = getDailyBPM(beatNumber);
-  const targetGrid = createDailyPattern(beatNumber);
+  const generatedBpm = getDailyBPM(beatNumber);
+  const generatedGrid = createDailyPattern(beatNumber);
+
+  // Get today's date in YYYY-MM-DD format
+  const today = new Date().toISOString().split("T")[0];
+
+  // Get beat for today (custom or generated)
+  const {
+    grid: targetGrid,
+    bpm,
+    isCustom,
+  } = getBeatForDate(today, generatedGrid, generatedBpm);
 
   const [mode, setMode] = useState<PlayMode>("recreate");
   const [isLooping, setIsLooping] = useState(true);
