@@ -87,10 +87,11 @@ export default function BeatdleMode() {
   const today = new Date().toISOString().split("T")[0];
 
   // Get beat for today (custom or generated)
-  const {
-    grid: targetGrid,
-    bpm,
-  } = getBeatForDate(today, generatedGrid, generatedBpm);
+  const { grid: targetGrid, bpm } = getBeatForDate(
+    today,
+    generatedGrid,
+    generatedBpm
+  );
 
   const [mode, setMode] = useState<PlayMode>("recreate");
   const [isLooping, setIsLooping] = useState(true);
@@ -423,6 +424,7 @@ export default function BeatdleMode() {
 
       setGameWon(true);
       setBeatsCompleted(beatsCompleted + 1);
+      setTotalAttempts(newTotalAttempts);
       const isPerfect = attemptsLeft === 3;
       if (isPerfect) {
         setPerfectSolves(perfectSolves + 1);
@@ -437,7 +439,7 @@ export default function BeatdleMode() {
         newTotalAttempts,
         perfectSolves + (attemptsLeft === 3 ? 1 : 0),
         updatedHighest,
-        3,
+        attemptsLeft,
         true, // gameWon
         false // gameOver
       );
