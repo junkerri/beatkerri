@@ -99,6 +99,21 @@ export default function BeatdleMode() {
     targetGridStructure: targetGrid?.map((row) => row.filter(Boolean).length),
   });
 
+  // If we're not getting a custom beat but we should have one, log more details
+  if (!isCustom) {
+    console.log("Expected custom beat but got generated beat. Checking localStorage...");
+    try {
+      const stored = localStorage.getItem("beatkerri_custom_beats");
+      if (stored) {
+        const storedBeats = JSON.parse(stored);
+        const todayBeat = storedBeats.find((b: any) => b.date === today);
+        console.log("Today's beat in localStorage:", todayBeat);
+      }
+    } catch (error) {
+      console.error("Error checking localStorage:", error);
+    }
+  }
+
   // Safety check - ensure targetGrid is properly initialized
   let safeTargetGrid: boolean[][];
   let safeBpm: number;

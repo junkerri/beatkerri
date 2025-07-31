@@ -71,6 +71,10 @@ const weeklyBeats: CustomBeat[] = [
         true,
         false,
       ],
+      [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+      [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+      [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+      [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
     ],
     bpm: 110,
     title: "Thursday Beat",
@@ -135,6 +139,10 @@ const weeklyBeats: CustomBeat[] = [
         true,
         false,
       ],
+      [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+      [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+      [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+      [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
     ],
     bpm: 110,
     title: "Friday Freedom",
@@ -1147,6 +1155,15 @@ const initializeCustomBeats = () => {
 if (typeof window !== "undefined") {
   // Initialize immediately to avoid race conditions
   initializeCustomBeats();
+  
+  // Force a small delay to ensure custom beats are loaded before any components try to use them
+  setTimeout(() => {
+    console.log("Custom beats loaded:", {
+      totalBeats: customBeats.length,
+      dates: customBeats.map(b => b.date),
+      todayBeat: customBeats.find(b => b.date === new Date().toISOString().split('T')[0])
+    });
+  }, 100);
 }
 
 // Get custom beat for a specific date
