@@ -15,35 +15,76 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BeatKerri 303 - Interactive Drum Machine Game by Junkerri",
+  title: "BeatKerri 303 - Free Online Music Puzzle Game & Beat Making Tool",
   description:
-    "BeatKerri 303 is an interactive web-based drum machine game created by Aastha Karki (junkerri), the Nepali artist behind Junkerri Art. Features three modes: Beatdle (daily challenges), Challenge (progressive difficulty), and Jam (creative mode).",
+    "Play BeatKerri 303 - the ultimate free online music puzzle game! Daily beat challenges, rhythm training, and creative beat making. Perfect for music lovers, puzzle gamers, and aspiring producers. No download required.",
   keywords: [
-    "drum machine",
+    // Primary music game keywords
+    "music puzzle game",
+    "online music game",
+    "free music game",
+    "beat making game",
+    "rhythm puzzle game",
+    "music challenge game",
+    "daily music puzzle",
+    "beat matching game",
+    "music sequencer game",
+    "drum machine game",
+
+    // Puzzle game keywords
+    "puzzle game",
+    "online puzzle game",
+    "free puzzle game",
+    "daily puzzle",
+    "music puzzle",
+    "rhythm puzzle",
+    "beat puzzle",
+    "sequencer puzzle",
+    "pattern matching game",
+    "logic puzzle game",
+
+    // Music production keywords
     "beat making",
-    "music game",
-    "rhythm game",
-    "TB-303",
-    "interactive music",
-    "beat matching",
-    "daily challenge",
+    "online beat maker",
+    "free beat maker",
+    "drum machine",
+    "music sequencer",
+    "rhythm training",
     "music creation",
-    "web audio",
-    "Tone.js",
+    "beat production",
+    "music technology",
+    "audio synthesis",
+
+    // Game-specific keywords
+    "Beatdle",
+    "daily music challenge",
+    "music wordle",
+    "beat wordle",
+    "music guessing game",
+    "rhythm guessing game",
+    "music pattern game",
+    "beat pattern game",
+    "music recreation game",
+
+    // Technical keywords
+    "web audio game",
+    "Tone.js game",
     "React music app",
-    "drum sequencer",
+    "interactive music",
+    "real-time audio",
+    "music web app",
+    "browser music game",
+    "no download music game",
+
+    // Brand keywords
+    "BeatKerri",
     "beat kerri",
     "junkerri",
     "junkerri art",
     "Aastha Karki",
     "Nepali artist",
     "music education",
-    "rhythm training",
-    "audio synthesis",
-    "music technology",
     "creative music",
-    "abstract art",
-    "playful creations",
   ],
   authors: [{ name: "Aastha Karki", url: "https://junkerri.com" }],
   creator: "Aastha Karki (junkerri)",
@@ -58,9 +99,9 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "BeatKerri 303 - Interactive Drum Machine Game by Junkerri",
+    title: "BeatKerri 303 - Free Online Music Puzzle Game & Beat Making Tool",
     description:
-      "Create, challenge, and jam with BeatKerri 303 - the interactive drum machine game by Aastha Karki (junkerri), creator of Junkerri Art. Features daily beat challenges, progressive difficulty levels, and creative mode.",
+      "Play BeatKerri 303 - the ultimate free online music puzzle game! Daily beat challenges, rhythm training, and creative beat making. Perfect for music lovers, puzzle gamers, and aspiring producers.",
     url: "https://beatkerri.com",
     siteName: "BeatKerri 303 by Junkerri",
     images: [
@@ -76,9 +117,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "BeatKerri 303 - Interactive Drum Machine Game by Junkerri",
+    title: "BeatKerri 303 - Free Online Music Puzzle Game & Beat Making Tool",
     description:
-      "Create, challenge, and jam with BeatKerri 303 - the interactive drum machine game by Aastha Karki (junkerri), creator of Junkerri Art. Features daily beat challenges, progressive difficulty levels, and creative mode.",
+      "Play BeatKerri 303 - the ultimate free online music puzzle game! Daily beat challenges, rhythm training, and creative beat making. Perfect for music lovers, puzzle gamers, and aspiring producers.",
     images: ["/og-image.png"],
     creator: "@junkerri",
   },
@@ -99,12 +140,13 @@ export const metadata: Metadata = {
   category: "music",
   classification: "music game",
   other: {
-    "theme-color": "#fbbf24",
-    "color-scheme": "dark",
+    "application-name": "BeatKerri 303",
+    "apple-mobile-web-app-title": "BeatKerri 303",
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "black-translucent",
-    "apple-mobile-web-app-title": "BeatKerri 303",
-    "application-name": "BeatKerri 303 by Junkerri",
+    "mobile-web-app-capable": "yes",
+    "theme-color": "#fbbf24",
+    "color-scheme": "dark",
     "msapplication-TileColor": "#fbbf24",
     "msapplication-config": "/browserconfig.xml",
   },
@@ -115,6 +157,45 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Structured data for SEO
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: "BeatKerri 303",
+    description:
+      "Free online music puzzle game with daily beat challenges, rhythm training, and creative beat making",
+    url: "https://beatkerri.com",
+    applicationCategory: "MusicApplication",
+    operatingSystem: "Web Browser",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+    },
+    author: {
+      "@type": "Person",
+      name: "Aastha Karki",
+      url: "https://junkerri.com",
+    },
+    creator: {
+      "@type": "Person",
+      name: "Aastha Karki (junkerri)",
+    },
+    genre: ["Music Game", "Puzzle Game", "Rhythm Game"],
+    keywords:
+      "music puzzle game, online music game, free music game, beat making game, rhythm puzzle game, daily music challenge, Beatdle",
+    screenshot: "https://beatkerri.com/og-image.png",
+    softwareVersion: "1.0.0",
+    featureList: [
+      "Daily beat challenges",
+      "Rhythm training",
+      "Creative beat making",
+      "Progressive difficulty levels",
+      "Real-time audio synthesis",
+      "No download required",
+      "Free to play",
+    ],
+  };
   return (
     <html lang="en">
       <head>
@@ -128,45 +209,7 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "WebApplication",
-              name: "BeatKerri 303",
-              description:
-                "Interactive drum machine game with daily challenges and creative modes",
-              url: "https://beatkerri.com",
-              applicationCategory: "MusicApplication",
-              operatingSystem: "Web Browser",
-              author: {
-                "@type": "Person",
-                name: "Aastha Karki",
-                alternateName: "junkerri",
-                url: "https://junkerri.com",
-                jobTitle: "Artist & Developer",
-                description:
-                  "Nepali artist creating playful abstract art and interactive music applications",
-              },
-              creator: {
-                "@type": "Person",
-                name: "Aastha Karki",
-                alternateName: "junkerri",
-                url: "https://junkerri.com",
-              },
-              offers: {
-                "@type": "Offer",
-                price: "0",
-                priceCurrency: "USD",
-              },
-              featureList: [
-                "Daily beat challenges",
-                "Progressive difficulty levels",
-                "Creative jam mode",
-                "WAV export functionality",
-                "Real-time audio synthesis",
-              ],
-              screenshot: "https://beatkerri.com/og-image.png",
-              softwareVersion: "1.0.0",
-            }),
+            __html: JSON.stringify(structuredData),
           }}
         />
       </head>
