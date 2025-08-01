@@ -57,11 +57,14 @@ const AnimatedTitle: React.FC = () => {
         // Fully revealed letter - add green outline and blinking if all letters are revealed
         const allRevealed = revealedLetters >= letters.length;
         return `${baseStyle} border-green-500 opacity-100 text-amber-400 drop-shadow-[0_0_20px_#fbbf24] ${
-          allRevealed ? "animate-pulse" : ""
+          allRevealed ? "animate-border-pulse" : ""
         }`;
       } else if (isCurrentlyRevealing) {
         // Currently revealing letter - green square outline
-        return `${baseStyle} border-green-500 opacity-100 text-amber-400 drop-shadow-[0_0_30px_#fbbf24] animate-pulse`;
+        const allRevealed = revealedLetters >= letters.length;
+        return `${baseStyle} border-green-500 opacity-100 text-amber-400 drop-shadow-[0_0_30px_#fbbf24] ${
+          allRevealed ? "animate-border-pulse" : "animate-pulse"
+        }`;
       } else {
         // Still a sequencer note
         return `${baseStyle} border-transparent opacity-100 text-amber-400 drop-shadow-[0_0_30px_#fbbf24] animate-pulse`;

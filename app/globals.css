@@ -98,6 +98,21 @@ body {
   animation: ghostFloat 2s ease-in-out infinite;
 }
 
+/* Border Pulse Animation */
+.animate-border-pulse {
+  animation: borderPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes borderPulse {
+  0%,
+  100% {
+    border-color: #22c55e; /* green-500 */
+  }
+  50% {
+    border-color: #16a34a; /* green-600 */
+  }
+}
+
 @keyframes ghostFloat {
   0%,
   100% {
