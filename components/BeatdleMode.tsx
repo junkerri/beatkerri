@@ -108,7 +108,9 @@ export default function BeatdleMode() {
       const stored = localStorage.getItem("beatkerri_custom_beats");
       if (stored) {
         const storedBeats = JSON.parse(stored);
-        const todayBeat = storedBeats.find((b: { date: string }) => b.date === today);
+        const todayBeat = storedBeats.find(
+          (b: { date: string }) => b.date === today
+        );
         console.log("Today's beat in localStorage:", todayBeat);
       }
     } catch (error) {

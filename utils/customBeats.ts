@@ -71,10 +71,78 @@ const weeklyBeats: CustomBeat[] = [
         true,
         false,
       ],
-      [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-      [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-      [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-      [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+      [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+      ],
+      [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+      ],
+      [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+      ],
+      [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+      ],
     ],
     bpm: 110,
     title: "Thursday Beat",
@@ -139,10 +207,78 @@ const weeklyBeats: CustomBeat[] = [
         true,
         false,
       ],
-      [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-      [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-      [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-      [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+      [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+      ],
+      [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+      ],
+      [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+      ],
+      [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+      ],
     ],
     bpm: 110,
     title: "Friday Freedom",
@@ -1095,6 +1231,24 @@ const weeklyBeats: CustomBeat[] = [
         false,
         false,
       ],
+      [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+      ],
     ],
     bpm: 100,
     title: "Friday Freedom II",
@@ -1114,7 +1268,22 @@ const initializeCustomBeats = () => {
   try {
     const stored = localStorage.getItem("beatkerri_custom_beats");
     if (stored) {
-      customBeats = JSON.parse(stored);
+      const storedBeats = JSON.parse(stored);
+      // Check if stored beats have the old 3-row structure
+      const hasOldStructure = storedBeats.some(
+        (beat: any) =>
+          beat.grid && Array.isArray(beat.grid) && beat.grid.length === 3
+      );
+
+      if (hasOldStructure) {
+        console.log(
+          "Found old 3-row custom beats in localStorage, clearing and reinitializing..."
+        );
+        localStorage.removeItem("beatkerri_custom_beats");
+        customBeats = [];
+      } else {
+        customBeats = storedBeats;
+      }
     }
 
     // Add weekly beats if they don't already exist
@@ -1155,14 +1324,16 @@ const initializeCustomBeats = () => {
 if (typeof window !== "undefined") {
   // Initialize immediately to avoid race conditions
   initializeCustomBeats();
-  
+
   // Force a small delay to ensure custom beats are loaded before any components try to use them
   setTimeout(() => {
-          console.log("Custom beats loaded:", {
-        totalBeats: customBeats.length,
-        dates: customBeats.map((b) => b.date),
-        todayBeat: customBeats.find((b) => b.date === new Date().toISOString().split('T')[0])
-      });
+    console.log("Custom beats loaded:", {
+      totalBeats: customBeats.length,
+      dates: customBeats.map((b) => b.date),
+      todayBeat: customBeats.find(
+        (b) => b.date === new Date().toISOString().split("T")[0]
+      ),
+    });
   }, 100);
 }
 
@@ -1215,6 +1386,16 @@ export const getAllCustomBeats = (): CustomBeat[] => {
 // Check if a date has a custom beat
 export const hasCustomBeat = (date: string): boolean => {
   return customBeats.some((beat) => beat.date === date);
+};
+
+// Clear localStorage and reinitialize custom beats (for testing)
+export const clearAndReinitializeCustomBeats = (): void => {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("beatkerri_custom_beats");
+    customBeats = [];
+    initializeCustomBeats();
+    console.log("Custom beats cleared and reinitialized");
+  }
 };
 
 // Get beat for a specific date (custom or generated)
