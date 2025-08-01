@@ -2,9 +2,9 @@
   <!-- Black background -->
   <rect width="512" height="512" fill="#000000"/>
   
-  <!-- Dark blue-grey outer square -->
-  <rect x="64" y="64" width="384" height="384" fill="#4A5568"/>
+  <!-- Dark gray outer square with rounded corners (matches keypad) -->
+  <rect x="64" y="64" width="384" height="384" fill="#374151" rx="32" ry="32"/>
   
-  <!-- Bright orange inner square -->
-  <rect x="128" y="128" width="256" height="256" fill="#F97316"/>
+  <!-- Bright amber inner square (matches Beatkerri font color) -->
+  <rect x="128" y="128" width="256" height="256" fill="#fbbf24"/>
 </svg> 
