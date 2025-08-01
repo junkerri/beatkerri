@@ -495,7 +495,7 @@ export const GameLayout = ({
             <button
               onClick={() =>
                 window.open(
-                  `https://www.facebook.com/sharer/sharer.php?u=https://beatkerri.vercel.app/`,
+                  `https://www.facebook.com/sharer/sharer.php?u=https://beatkerri.com/`,
                   "_blank"
                 )
               }

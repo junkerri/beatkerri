@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL("https://beatkerri.vercel.app"),
+  metadataBase: new URL("https://beatkerri.com"),
   alternates: {
     canonical: "/",
   },
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
     title: "BeatKerri 303 - Interactive Drum Machine Game by Junkerri",
     description:
       "Create, challenge, and jam with BeatKerri 303 - the interactive drum machine game by Aastha Karki (junkerri), creator of Junkerri Art. Features daily beat challenges, progressive difficulty levels, and creative mode.",
-    url: "https://beatkerri.vercel.app",
+    url: "https://beatkerri.com",
     siteName: "BeatKerri 303 by Junkerri",
     images: [
       {
@@ -134,7 +134,7 @@ export default function RootLayout({
               name: "BeatKerri 303",
               description:
                 "Interactive drum machine game with daily challenges and creative modes",
-              url: "https://beatkerri.vercel.app",
+              url: "https://beatkerri.com",
               applicationCategory: "MusicApplication",
               operatingSystem: "Web Browser",
               author: {
@@ -164,7 +164,7 @@ export default function RootLayout({
                 "WAV export functionality",
                 "Real-time audio synthesis",
               ],
-              screenshot: "https://beatkerri.vercel.app/og-image.png",
+              screenshot: "https://beatkerri.com/og-image.png",
               softwareVersion: "1.0.0",
             }),
           }}

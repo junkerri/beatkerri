@@ -375,7 +375,7 @@ export default function BeatdleMode() {
     const header = `Beatdle #${beatNumber} ${attemptStr} ${attemptEmoji} 🎧`;
     // All attempts' colored squares, each on a new line
     const rows = attemptHistory.map((a) => getShareRow(a.grid)).join("\n");
-    return `${header}\n${rows}\nScore: ${score}\nCan you beat it?\nhttps://beatkerri.vercel.app/`;
+    return `${header}\n${rows}\nScore: ${score}\nCan you beat it?\nhttps://beatkerri.com/`;
   }
 
   // Share menu/modal state
