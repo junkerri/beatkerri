@@ -10,6 +10,7 @@ import { AudioControls } from "@/components/AudioControls";
 // Animated Title Component
 const AnimatedTitle: React.FC = () => {
   const [animationPhase, setAnimationPhase] = useState(0);
+  const [revealedLetters, setRevealedLetters] = useState(0);
 
   const letters = "BEATKERRI";
   const sequencerNote = "■"; // Unicode filled square for sequencer note
@@ -20,25 +21,25 @@ const AnimatedTitle: React.FC = () => {
       setAnimationPhase(1);
     }, 500);
 
-    // Phase 1: Start transforming to letters
+    // Phase 1: Start revealing letters one by one
     const timer2 = setTimeout(() => {
       setAnimationPhase(2);
+      // Start revealing letters with delays
+      letters.split("").forEach((_, index) => {
+        setTimeout(() => {
+          setRevealedLetters(index + 1);
+        }, 2000 + index * 120); // 120ms delay between each letter (faster)
+      });
     }, 2000);
-
-    // Phase 2: Complete transformation
-    const timer3 = setTimeout(() => {
-      setAnimationPhase(3);
-    }, 3000);
 
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
-      clearTimeout(timer3);
     };
   }, []);
 
   const getLetterStyle = (index: number) => {
-    const baseStyle = "inline-block transition-all duration-700 ease-out";
+    const baseStyle = "inline-block transition-all duration-500 ease-out";
 
     if (animationPhase === 0) {
       // Initial state - invisible
@@ -46,30 +47,38 @@ const AnimatedTitle: React.FC = () => {
     } else if (animationPhase === 1) {
       // Show sequencer notes
       return `${baseStyle} opacity-100 text-amber-400 drop-shadow-[0_0_30px_#fbbf24] animate-pulse`;
-    } else if (animationPhase === 2) {
-      // Transform phase with green outline
-      const delay = index * 100;
-      return `${baseStyle} opacity-100 text-amber-400 drop-shadow-[0_0_30px_#fbbf24,0_0_10px_#22c55e] animate-pulse transition-delay-[${delay}ms]`;
     } else {
-      // Final state - letters
-      return `${baseStyle} opacity-100 text-amber-400 drop-shadow-[0_0_20px_#fbbf24]`;
+      // Letter reveal phase
+      const isRevealed = index < revealedLetters;
+      const isCurrentlyRevealing = index === revealedLetters - 1;
+
+      if (isRevealed && !isCurrentlyRevealing) {
+        // Fully revealed letter - add green outline and blinking if all letters are revealed
+        const allRevealed = revealedLetters >= letters.length;
+        return `${baseStyle} opacity-100 text-amber-400 drop-shadow-[0_0_20px_#fbbf24] ${
+          allRevealed ? "border-2 border-green-500 animate-pulse" : ""
+        }`;
+      } else if (isCurrentlyRevealing) {
+        // Currently revealing letter - green square outline
+        return `${baseStyle} opacity-100 text-amber-400 drop-shadow-[0_0_30px_#fbbf24] animate-pulse border-2 border-green-500`;
+      } else {
+        // Still a sequencer note
+        return `${baseStyle} opacity-100 text-amber-400 drop-shadow-[0_0_30px_#fbbf24] animate-pulse`;
+      }
     }
   };
 
   const getDisplayText = () => {
     if (animationPhase <= 1) {
       return sequencerNote.repeat(letters.length);
-    } else if (animationPhase === 2) {
-      // Mix of notes and letters during transition
+    } else {
+      // Mix of revealed letters and sequencer notes
       return letters
         .split("")
-        .map((letter) => {
-          const shouldTransform = Math.random() > 0.5; // Random transformation
-          return shouldTransform ? letter : sequencerNote;
+        .map((letter, index) => {
+          return index < revealedLetters ? letter : sequencerNote;
         })
         .join("");
-    } else {
-      return letters;
     }
   };
 

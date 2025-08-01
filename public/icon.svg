@@ -7,4 +7,7 @@
   
   <!-- Bright amber inner square (matches Beatkerri font color) -->
   <rect x="128" y="128" width="256" height="256" fill="#fbbf24"/>
+  
+  <!-- Green outline (matches animation square outlines) -->
+  <rect x="96" y="96" width="320" height="320" fill="none" stroke="#22c55e" stroke-width="16" rx="16" ry="16"/>
 </svg> 
