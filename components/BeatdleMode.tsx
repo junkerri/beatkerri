@@ -342,17 +342,17 @@ export default function BeatdleMode() {
         }
 
         // Get the nth target note (ordered by column)
-        if (noteIndex >= targetNotes.length) return "⬜"; // Shouldn't happen, but show white
+        if (noteIndex >= targetNotes.length) return "⬛"; // Shouldn't happen, but show black
         const targetNote = targetNotes[noteIndex];
 
         // Check if user placed a note at this target position
         const userPlacedNote = grid[targetNote.row][targetNote.col];
 
-        // Simple logic: if user placed a note in target position, it's green, otherwise white (like Wordle)
+        // Simple logic: if user placed a note in target position, it's green, otherwise black (like Wordle)
         if (userPlacedNote && safeTargetGrid[targetNote.row][targetNote.col]) {
           return "🟩"; // User correctly placed a note in target position
         } else {
-          return "⬜"; // User either didn't place a note or placed it in wrong position (white like Wordle)
+          return "⬛"; // User either didn't place a note or placed it in wrong position (black like Wordle miss)
         }
       })
       .join("");
@@ -516,12 +516,30 @@ export default function BeatdleMode() {
 
   const shareToThreads = async () => {
     const text = getShareText();
-    const threadsUrl = `https://threads.net/intent/post?text=${encodeURIComponent(
-      text
-    )}`;
 
-    window.open(threadsUrl, "_blank");
-    toast.success("Sharing to Threads!");
+    // Try copying to clipboard first, then open Threads (better emoji support)
+    try {
+      await navigator.clipboard.writeText(text);
+      const threadsUrl = `https://threads.net/intent/post`;
+      window.open(threadsUrl, "_blank");
+      toast.success(
+        "Results copied to clipboard! Paste into your Threads post.",
+        {
+          duration: 6000,
+          style: { maxWidth: "400px" },
+        }
+      );
+    } catch {
+      // Fallback to URL encoding if clipboard fails
+      const threadsUrl = `https://threads.net/intent/post?text=${encodeURIComponent(
+        text
+      )}`;
+      window.open(threadsUrl, "_blank");
+      toast("Copy your results manually and paste into Threads!", {
+        duration: 5000,
+        style: { maxWidth: "400px" },
+      });
+    }
     setShowShareMenu(false);
   };
 
