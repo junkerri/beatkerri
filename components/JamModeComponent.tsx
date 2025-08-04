@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import { SequencerGrid } from "@/components/SequencerGrid";
 import { GameControls } from "@/components/GameControls";
-import { GameStats } from "@/components/GameStats";
 import { useAudioPlayback } from "@/hooks/useAudioPlayback";
 import { useGameState } from "@/hooks/useGameState";
 import { Download, Upload, Save, Music, HelpCircle, Piano } from "lucide-react";
@@ -314,6 +313,16 @@ export default function JamModeComponent() {
     return wavBlob;
   };
 
+  // MIDI Event Types
+  interface MidiEvent {
+    deltaTime: number;
+    type: string;
+    microsecondsPerQuarter?: number;
+    channel?: number;
+    noteNumber?: number;
+    velocity?: number;
+  }
+
   // MIDI Export functionality
   const generateMidi = () => {
     try {
@@ -333,7 +342,7 @@ export default function JamModeComponent() {
       const ticksPerStep = ticksPerQuarter / 4; // 16th notes
 
       // Create MIDI events
-      const events: any[] = [];
+      const events: MidiEvent[] = [];
 
       // Add tempo event
       const microsecondsPerQuarter = Math.round(60000000 / bpm);
@@ -399,7 +408,7 @@ export default function JamModeComponent() {
     }
   };
 
-  const createMidiFile = (events: any[], ticksPerQuarter: number): Blob => {
+  const createMidiFile = (events: MidiEvent[], ticksPerQuarter: number): Blob => {
     // Helper functions for MIDI file creation
     const writeVariableLength = (value: number): number[] => {
       const bytes: number[] = [];
