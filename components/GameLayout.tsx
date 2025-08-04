@@ -9,6 +9,12 @@ import {
   Trophy,
   Clock,
   HelpCircle,
+  ChevronDown,
+  Copy,
+  Facebook,
+  AtSign,
+  MessageCircle,
+  Mail,
 } from "lucide-react";
 import Confetti from "react-confetti";
 import { playSubmitClick } from "@/utils/clickSounds";
@@ -54,6 +60,16 @@ interface GameLayoutProps {
   alreadyPlayed?: boolean;
   timeUntilNextBeat?: string;
   totalAttempts?: number;
+  
+  // Share dropdown functions
+  shareWithNativeAPI?: () => void;
+  onCopyShareLink?: () => void;
+  onShareToX?: () => void;
+  onShareToFacebook?: () => void;
+  onShareToThreads?: () => void;
+  onShareToMessages?: () => void;
+  onShareToWhatsApp?: () => void;
+  onShareToEmail?: () => void;
   // Stats (optional)
   score?: number;
   highestScore?: number;
@@ -119,6 +135,15 @@ export const GameLayout = ({
   onJamShareToEmail,
   onJamShareToInstagram,
   jamShareMenuRef,
+  // Share dropdown functions
+  shareWithNativeAPI,
+  onCopyShareLink,
+  onShareToX,
+  onShareToFacebook,
+  onShareToThreads,
+  onShareToMessages,
+  onShareToWhatsApp,
+  onShareToEmail,
 }: GameLayoutProps) => {
   const getModeTitle = (mode: GameMode) => {
     switch (mode) {
@@ -415,13 +440,88 @@ export const GameLayout = ({
                   </button>
                 )}
                 {mode === "beatdle" && onShare && (
-                  <button
-                    onClick={onShare}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded flex items-center space-x-2 transition-colors"
-                  >
-                    <Share2 size={18} className="text-white" />
-                    <span>Share Results</span>
-                  </button>
+                  <div className="relative" ref={jamShareMenuRef}>
+                    <button
+                      onClick={onShare}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded flex items-center space-x-2 transition-colors"
+                    >
+                      <Share2 size={18} className="text-white" />
+                      <span>Share Results</span>
+                      {showShareMenu !== undefined && (
+                        <ChevronDown
+                          size={16}
+                          className={`text-white transition-transform ${
+                            showShareMenu ? "rotate-180" : ""
+                          }`}
+                        />
+                      )}
+                    </button>
+
+                    {showShareMenu && (
+                      <div className="absolute top-full left-0 mt-2 w-48 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-50">
+                        <div className="py-2">
+                          {typeof navigator !== "undefined" &&
+                            typeof navigator.share === "function" && (
+                              <button
+                                onClick={shareWithNativeAPI}
+                                className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
+                              >
+                                <Share2 size={16} />
+                                Share (Native)
+                              </button>
+                            )}
+                          <button
+                            onClick={onCopyShareLink}
+                            className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
+                          >
+                            <Copy size={16} />
+                            Copy Link
+                          </button>
+                          <button
+                            onClick={onShareToX}
+                            className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
+                          >
+                            <span className="text-lg font-bold">𝕏</span>X
+                          </button>
+                          <button
+                            onClick={onShareToFacebook}
+                            className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
+                          >
+                            <Facebook size={16} />
+                            Facebook
+                          </button>
+                          <button
+                            onClick={onShareToThreads}
+                            className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
+                          >
+                            <AtSign size={16} />
+                            Threads
+                          </button>
+                          <button
+                            onClick={onShareToMessages}
+                            className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
+                          >
+                            <MessageCircle size={16} />
+                            Messages
+                          </button>
+                          <button
+                            onClick={onShareToWhatsApp}
+                            className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
+                          >
+                            <span className="text-lg">💬</span>
+                            WhatsApp
+                          </button>
+                          <button
+                            onClick={onShareToEmail}
+                            className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
+                          >
+                            <Mail size={16} />
+                            Email
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
 

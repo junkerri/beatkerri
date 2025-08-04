@@ -914,6 +914,15 @@ export default function BeatdleMode() {
       totalAttempts={attemptHistory.length}
       score={score}
       highestScore={highestScore}
+      // Share dropdown functions
+      shareWithNativeAPI={shareWithNativeAPI}
+      onCopyShareLink={copyShareLink}
+      onShareToX={shareToX}
+      onShareToFacebook={shareToFacebook}
+      onShareToThreads={shareToThreads}
+      onShareToMessages={shareToMessages}
+      onShareToWhatsApp={shareToWhatsApp}
+      onShareToEmail={shareToEmail}
     />
   );
 }

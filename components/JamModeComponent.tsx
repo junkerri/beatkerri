@@ -5,14 +5,7 @@ import { SequencerGrid } from "@/components/SequencerGrid";
 import { GameControls } from "@/components/GameControls";
 import { useAudioPlayback } from "@/hooks/useAudioPlayback";
 import { useGameState } from "@/hooks/useGameState";
-import {
-  Download,
-  Upload,
-  Save,
-  Music,
-  HelpCircle,
-  Piano,
-} from "lucide-react";
+import { Download, Upload, Save, Music, HelpCircle, Piano } from "lucide-react";
 import Link from "next/link";
 import { playSubmitClick } from "@/utils/clickSounds";
 import toast from "react-hot-toast";
@@ -304,8 +297,6 @@ export default function JamModeComponent() {
       return null;
     }
   };
-
-
 
   const exportBeat = () => {
     const beatName =
