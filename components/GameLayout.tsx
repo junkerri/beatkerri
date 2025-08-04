@@ -599,13 +599,88 @@ export const GameLayout = ({
                   </button>
                 )}
                 {mode === "beatdle" && onShare && (
-                  <button
-                    onClick={onShare}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded flex items-center space-x-2 transition-colors"
-                  >
-                    <Share2 size={18} className="text-white" />
-                    <span>Share Results</span>
-                  </button>
+                  <div className="relative" ref={jamShareMenuRef}>
+                    <button
+                      onClick={onShare}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded flex items-center space-x-2 transition-colors"
+                    >
+                      <Share2 size={18} className="text-white" />
+                      <span>Share Results</span>
+                      {showShareMenu !== undefined && (
+                        <ChevronDown
+                          size={16}
+                          className={`text-white transition-transform ${
+                            showShareMenu ? "rotate-180" : ""
+                          }`}
+                        />
+                      )}
+                    </button>
+
+                    {showShareMenu && (
+                      <div className="absolute top-full left-0 mt-2 w-48 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-50">
+                        <div className="py-2">
+                          {typeof navigator !== "undefined" &&
+                            typeof navigator.share === "function" && (
+                              <button
+                                onClick={shareWithNativeAPI}
+                                className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
+                              >
+                                <Share2 size={16} />
+                                Share (Native)
+                              </button>
+                            )}
+                          <button
+                            onClick={onCopyShareLink}
+                            className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
+                          >
+                            <Copy size={16} />
+                            Copy Link
+                          </button>
+                          <button
+                            onClick={onShareToX}
+                            className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
+                          >
+                            <span className="text-lg font-bold">𝕏</span>X
+                          </button>
+                          <button
+                            onClick={onShareToFacebook}
+                            className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
+                          >
+                            <Facebook size={16} />
+                            Facebook
+                          </button>
+                          <button
+                            onClick={onShareToThreads}
+                            className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
+                          >
+                            <AtSign size={16} />
+                            Threads
+                          </button>
+                          <button
+                            onClick={onShareToMessages}
+                            className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
+                          >
+                            <MessageCircle size={16} />
+                            Messages
+                          </button>
+                          <button
+                            onClick={onShareToWhatsApp}
+                            className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
+                          >
+                            <span className="text-lg">💬</span>
+                            WhatsApp
+                          </button>
+                          <button
+                            onClick={onShareToEmail}
+                            className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
+                          >
+                            <Mail size={16} />
+                            Email
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
 
@@ -622,117 +697,7 @@ export const GameLayout = ({
         </div>
       )}
 
-      {/* Share Menu for Beatdle Mode */}
-      {showShareMenu && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-80 flex flex-col items-center justify-center">
-          <div className="bg-gray-900 rounded-lg p-6 flex flex-col gap-4 items-center w-80">
-            <button
-              onClick={() =>
-                window.open(
-                  `https://www.facebook.com/sharer/sharer.php?u=https://beatkerri.com/`,
-                  "_blank"
-                )
-              }
-              className="w-full flex items-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded transition-colors"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="lucide lucide-facebook"
-              >
-                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-              </svg>{" "}
-              Facebook
-            </button>
-            <button
-              onClick={() =>
-                window.open(
-                  `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-                    "Check out my Beatdle score!"
-                  )}`,
-                  "_blank"
-                )
-              }
-              className="w-full flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="lucide lucide-twitter"
-              >
-                <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z" />
-              </svg>{" "}
-              Twitter/X
-            </button>
-            <div className="w-full flex items-center gap-2 px-4 py-2 bg-pink-600 text-white rounded opacity-80 cursor-not-allowed">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="lucide lucide-instagram"
-              >
-                <path d="M15 6v8h-3V6h3z" />
-                <circle cx="12" cy="12" r="3" />
-                <path d="M19 5h-2a3 3 0 0 0-3 3v7a3 3 0 0 0 3 3h7a3 3 0 0 0 3-3v-7a3 3 0 0 0-3-3h-2" />
-              </svg>{" "}
-              Instagram (screenshot & share!)
-            </div>
-            <button
-              onClick={() =>
-                navigator.clipboard.writeText("Check out my Beatdle score!")
-              }
-              className="w-full flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="lucide lucide-copy"
-              >
-                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-                <rect x="9" y="3" width="6" height="4" />
-                <path d="M9 17h6" />
-                <path d="M9 21h6" />
-              </svg>{" "}
-              Copy
-            </button>
-            {onCloseShareMenu && (
-              <button
-                onClick={onCloseShareMenu}
-                className="mt-2 text-gray-400 hover:text-white"
-              >
-                Cancel
-              </button>
-            )}
-          </div>
-        </div>
-      )}
+
     </main>
   );
 };
