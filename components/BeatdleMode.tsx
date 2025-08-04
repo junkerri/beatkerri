@@ -908,7 +908,6 @@ export default function BeatdleMode() {
       onShare={handleShare}
       isTargetPlaying={isTargetPlaying}
       showShareMenu={showShareMenu}
-      onCloseShareMenu={() => setShowShareMenu(false)}
       alreadyPlayed={alreadyPlayed}
       timeUntilNextBeat={getTimeUntilNextBeat()}
       totalAttempts={attemptHistory.length}

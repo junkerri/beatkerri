@@ -56,7 +56,6 @@ interface GameLayoutProps {
   onShare?: () => void;
   isTargetPlaying?: boolean;
   showShareMenu?: boolean;
-  onCloseShareMenu?: () => void;
   alreadyPlayed?: boolean;
   timeUntilNextBeat?: string;
   totalAttempts?: number;
@@ -114,7 +113,6 @@ export const GameLayout = ({
   onShare,
   isTargetPlaying,
   showShareMenu,
-  onCloseShareMenu,
   alreadyPlayed,
   timeUntilNextBeat,
   totalAttempts,
