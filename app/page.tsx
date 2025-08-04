@@ -147,6 +147,10 @@ export default function Home() {
 
       <AnimatedTitle />
 
+      <p className="text-center text-gray-400 font-mono text-sm mb-8 tracking-wide">
+        16-Step Digital Sequencer
+      </p>
+
       <div className="space-y-6 w-full max-w-md text-center">
         <Link
           href="/beatdle"

@@ -147,13 +147,13 @@ export default function About() {
                 </h3>
                 <p className="text-gray-300 text-sm mb-3">
                   Free-form creative mode for making your own beats. Save, load,
-                  and export your creations as WAV files!
+                  and export your creations as WAV or MIDI files!
                 </p>
                 <ul className="text-gray-400 text-xs space-y-1">
                   <li>• Unlimited creativity</li>
                   <li>• Save & load beats</li>
-                  <li>• WAV export</li>
-                  <li>• BPM control</li>
+                  <li>• WAV & MIDI export</li>
+                  <li>• Direct BPM input</li>
                 </ul>
                 <div className="mt-3 text-blue-300 text-xs font-mono opacity-0 group-hover:opacity-100 transition-opacity">
                   Click to learn more →
@@ -214,8 +214,8 @@ export default function About() {
                       Export & Share
                     </h4>
                     <p className="text-gray-400 text-sm">
-                      Export beats as WAV files and share results with friends
-                      via social media
+                      Export beats as WAV or MIDI files for use in DAWs, and
+                      share results with friends via social media
                     </p>
                   </div>
                 </div>
@@ -244,6 +244,7 @@ export default function About() {
                 <ul className="text-gray-400 space-y-1">
                   <li>• 44.1kHz Sample Rate</li>
                   <li>• 16-bit PCM WAV Export</li>
+                  <li>• General MIDI Export</li>
                   <li>• Real-time Audio Processing</li>
                   <li>• Cross-browser Compatibility</li>
                   <li>• Mobile Audio Support</li>

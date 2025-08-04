@@ -13,6 +13,7 @@ import {
   Upload,
   Save,
   Music,
+  Piano,
   Puzzle,
   Trophy,
   Settings,
@@ -412,7 +413,8 @@ export default function HowToPlay() {
                   <div>
                     <h4 className="font-bold text-white mb-2">BPM Control</h4>
                     <ul className="space-y-1">
-                      <li>Use +/- buttons to adjust tempo</li>
+                      <li>Click BPM field to type directly</li>
+                      <li>Press Enter to apply and start playback</li>
                       <li>Range: 60-200 BPM</li>
                       <li>Real-time tempo changes</li>
                     </ul>
@@ -435,6 +437,10 @@ export default function HowToPlay() {
                   <li>
                     <Music className="inline w-4 h-4" /> Export WAV: Download as
                     audio file
+                  </li>
+                  <li>
+                    <Piano className="inline w-4 h-4" /> Export MIDI: Download
+                    as MIDI file for DAWs
                   </li>
                   <li>
                     <Upload className="inline w-4 h-4" /> Import: Load saved
@@ -469,7 +475,7 @@ export default function HowToPlay() {
                 <ul className="text-sm text-gray-300 space-y-2">
                   <li>• Experiment with off-beat patterns</li>
                   <li>• Use stacking to create complex rhythms</li>
-                  <li>• Export WAV files for use in your DAW</li>
+                  <li>• Export WAV or MIDI files for use in your DAW</li>
                   <li>• Challenge yourself with higher BPMs</li>
                 </ul>
               </div>
