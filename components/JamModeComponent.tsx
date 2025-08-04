@@ -448,12 +448,20 @@ export default function JamModeComponent() {
       if (event.type === "setTempo") {
         // Meta event: Set Tempo
         trackData.push(0xff, 0x51, 0x03);
-        const tempo = event.microsecondsPerQuarter;
+        const tempo = event.microsecondsPerQuarter || 500000; // Default to 120 BPM if undefined
         trackData.push((tempo >> 16) & 0xff, (tempo >> 8) & 0xff, tempo & 0xff);
       } else if (event.type === "noteOn") {
-        trackData.push(0x90 | event.channel, event.noteNumber, event.velocity);
+        trackData.push(
+          0x90 | (event.channel || 9), 
+          event.noteNumber || 36, 
+          event.velocity || 100
+        );
       } else if (event.type === "noteOff") {
-        trackData.push(0x80 | event.channel, event.noteNumber, event.velocity);
+        trackData.push(
+          0x80 | (event.channel || 9), 
+          event.noteNumber || 36, 
+          event.velocity || 0
+        );
       }
     });
 
