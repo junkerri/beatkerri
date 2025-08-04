@@ -1,13 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import seedrandom from "seedrandom";
 import { GameLayout } from "@/components/GameLayout";
 import { useAudioPlayback } from "@/hooks/useAudioPlayback";
 import { useGameState } from "@/hooks/useGameState";
 import { createEmptyGrid, PlayMode } from "@/utils/gameUtils";
 import { getBeatForDate } from "../utils/customBeats";
-import { Headphones, Clock, Share2 } from "lucide-react";
+import {
+  Headphones,
+  Clock,
+  Share2,
+  Copy,
+  Facebook,
+  Mail,
+  MessageCircle,
+  ChevronDown,
+  AtSign,
+} from "lucide-react";
 import toast from "react-hot-toast";
 import { playToggleClick, playSubmitClick } from "@/utils/clickSounds";
 import { useSoundscapes } from "@/hooks/useSoundscapes";
@@ -332,17 +342,17 @@ export default function BeatdleMode() {
         }
 
         // Get the nth target note (ordered by column)
-        if (noteIndex >= targetNotes.length) return "🟥"; // Shouldn't happen, but show red
+        if (noteIndex >= targetNotes.length) return "⬜"; // Shouldn't happen, but show white
         const targetNote = targetNotes[noteIndex];
 
         // Check if user placed a note at this target position
         const userPlacedNote = grid[targetNote.row][targetNote.col];
 
-        // Simple logic: if user placed a note in target position, it's green, otherwise red
+        // Simple logic: if user placed a note in target position, it's green, otherwise white (like Wordle)
         if (userPlacedNote && safeTargetGrid[targetNote.row][targetNote.col]) {
           return "🟩"; // User correctly placed a note in target position
         } else {
-          return "🟥"; // User either didn't place a note or placed it in wrong position
+          return "⬜"; // User either didn't place a note or placed it in wrong position (white like Wordle)
         }
       })
       .join("");
@@ -380,19 +390,164 @@ export default function BeatdleMode() {
 
   // Share menu/modal state
   const [showShareMenu, setShowShareMenu] = useState(false);
+  const shareMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close share menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        shareMenuRef.current &&
+        !shareMenuRef.current.contains(event.target as Node)
+      ) {
+        setShowShareMenu(false);
+      }
+    };
+
+    if (showShareMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [showShareMenu]);
 
   const handleShare = async () => {
+    setShowShareMenu(!showShareMenu);
+  };
+
+  const copyShareLink = async () => {
     const text = getShareText();
-    if (navigator.share) {
-      try {
-        await navigator.share({ text });
-        toast.success("Results shared!");
-      } catch {
-        toast.error("Could not share.");
-      }
-    } else {
+
+    try {
       await navigator.clipboard.writeText(text);
       toast.success("Results copied to clipboard!");
+      setShowShareMenu(false);
+    } catch {
+      toast.error("Could not copy to clipboard.");
+    }
+  };
+
+  const shareToX = async () => {
+    const text = getShareText();
+    const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+      text
+    )}`;
+
+    window.open(xUrl, "_blank");
+    toast.success("Sharing to X!");
+    setShowShareMenu(false);
+  };
+
+  const shareToFacebook = async () => {
+    const text = getShareText();
+    // Facebook doesn't support quote parameter reliably, so we'll copy to clipboard and open Facebook
+    try {
+      await navigator.clipboard.writeText(text);
+      const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+        "https://beatkerri.com/beatdle"
+      )}`;
+      window.open(facebookUrl, "_blank");
+      toast.success(
+        "Results copied to clipboard! Paste into your Facebook post.",
+        {
+          duration: 6000,
+          style: { maxWidth: "400px" },
+        }
+      );
+    } catch {
+      // Fallback: just open Facebook
+      const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+        "https://beatkerri.com/beatdle"
+      )}`;
+      window.open(facebookUrl, "_blank");
+      toast("Copy your results manually and paste into Facebook!", {
+        duration: 5000,
+        style: { maxWidth: "400px" },
+      });
+    }
+    setShowShareMenu(false);
+  };
+
+  const shareToWhatsApp = async () => {
+    const text = getShareText();
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+
+    window.open(whatsappUrl, "_blank");
+    toast.success("Sharing to WhatsApp!");
+    setShowShareMenu(false);
+  };
+
+  const shareToEmail = async () => {
+    const text = getShareText();
+
+    const subject = `🎵 Check out my Beatdle #${beatNumber} result!`;
+    const body = `${text}\n\nI just played today's Beatdle challenge!\n\nTry Beatdle - the daily music puzzle game!\nhttps://beatkerri.com/beatdle`;
+
+    const mailtoUrl = `mailto:?subject=${encodeURIComponent(
+      subject
+    )}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoUrl;
+    toast.success("Opening email to share results!");
+    setShowShareMenu(false);
+  };
+
+  const shareToMessages = async () => {
+    const text = getShareText();
+    const smsText = `${text}\n\nTry Beatdle - the daily music puzzle! https://beatkerri.com/beatdle`;
+
+    const isMobile =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
+
+    if (isMobile) {
+      const smsUrl = `sms:?body=${encodeURIComponent(smsText)}`;
+      window.location.href = smsUrl;
+      toast.success("Opening Messages!");
+    } else {
+      try {
+        await navigator.clipboard.writeText(smsText);
+        toast.success("Results copied! Paste in your messaging app.");
+      } catch {
+        toast.error("Please copy manually on desktop");
+      }
+    }
+    setShowShareMenu(false);
+  };
+
+  const shareToThreads = async () => {
+    const text = getShareText();
+    const threadsUrl = `https://threads.net/intent/post?text=${encodeURIComponent(
+      text
+    )}`;
+
+    window.open(threadsUrl, "_blank");
+    toast.success("Sharing to Threads!");
+    setShowShareMenu(false);
+  };
+
+  const shareWithNativeAPI = async () => {
+    const text = getShareText();
+    const shareData = {
+      title: `Beatdle #${beatNumber} Results`,
+      text: text,
+      url: "https://beatkerri.com/beatdle",
+    };
+
+    if (
+      typeof navigator !== "undefined" &&
+      typeof navigator.share === "function"
+    ) {
+      try {
+        await navigator.share(shareData);
+        toast.success("Results shared!");
+        setShowShareMenu(false);
+      } catch {
+        // User cancelled or error occurred
+        setShowShareMenu(false);
+      }
+    } else {
+      // Fallback to copy
+      copyShareLink();
     }
   };
 
@@ -633,13 +788,88 @@ export default function BeatdleMode() {
               <Headphones size={18} className="text-white" />
               <span>Listen</span>
             </button>
-            <button
-              onClick={handleShare}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded flex items-center justify-center space-x-2 transition-colors w-full sm:w-auto max-w-xs"
-            >
-              <Share2 size={18} className="text-white" />
-              <span>Share Results</span>
-            </button>
+
+            {/* Share Dropdown Menu */}
+            <div className="relative" ref={shareMenuRef}>
+              <button
+                onClick={handleShare}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded flex items-center justify-center space-x-2 transition-colors w-full sm:w-auto max-w-xs"
+              >
+                <Share2 size={18} className="text-white" />
+                <span>Share Results</span>
+                <ChevronDown
+                  size={16}
+                  className={`text-white transition-transform ${
+                    showShareMenu ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {showShareMenu && (
+                <div className="absolute top-full left-0 mt-2 w-48 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-50">
+                  <div className="py-2">
+                    {typeof navigator !== "undefined" &&
+                      typeof navigator.share === "function" && (
+                        <button
+                          onClick={shareWithNativeAPI}
+                          className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
+                        >
+                          <Share2 size={16} />
+                          Share (Native)
+                        </button>
+                      )}
+                    <button
+                      onClick={copyShareLink}
+                      className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
+                    >
+                      <Copy size={16} />
+                      Copy Link
+                    </button>
+                    <button
+                      onClick={shareToX}
+                      className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
+                    >
+                      <span className="text-lg font-bold">𝕏</span>X
+                    </button>
+                    <button
+                      onClick={shareToFacebook}
+                      className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
+                    >
+                      <Facebook size={16} />
+                      Facebook
+                    </button>
+                    <button
+                      onClick={shareToThreads}
+                      className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
+                    >
+                      <AtSign size={16} />
+                      Threads
+                    </button>
+                    <button
+                      onClick={shareToMessages}
+                      className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
+                    >
+                      <MessageCircle size={16} />
+                      Messages
+                    </button>
+                    <button
+                      onClick={shareToWhatsApp}
+                      className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
+                    >
+                      <span className="text-lg">💬</span>
+                      WhatsApp
+                    </button>
+                    <button
+                      onClick={shareToEmail}
+                      className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
+                    >
+                      <Mail size={16} />
+                      Email
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
           <p className="text-gray-400 font-mono text-center mt-4">
             Come back tomorrow for a new beat!

@@ -1,11 +1,23 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { SequencerGrid } from "@/components/SequencerGrid";
 import { GameControls } from "@/components/GameControls";
 import { useAudioPlayback } from "@/hooks/useAudioPlayback";
 import { useGameState } from "@/hooks/useGameState";
-import { Download, Upload, Save, Music, HelpCircle, Piano } from "lucide-react";
+import {
+  Download,
+  Upload,
+  Save,
+  Music,
+  HelpCircle,
+  Piano,
+  Share2,
+  Copy,
+  Facebook,
+  Mail,
+  Camera,
+} from "lucide-react";
 import Link from "next/link";
 import { playSubmitClick } from "@/utils/clickSounds";
 import toast from "react-hot-toast";
@@ -17,7 +29,30 @@ export default function JamModeComponent() {
 
   const [bpm, setBpm] = useState(120);
   const [bpmInput, setBpmInput] = useState("120");
+
+  // Share menu state for sequencer controls
+  const [jamShareMenuOpen, setJamShareMenuOpen] = useState(false);
+  const jamShareMenuRef = useRef<HTMLDivElement>(null);
+  const [hasPlayedOnce, setHasPlayedOnce] = useState(false);
   const [isLooping, setIsLooping] = useState(true);
+
+  // Close jam share menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        jamShareMenuRef.current &&
+        !jamShareMenuRef.current.contains(event.target as Node)
+      ) {
+        setJamShareMenuOpen(false);
+      }
+    };
+
+    if (jamShareMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [jamShareMenuOpen]);
   const [savedBeats, setSavedBeats] = useState<
     Array<{
       id: string;
@@ -41,12 +76,124 @@ export default function JamModeComponent() {
 
   const {
     grid,
-    setGrid,
+    setGrid: setGridRaw,
     toggleStep: toggleStepGrid,
     clearGrid,
   } = useGameState({
     onGridChange: updatePattern, // Connect the real-time update callback
   });
+
+  // Safe grid setter that always keeps audio in sync
+  const setGrid = useCallback(
+    (newGrid: boolean[][]) => {
+      setGridRaw(newGrid);
+      updatePattern(newGrid); // Ensure audio always syncs
+    },
+    [setGridRaw, updatePattern]
+  );
+
+  // Share handlers for sequencer controls
+  const handleToggleJamShareMenu = useCallback(() => {
+    setJamShareMenuOpen(!jamShareMenuOpen);
+  }, [jamShareMenuOpen]);
+
+  const handleJamCopyShareLink = useCallback(async () => {
+    const shareUrl = encodeBeatToUrl(grid, bpm);
+    const shareText = `🎵 Check out this beat I made on BeatKerri! 🥁`;
+    const fullText = `${shareText}\n\nPlay it here: ${shareUrl}`;
+
+    try {
+      await navigator.clipboard.writeText(fullText);
+      toast.success("Beat link copied to clipboard!");
+      setJamShareMenuOpen(false);
+    } catch {
+      toast.error("Could not copy to clipboard.");
+    }
+  }, [grid, bpm]);
+
+  const handleJamShareToX = useCallback(async () => {
+    const shareUrl = encodeBeatToUrl(grid, bpm);
+    const tweetText = `🎵 Check out this beat I made on BeatKerri! 🥁`;
+    const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+      tweetText
+    )}&url=${encodeURIComponent(shareUrl)}`;
+
+    window.open(xUrl, "_blank");
+    toast.success("Sharing to X!");
+    setJamShareMenuOpen(false);
+  }, [grid, bpm]);
+
+  const handleJamShareToFacebook = useCallback(async () => {
+    const shareUrl = encodeBeatToUrl(grid, bpm);
+    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+      shareUrl
+    )}`;
+
+    window.open(facebookUrl, "_blank");
+    toast.success("Sharing to Facebook!");
+    setJamShareMenuOpen(false);
+  }, [grid, bpm]);
+
+  const handleJamShareToWhatsApp = useCallback(async () => {
+    const shareUrl = encodeBeatToUrl(grid, bpm);
+    const whatsappText = `🎵 Check out this beat I made on BeatKerri! 🥁\n\nPlay it here: ${shareUrl}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(
+      whatsappText
+    )}`;
+
+    window.open(whatsappUrl, "_blank");
+    toast.success("Sharing to WhatsApp!");
+    setJamShareMenuOpen(false);
+  }, [grid, bpm]);
+
+  const handleJamShareToEmail = useCallback(async () => {
+    const shareUrl = encodeBeatToUrl(grid, bpm);
+
+    const subject = `🎵 Check out this beat I made!`;
+    const body = `I just created this awesome beat on BeatKerri!\n\nPlay it here:\n${shareUrl}\n\nBeatKerri is a free online drum machine and beat maker.\nTry it at: https://beatkerri.com/jam`;
+
+    const mailtoUrl = `mailto:?subject=${encodeURIComponent(
+      subject
+    )}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoUrl;
+    toast.success("Opening email to share beat!");
+    setJamShareMenuOpen(false);
+  }, [grid, bpm]);
+
+  const handleJamShareToInstagram = useCallback(async () => {
+    const shareUrl = encodeBeatToUrl(grid, bpm);
+
+    const storyText = `🎵 Made this beat on BeatKerri! 🥁\n\n${shareUrl}\n\n#BeatKerri #BeatMaking #DrumMachine #MusicCreation`;
+
+    const isMobile =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
+
+    if (isMobile) {
+      try {
+        await navigator.clipboard.writeText(storyText);
+        window.location.href = `instagram://story-camera`;
+        toast.success("Content copied! Opening Instagram Stories...", {
+          duration: 5000,
+        });
+      } catch {
+        toast(`📸 Copy this to your Instagram Story:\n\n${storyText}`, {
+          duration: 8000,
+        });
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(storyText);
+        toast.success("Instagram Story content copied! Paste it on mobile.", {
+          duration: 6000,
+        });
+      } catch {
+        alert(`Copy this to your Instagram Story:\n\n${storyText}`);
+      }
+    }
+    setJamShareMenuOpen(false);
+  }, [grid, bpm]);
 
   // Stop all soundscapes when component mounts and cleanup on unmount
   useEffect(() => {
@@ -73,6 +220,12 @@ export default function JamModeComponent() {
       setIsPlaying(true);
     }
   };
+
+  // Wrapped play function to track when user has played
+  const handlePlay = useCallback(() => {
+    togglePlay();
+    setHasPlayedOnce(true);
+  }, [togglePlay]);
 
   const toggleStep = async (row: number, col: number) => {
     toggleStepGrid(row, col);
@@ -119,11 +272,281 @@ export default function JamModeComponent() {
     toast.success("Beat deleted!");
   };
 
-  const exportBeat = () => {
+  // URL encoding/decoding for beat sharing
+  const encodeBeatToUrl = (grid: boolean[][], bpm: number, name?: string) => {
+    // Compress grid to a compact string format
+    const compressedGrid = grid
+      .map((row) => row.map((step) => (step ? "1" : "0")).join(""))
+      .join("");
+
     const beatData = {
-      grid,
-      bpm,
+      g: compressedGrid, // grid (compressed)
+      b: bpm, // bpm
+      n: name || "Shared Beat", // name
+    };
+
+    // Encode as base64 URL parameter
+    const encoded = btoa(JSON.stringify(beatData));
+    return `${window.location.origin}/jam?beat=${encoded}`;
+  };
+
+  const decodeBeatFromUrl = (encodedBeat: string) => {
+    try {
+      const decoded = JSON.parse(atob(encodedBeat));
+      const { g: compressedGrid, b: bpm, n: name } = decoded;
+
+      // Decompress grid
+      const grid = [];
+      for (let i = 0; i < 7; i++) {
+        const row = [];
+        for (let j = 0; j < 16; j++) {
+          row.push(compressedGrid[i * 16 + j] === "1");
+        }
+        grid.push(row);
+      }
+
+      return { grid, bpm, name };
+    } catch (error) {
+      console.error("Failed to decode beat from URL:", error);
+      return null;
+    }
+  };
+
+  // Copy link to clipboard
+  const copyShareLink = () => {
+    const beatName =
+      prompt("Enter a name for this beat:", "My Awesome Beat") ||
+      "My Awesome Beat";
+    const shareUrl = encodeBeatToUrl(grid, bpm, beatName);
+
+    // Copy to clipboard
+    navigator.clipboard
+      .writeText(shareUrl)
+      .then(() => {
+        toast.success(`🔗 Share link copied! "${beatName}" ready to share!`, {
+          duration: 4000,
+        });
+      })
+      .catch(() => {
+        // Fallback for older browsers
+        const textArea = document.createElement("textarea");
+        textArea.value = shareUrl;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+        toast.success(`🔗 Share link copied! "${beatName}" ready to share!`, {
+          duration: 4000,
+        });
+      });
+
+    return shareUrl;
+  };
+
+  // Social media specific sharing
+  const shareToX = () => {
+    const beatName =
+      prompt("Enter a name for this beat:", "My Beat") || "My Beat";
+    const shareUrl = encodeBeatToUrl(grid, bpm, beatName);
+    const totalNotes = grid.flat().filter(Boolean).length;
+
+    const tweetText = `🎵 Check out "${beatName}" - ${totalNotes} notes at ${bpm} BPM! Made with BeatKerri 16-Step Sequencer 🥁`;
+    const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+      tweetText
+    )}&url=${encodeURIComponent(shareUrl)}`;
+
+    window.open(xUrl, "_blank");
+    toast.success(`✖️ Sharing "${beatName}" to X!`);
+  };
+
+  const shareToFacebook = () => {
+    const beatName =
+      prompt("Enter a name for this beat:", "My Beat") || "My Beat";
+    const shareUrl = encodeBeatToUrl(grid, bpm, beatName);
+
+    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+      shareUrl
+    )}`;
+
+    window.open(facebookUrl, "_blank");
+    toast.success(`📘 Sharing "${beatName}" to Facebook!`);
+  };
+
+  const shareToWhatsApp = () => {
+    const beatName =
+      prompt("Enter a name for this beat:", "My Beat") || "My Beat";
+    const shareUrl = encodeBeatToUrl(grid, bpm, beatName);
+    const totalNotes = grid.flat().filter(Boolean).length;
+
+    const whatsappText = `🎵 Check out "${beatName}" - ${totalNotes} notes at ${bpm} BPM! Made with BeatKerri 16-Step Sequencer 🥁\n\n${shareUrl}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(
+      whatsappText
+    )}`;
+
+    window.open(whatsappUrl, "_blank");
+    toast.success(`💬 Sharing "${beatName}" to WhatsApp!`);
+  };
+
+  const shareToReddit = () => {
+    const beatName =
+      prompt("Enter a name for this beat:", "My Beat") || "My Beat";
+    const shareUrl = encodeBeatToUrl(grid, bpm, beatName);
+    const totalNotes = grid.flat().filter(Boolean).length;
+
+    const redditTitle = `🎵 "${beatName}" - ${totalNotes} notes at ${bpm} BPM (Made with BeatKerri)`;
+    const redditUrl = `https://reddit.com/submit?url=${encodeURIComponent(
+      shareUrl
+    )}&title=${encodeURIComponent(redditTitle)}`;
+
+    window.open(redditUrl, "_blank");
+    toast.success(`🔴 Sharing "${beatName}" to Reddit!`);
+  };
+
+  const shareToEmail = () => {
+    const beatName =
+      prompt("Enter a name for this beat:", "My Beat") || "My Beat";
+    const shareUrl = encodeBeatToUrl(grid, bpm, beatName);
+    const totalNotes = grid.flat().filter(Boolean).length;
+
+    const subject = `🎵 Check out my beat: "${beatName}"`;
+    const body = `Hey!\n\nI just created "${beatName}" using BeatKerri's 16-Step Sequencer!\n\nBeat Details:\n• ${totalNotes} notes\n• ${bpm} BPM\n• Made with BeatKerri online drum machine\n\nClick this link to play it instantly:\n${shareUrl}\n\nTry making your own beats at beatkerri.com!\n\n🥁 Happy beat making!`;
+
+    const mailtoUrl = `mailto:?subject=${encodeURIComponent(
+      subject
+    )}&body=${encodeURIComponent(body)}`;
+
+    window.location.href = mailtoUrl;
+    toast.success(`📧 Opening email to share "${beatName}"`);
+  };
+
+  const shareToInstagramStory = () => {
+    const beatName =
+      prompt("Enter a name for this beat:", "My Beat") || "My Beat";
+    const shareUrl = encodeBeatToUrl(grid, bpm, beatName);
+    const totalNotes = grid.flat().filter(Boolean).length;
+
+    // Create Instagram Story content
+    const storyText = `🎵 "${beatName}"\n${totalNotes} notes • ${bpm} BPM\nMade with BeatKerri 16-Step Sequencer\n\n🔗 ${shareUrl}\n\n#BeatKerri #BeatMaking #DrumMachine #Music`;
+
+    // Check if on mobile and try Instagram app
+    const isMobile =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
+
+    if (isMobile) {
+      // Try to open Instagram app on mobile
+      const instagramUrl = `instagram://story-camera`;
+
+      // Copy content to clipboard for Instagram
+      navigator.clipboard
+        .writeText(storyText)
+        .then(() => {
+          // Try to open Instagram app
+          window.location.href = instagramUrl;
+
+          toast.success(`📸 Content copied! Opening Instagram Stories...`, {
+            duration: 5000,
+          });
+        })
+        .catch(() => {
+          // Fallback
+          toast(`📸 Copy this to your Instagram Story:\n\n${storyText}`, {
+            duration: 8000,
+          });
+        });
+    } else {
+      // Desktop: Copy content to clipboard
+      navigator.clipboard
+        .writeText(storyText)
+        .then(() => {
+          toast.success(
+            `📸 Instagram Story content copied!\n\nPaste it in your Instagram Story on mobile.`,
+            {
+              duration: 6000,
+            }
+          );
+        })
+        .catch(() => {
+          // Show content in alert as fallback
+          alert(`Copy this to your Instagram Story:\n\n${storyText}`);
+        });
+    }
+  };
+
+  const exportBeat = () => {
+    const beatName =
+      prompt("Enter a name for this beat (optional):", "Custom Beat") ||
+      "Custom Beat";
+    const author =
+      prompt("Enter author name (optional):", "Unknown") || "Unknown";
+    const description = prompt("Enter a description (optional):", "") || "";
+
+    // Calculate beat statistics
+    const totalNotes = grid.flat().filter(Boolean).length;
+    const activeInstruments = grid
+      .map((row, index) => ({
+        index,
+        name: [
+          "Kick",
+          "Snare",
+          "Closed Hi-Hat",
+          "Open Hi-Hat",
+          "Low Tom",
+          "High Tom",
+          "Clap",
+        ][index],
+        notes: row.filter(Boolean).length,
+        active: row.some(Boolean),
+      }))
+      .filter((inst) => inst.active);
+
+    const currentDate = new Date();
+
+    const beatData = {
+      // Metadata
+      formatVersion: "1.0",
+      name: beatName,
+      author: author,
+      description: description,
+      createdAt: currentDate.toISOString(),
+      createdAtReadable: currentDate.toLocaleString(),
+
+      // Beat Properties
+      bpm: bpm,
+      totalSteps: 16,
+      totalNotes: totalNotes,
+
+      // Instrument Mapping
+      instruments: [
+        { index: 0, name: "Kick", midi: 36, color: "#ef4444" },
+        { index: 1, name: "Snare", midi: 38, color: "#f97316" },
+        { index: 2, name: "Closed Hi-Hat", midi: 42, color: "#eab308" },
+        { index: 3, name: "Open Hi-Hat", midi: 46, color: "#22c55e" },
+        { index: 4, name: "Low Tom", midi: 45, color: "#3b82f6" },
+        { index: 5, name: "High Tom", midi: 48, color: "#a855f7" },
+        { index: 6, name: "Clap", midi: 39, color: "#ec4899" },
+      ],
+
+      // Active Instruments Summary
+      activeInstruments: activeInstruments,
+
+      // Pattern Data
+      grid: grid,
+
+      // Technical Data
       timestamp: Date.now(),
+      source: "BeatKerri v1.0",
+
+      // Usage Instructions
+      _readme: {
+        usage:
+          "Import this file into BeatKerri Jam Mode using the Import button",
+        format: "16-step sequencer pattern with 7 drum instruments",
+        bpm: `Tempo is set to ${bpm} BPM`,
+        instruments:
+          "Each row represents: Kick, Snare, Closed HH, Open HH, Low Tom, High Tom, Clap",
+      },
     };
 
     const dataStr = JSON.stringify(beatData, null, 2);
@@ -132,11 +555,13 @@ export default function JamModeComponent() {
 
     const link = document.createElement("a");
     link.href = url;
-    link.download = `beat-${Date.now()}.json`;
+    link.download = `${beatName
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "-")}-${Date.now()}.json`;
     link.click();
 
     URL.revokeObjectURL(url);
-    toast.success("Beat exported!");
+    toast.success(`Beat "${beatName}" exported with full metadata!`);
   };
 
   const importBeat = () => {
@@ -151,15 +576,53 @@ export default function JamModeComponent() {
       reader.onload = (e) => {
         try {
           const beatData = JSON.parse(e.target?.result as string);
+
+          // Validate that we have the required grid data
+          if (!beatData.grid || !Array.isArray(beatData.grid)) {
+            toast.error("Invalid beat file: Missing grid data!");
+            return;
+          }
+
+          // Set the grid pattern (audio sync is automatic)
           setGrid(beatData.grid);
+
+          // Set BPM (with fallback)
           const newBpm = beatData.bpm || 120;
           setBpm(newBpm);
           setBpmInput(newBpm.toString());
-          // Update the pattern in real-time if currently playing
-          updatePattern(beatData.grid);
-          toast.success("Beat imported!");
-        } catch {
-          toast.error("Invalid beat file!");
+
+          // Show detailed import message based on format
+          if (beatData.formatVersion && beatData.name) {
+            // New comprehensive format
+            const totalNotes =
+              beatData.totalNotes ||
+              beatData.grid.flat().filter(Boolean).length;
+            const authorInfo =
+              beatData.author && beatData.author !== "Unknown"
+                ? ` by ${beatData.author}`
+                : "";
+
+            toast.success(
+              `🎵 Imported "${beatData.name}"${authorInfo}! ${totalNotes} notes at ${newBpm} BPM`,
+              { duration: 4000 }
+            );
+
+            // Log comprehensive info to console for debugging
+            console.log("🎵 Imported beat with metadata:", {
+              name: beatData.name,
+              author: beatData.author,
+              bpm: newBpm,
+              notes: totalNotes,
+              created: beatData.createdAtReadable,
+              description: beatData.description,
+            });
+          } else {
+            // Legacy simple format
+            toast.success(`Beat imported! ${newBpm} BPM`);
+          }
+        } catch (error) {
+          console.error("Beat import error:", error);
+          toast.error("Invalid beat file format!");
         }
       };
       reader.readAsText(file);
@@ -408,7 +871,10 @@ export default function JamModeComponent() {
     }
   };
 
-  const createMidiFile = (events: MidiEvent[], ticksPerQuarter: number): Blob => {
+  const createMidiFile = (
+    events: MidiEvent[],
+    ticksPerQuarter: number
+  ): Blob => {
     // Helper functions for MIDI file creation
     const writeVariableLength = (value: number): number[] => {
       const bytes: number[] = [];
@@ -452,14 +918,14 @@ export default function JamModeComponent() {
         trackData.push((tempo >> 16) & 0xff, (tempo >> 8) & 0xff, tempo & 0xff);
       } else if (event.type === "noteOn") {
         trackData.push(
-          0x90 | (event.channel || 9), 
-          event.noteNumber || 36, 
+          0x90 | (event.channel || 9),
+          event.noteNumber || 36,
           event.velocity || 100
         );
       } else if (event.type === "noteOff") {
         trackData.push(
-          0x80 | (event.channel || 9), 
-          event.noteNumber || 36, 
+          0x80 | (event.channel || 9),
+          event.noteNumber || 36,
           event.velocity || 0
         );
       }
@@ -497,6 +963,32 @@ export default function JamModeComponent() {
       }
     }
   }, []);
+
+  // Check for shared beat in URL parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sharedBeat = urlParams.get("beat");
+
+    if (sharedBeat) {
+      const decoded = decodeBeatFromUrl(sharedBeat);
+      if (decoded) {
+        setGrid(decoded.grid);
+        setBpm(decoded.bpm);
+        setBpmInput(decoded.bpm.toString());
+
+        toast.success(
+          `🎵 Loaded shared beat: "${decoded.name}" (${decoded.bpm} BPM)`,
+          { duration: 5000 }
+        );
+
+        // Clean the URL without triggering a page reload
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+      } else {
+        toast.error("Invalid shared beat link!");
+      }
+    }
+  }, [setGrid, setBpm, setBpmInput]);
 
   return (
     <main className="relative flex flex-col items-center justify-center min-h-screen bg-black text-white p-4">
@@ -585,9 +1077,19 @@ export default function JamModeComponent() {
         <GameControls
           isPlaying={isPlaying}
           isLooping={isLooping}
-          onTogglePlay={togglePlay}
+          onTogglePlay={handlePlay}
           onToggleLoop={() => setIsLooping(!isLooping)}
           onClearGrid={clearGrid}
+          showShare={true}
+          shareMenuOpen={jamShareMenuOpen}
+          onToggleShareMenu={handleToggleJamShareMenu}
+          onCopyShareLink={handleJamCopyShareLink}
+          onShareToX={handleJamShareToX}
+          onShareToFacebook={handleJamShareToFacebook}
+          onShareToWhatsApp={handleJamShareToWhatsApp}
+          onShareToEmail={handleJamShareToEmail}
+          onShareToInstagram={handleJamShareToInstagram}
+          shareMenuRef={jamShareMenuRef}
         />
 
         <footer className="mt-6 text-gray-500 text-xs font-mono w-full text-center">

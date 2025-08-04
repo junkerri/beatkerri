@@ -59,6 +59,18 @@ interface GameLayoutProps {
   highestScore?: number;
   beatsCompleted?: number;
   perfectSolves?: number;
+
+  // Jam mode share functionality
+  showJamShare?: boolean;
+  jamShareMenuOpen?: boolean;
+  onToggleJamShareMenu?: () => void;
+  onJamCopyShareLink?: () => void;
+  onJamShareToX?: () => void;
+  onJamShareToFacebook?: () => void;
+  onJamShareToWhatsApp?: () => void;
+  onJamShareToEmail?: () => void;
+  onJamShareToInstagram?: () => void;
+  jamShareMenuRef?: React.RefObject<HTMLDivElement>;
 }
 
 export const GameLayout = ({
@@ -96,6 +108,17 @@ export const GameLayout = ({
   perfectSolves,
   currentPlayMode,
   onTogglePlayMode,
+  // Jam mode share props
+  showJamShare,
+  jamShareMenuOpen,
+  onToggleJamShareMenu,
+  onJamCopyShareLink,
+  onJamShareToX,
+  onJamShareToFacebook,
+  onJamShareToWhatsApp,
+  onJamShareToEmail,
+  onJamShareToInstagram,
+  jamShareMenuRef,
 }: GameLayoutProps) => {
   const getModeTitle = (mode: GameMode) => {
     switch (mode) {
@@ -277,6 +300,17 @@ export const GameLayout = ({
             onToggleLoop={onToggleLoop}
             onSubmitGuess={onSubmitGuess}
             onClearGrid={onClearGrid}
+            // Jam mode share props
+            showShare={showJamShare}
+            shareMenuOpen={jamShareMenuOpen}
+            onToggleShareMenu={onToggleJamShareMenu}
+            onCopyShareLink={onJamCopyShareLink}
+            onShareToX={onJamShareToX}
+            onShareToFacebook={onJamShareToFacebook}
+            onShareToWhatsApp={onJamShareToWhatsApp}
+            onShareToEmail={onJamShareToEmail}
+            onShareToInstagram={onJamShareToInstagram}
+            shareMenuRef={jamShareMenuRef}
           />
         )}
 
