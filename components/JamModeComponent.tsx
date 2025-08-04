@@ -12,11 +12,6 @@ import {
   Music,
   HelpCircle,
   Piano,
-  Share2,
-  Copy,
-  Facebook,
-  Mail,
-  Camera,
 } from "lucide-react";
 import Link from "next/link";
 import { playSubmitClick } from "@/utils/clickSounds";
@@ -33,7 +28,6 @@ export default function JamModeComponent() {
   // Share menu state for sequencer controls
   const [jamShareMenuOpen, setJamShareMenuOpen] = useState(false);
   const jamShareMenuRef = useRef<HTMLDivElement>(null);
-  const [hasPlayedOnce, setHasPlayedOnce] = useState(false);
   const [isLooping, setIsLooping] = useState(true);
 
   // Close jam share menu when clicking outside
@@ -211,7 +205,7 @@ export default function JamModeComponent() {
     };
   }, [stopAllImmediately, stopPlaybackAudio, setIsPlaying]);
 
-  const togglePlay = async () => {
+  const togglePlay = useCallback(async () => {
     if (isPlaying) {
       stopPlaybackAudio();
       setIsPlaying(false);
@@ -219,12 +213,11 @@ export default function JamModeComponent() {
       await playPatternAudio(grid);
       setIsPlaying(true);
     }
-  };
+  }, [isPlaying, stopPlaybackAudio, playPatternAudio, grid, setIsPlaying]);
 
-  // Wrapped play function to track when user has played
+  // Wrapped play function for controls
   const handlePlay = useCallback(() => {
     togglePlay();
-    setHasPlayedOnce(true);
   }, [togglePlay]);
 
   const toggleStep = async (row: number, col: number) => {
@@ -312,167 +305,7 @@ export default function JamModeComponent() {
     }
   };
 
-  // Copy link to clipboard
-  const copyShareLink = () => {
-    const beatName =
-      prompt("Enter a name for this beat:", "My Awesome Beat") ||
-      "My Awesome Beat";
-    const shareUrl = encodeBeatToUrl(grid, bpm, beatName);
 
-    // Copy to clipboard
-    navigator.clipboard
-      .writeText(shareUrl)
-      .then(() => {
-        toast.success(`🔗 Share link copied! "${beatName}" ready to share!`, {
-          duration: 4000,
-        });
-      })
-      .catch(() => {
-        // Fallback for older browsers
-        const textArea = document.createElement("textarea");
-        textArea.value = shareUrl;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textArea);
-        toast.success(`🔗 Share link copied! "${beatName}" ready to share!`, {
-          duration: 4000,
-        });
-      });
-
-    return shareUrl;
-  };
-
-  // Social media specific sharing
-  const shareToX = () => {
-    const beatName =
-      prompt("Enter a name for this beat:", "My Beat") || "My Beat";
-    const shareUrl = encodeBeatToUrl(grid, bpm, beatName);
-    const totalNotes = grid.flat().filter(Boolean).length;
-
-    const tweetText = `🎵 Check out "${beatName}" - ${totalNotes} notes at ${bpm} BPM! Made with BeatKerri 16-Step Sequencer 🥁`;
-    const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-      tweetText
-    )}&url=${encodeURIComponent(shareUrl)}`;
-
-    window.open(xUrl, "_blank");
-    toast.success(`✖️ Sharing "${beatName}" to X!`);
-  };
-
-  const shareToFacebook = () => {
-    const beatName =
-      prompt("Enter a name for this beat:", "My Beat") || "My Beat";
-    const shareUrl = encodeBeatToUrl(grid, bpm, beatName);
-
-    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-      shareUrl
-    )}`;
-
-    window.open(facebookUrl, "_blank");
-    toast.success(`📘 Sharing "${beatName}" to Facebook!`);
-  };
-
-  const shareToWhatsApp = () => {
-    const beatName =
-      prompt("Enter a name for this beat:", "My Beat") || "My Beat";
-    const shareUrl = encodeBeatToUrl(grid, bpm, beatName);
-    const totalNotes = grid.flat().filter(Boolean).length;
-
-    const whatsappText = `🎵 Check out "${beatName}" - ${totalNotes} notes at ${bpm} BPM! Made with BeatKerri 16-Step Sequencer 🥁\n\n${shareUrl}`;
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(
-      whatsappText
-    )}`;
-
-    window.open(whatsappUrl, "_blank");
-    toast.success(`💬 Sharing "${beatName}" to WhatsApp!`);
-  };
-
-  const shareToReddit = () => {
-    const beatName =
-      prompt("Enter a name for this beat:", "My Beat") || "My Beat";
-    const shareUrl = encodeBeatToUrl(grid, bpm, beatName);
-    const totalNotes = grid.flat().filter(Boolean).length;
-
-    const redditTitle = `🎵 "${beatName}" - ${totalNotes} notes at ${bpm} BPM (Made with BeatKerri)`;
-    const redditUrl = `https://reddit.com/submit?url=${encodeURIComponent(
-      shareUrl
-    )}&title=${encodeURIComponent(redditTitle)}`;
-
-    window.open(redditUrl, "_blank");
-    toast.success(`🔴 Sharing "${beatName}" to Reddit!`);
-  };
-
-  const shareToEmail = () => {
-    const beatName =
-      prompt("Enter a name for this beat:", "My Beat") || "My Beat";
-    const shareUrl = encodeBeatToUrl(grid, bpm, beatName);
-    const totalNotes = grid.flat().filter(Boolean).length;
-
-    const subject = `🎵 Check out my beat: "${beatName}"`;
-    const body = `Hey!\n\nI just created "${beatName}" using BeatKerri's 16-Step Sequencer!\n\nBeat Details:\n• ${totalNotes} notes\n• ${bpm} BPM\n• Made with BeatKerri online drum machine\n\nClick this link to play it instantly:\n${shareUrl}\n\nTry making your own beats at beatkerri.com!\n\n🥁 Happy beat making!`;
-
-    const mailtoUrl = `mailto:?subject=${encodeURIComponent(
-      subject
-    )}&body=${encodeURIComponent(body)}`;
-
-    window.location.href = mailtoUrl;
-    toast.success(`📧 Opening email to share "${beatName}"`);
-  };
-
-  const shareToInstagramStory = () => {
-    const beatName =
-      prompt("Enter a name for this beat:", "My Beat") || "My Beat";
-    const shareUrl = encodeBeatToUrl(grid, bpm, beatName);
-    const totalNotes = grid.flat().filter(Boolean).length;
-
-    // Create Instagram Story content
-    const storyText = `🎵 "${beatName}"\n${totalNotes} notes • ${bpm} BPM\nMade with BeatKerri 16-Step Sequencer\n\n🔗 ${shareUrl}\n\n#BeatKerri #BeatMaking #DrumMachine #Music`;
-
-    // Check if on mobile and try Instagram app
-    const isMobile =
-      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-        navigator.userAgent
-      );
-
-    if (isMobile) {
-      // Try to open Instagram app on mobile
-      const instagramUrl = `instagram://story-camera`;
-
-      // Copy content to clipboard for Instagram
-      navigator.clipboard
-        .writeText(storyText)
-        .then(() => {
-          // Try to open Instagram app
-          window.location.href = instagramUrl;
-
-          toast.success(`📸 Content copied! Opening Instagram Stories...`, {
-            duration: 5000,
-          });
-        })
-        .catch(() => {
-          // Fallback
-          toast(`📸 Copy this to your Instagram Story:\n\n${storyText}`, {
-            duration: 8000,
-          });
-        });
-    } else {
-      // Desktop: Copy content to clipboard
-      navigator.clipboard
-        .writeText(storyText)
-        .then(() => {
-          toast.success(
-            `📸 Instagram Story content copied!\n\nPaste it in your Instagram Story on mobile.`,
-            {
-              duration: 6000,
-            }
-          );
-        })
-        .catch(() => {
-          // Show content in alert as fallback
-          alert(`Copy this to your Instagram Story:\n\n${storyText}`);
-        });
-    }
-  };
 
   const exportBeat = () => {
     const beatName =
