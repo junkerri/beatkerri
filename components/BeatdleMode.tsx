@@ -342,17 +342,17 @@ export default function BeatdleMode() {
         }
 
         // Get the nth target note (ordered by column)
-        if (noteIndex >= targetNotes.length) return "⬛"; // Shouldn't happen, but show black
+        if (noteIndex >= targetNotes.length) return "🟥"; // Shouldn't happen, but show red
         const targetNote = targetNotes[noteIndex];
 
         // Check if user placed a note at this target position
         const userPlacedNote = grid[targetNote.row][targetNote.col];
 
-        // Simple logic: if user placed a note in target position, it's green, otherwise black (like Wordle)
+        // Simple logic: if user placed a note in target position, it's green, otherwise red
         if (userPlacedNote && safeTargetGrid[targetNote.row][targetNote.col]) {
           return "🟩"; // User correctly placed a note in target position
         } else {
-          return "⬛"; // User either didn't place a note or placed it in wrong position (black like Wordle miss)
+          return "🟥"; // User either didn't place a note or placed it in wrong position (red for better visibility)
         }
       })
       .join("");
@@ -514,31 +514,34 @@ export default function BeatdleMode() {
     setShowShareMenu(false);
   };
 
-  const shareToThreads = async () => {
+    const shareToThreads = async () => {
     const text = getShareText();
-
-    // Try copying to clipboard first, then open Threads (better emoji support)
+    
+    // Always copy to clipboard first for best emoji compatibility
     try {
       await navigator.clipboard.writeText(text);
+      // Open Threads without pre-filled text to avoid emoji encoding issues
       const threadsUrl = `https://threads.net/intent/post`;
       window.open(threadsUrl, "_blank");
       toast.success(
-        "Results copied to clipboard! Paste into your Threads post.",
+        "🟩🟥 Results copied! Paste into your Threads post for perfect squares.",
         {
-          duration: 6000,
-          style: { maxWidth: "400px" },
+          duration: 7000,
+          style: { maxWidth: "450px" },
         }
       );
     } catch {
-      // Fallback to URL encoding if clipboard fails
-      const threadsUrl = `https://threads.net/intent/post?text=${encodeURIComponent(
-        text
-      )}`;
+      // Manual copy fallback
+      toast.error(
+        "Please manually copy your results and paste into Threads for best emoji display!",
+        {
+          duration: 8000,
+          style: { maxWidth: "450px" },
+        }
+      );
+      // Still open Threads
+      const threadsUrl = `https://threads.net/intent/post`;
       window.open(threadsUrl, "_blank");
-      toast("Copy your results manually and paste into Threads!", {
-        duration: 5000,
-        style: { maxWidth: "400px" },
-      });
     }
     setShowShareMenu(false);
   };
