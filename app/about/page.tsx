@@ -86,7 +86,7 @@ export default function About() {
               </a>
               ), a musician and web developer who wanted to build a fun,
               interactive rhythm game that also works as a tool for sketching
-              beat ideas and sharing them with friends. Whether you're playing
+              beat ideas and sharing them with friends. Whether you&apos;re playing
               solo or jamming with others, Beatkerri 303 is your pocket-sized
               beat lab.
             </p>
@@ -265,7 +265,7 @@ export default function About() {
                       Pattern Export
                     </h4>
                     <p className="text-gray-400 text-sm">
-                      Export today's Beatdle pattern as high-quality WAV audio
+                      Export today&apos;s Beatdle pattern as high-quality WAV audio
                       files or MIDI files for use in your favorite music
                       production software.
                     </p>

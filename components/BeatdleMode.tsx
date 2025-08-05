@@ -21,7 +21,6 @@ import {
   Music,
   Flame,
   Trophy,
-  Target,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { playToggleClick, playSubmitClick } from "@/utils/clickSounds";
@@ -434,9 +433,7 @@ export default function BeatdleMode() {
     }
   }, [showShareMenu]);
 
-  const handleShare = async () => {
-    setShowShareMenu(!showShareMenu);
-  };
+
 
   const copyShareLink = async () => {
     const text = getShareText();
@@ -696,7 +693,7 @@ export default function BeatdleMode() {
       }
 
       // Update streak data
-      const updatedStreakData = updateStreakData(
+      updateStreakData(
         beatNumber,
         true, // won
         totalScore,
@@ -754,7 +751,7 @@ export default function BeatdleMode() {
         stopPlaybackAudio();
 
         // Update streak data for loss
-        const updatedStreakData = updateStreakData(
+        updateStreakData(
           beatNumber,
           false, // won
           totalScore,
