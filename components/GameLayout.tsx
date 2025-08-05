@@ -15,6 +15,9 @@ import {
   AtSign,
   MessageCircle,
   Mail,
+  Download,
+  Music,
+  Flame,
 } from "lucide-react";
 import Confetti from "react-confetti";
 import { playSubmitClick } from "@/utils/clickSounds";
@@ -59,7 +62,7 @@ interface GameLayoutProps {
   alreadyPlayed?: boolean;
   timeUntilNextBeat?: string;
   totalAttempts?: number;
-  
+
   // Share dropdown functions
   shareWithNativeAPI?: () => void;
   onCopyShareLink?: () => void;
@@ -86,6 +89,24 @@ interface GameLayoutProps {
   onJamShareToEmail?: () => void;
   onJamShareToInstagram?: () => void;
   jamShareMenuRef?: React.RefObject<HTMLDivElement>;
+
+  // Streak tracking (Beatdle only)
+  streakData?: {
+    currentStreak: number;
+    longestStreak: number;
+    isActive: boolean;
+  };
+  streakStats?: {
+    winRate: number;
+    perfectRate: number;
+    averageScore: number;
+  };
+
+  // Export functions (Beatdle only)
+  onExportMidi?: () => void;
+  onExportWav?: () => void;
+  showExportMenu?: boolean;
+  onToggleExportMenu?: () => void;
 }
 
 export const GameLayout = ({
@@ -142,6 +163,12 @@ export const GameLayout = ({
   onShareToMessages,
   onShareToWhatsApp,
   onShareToEmail,
+  streakData,
+  streakStats,
+  onExportMidi,
+  onExportWav,
+  showExportMenu,
+  onToggleExportMenu,
 }: GameLayoutProps) => {
   const getModeTitle = (mode: GameMode) => {
     switch (mode) {
@@ -338,7 +365,15 @@ export const GameLayout = ({
         )}
 
         <footer className="mt-6 text-gray-500 text-xs font-mono w-full text-center">
-          © {new Date().getFullYear()} Junkerri
+          © {new Date().getFullYear()}{" "}
+          <a
+            href="https://github.com/junkerri"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-500 hover:text-amber-400 transition-colors underline"
+          >
+            Junkerri
+          </a>
         </footer>
 
         {/* Drum machine lights/knobs for realism */}
@@ -425,8 +460,61 @@ export const GameLayout = ({
                 </div>
               )}
 
+              {/* Streak Display for Beatdle */}
+              {mode === "beatdle" && streakData && streakStats && (
+                <div className="bg-gray-800 rounded-lg p-4 border border-gray-600 max-w-md w-full mx-auto">
+                  <div className="text-center mb-3">
+                    <h3 className="text-lg font-bold text-white mb-2">
+                      Your Streak
+                    </h3>
+                    <div className="flex items-center justify-center space-x-4">
+                      <div className="flex items-center space-x-2">
+                        <Flame
+                          className={`w-5 h-5 ${
+                            streakData.isActive
+                              ? "text-orange-500"
+                              : "text-gray-500"
+                          }`}
+                        />
+                        <span className="text-xl font-bold">
+                          {streakData.currentStreak}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Trophy className="w-5 h-5 text-yellow-500" />
+                        <span className="text-sm">
+                          Best: {streakData.longestStreak}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Stats */}
+                  <div className="grid grid-cols-3 gap-2 text-center text-sm">
+                    <div>
+                      <div className="text-gray-400">Win Rate</div>
+                      <div className="font-bold text-green-400">
+                        {streakStats.winRate}%
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-gray-400">Perfect</div>
+                      <div className="font-bold text-purple-400">
+                        {streakStats.perfectRate}%
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-gray-400">Avg Score</div>
+                      <div className="font-bold text-blue-400">
+                        {streakStats.averageScore.toFixed(1)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Listen and action buttons for game over */}
-              <div className="flex flex-col sm:flex-row items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-lg mx-auto">
                 {onListenTarget && (
                   <button
                     onClick={onListenTarget}
@@ -584,20 +672,122 @@ export const GameLayout = ({
                 </div>
               )}
 
+              {/* Streak Display for Beatdle */}
+              {mode === "beatdle" && streakData && streakStats && (
+                <div className="bg-gray-800 rounded-lg p-4 border border-gray-600 max-w-md w-full mx-auto">
+                  <div className="text-center mb-3">
+                    <h3 className="text-lg font-bold text-white mb-2">
+                      Your Streak
+                    </h3>
+                    <div className="flex items-center justify-center space-x-4">
+                      <div className="flex items-center space-x-2">
+                        <Flame
+                          className={`w-5 h-5 ${
+                            streakData.isActive
+                              ? "text-orange-500"
+                              : "text-gray-500"
+                          }`}
+                        />
+                        <span className="text-xl font-bold">
+                          {streakData.currentStreak}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Trophy className="w-5 h-5 text-yellow-500" />
+                        <span className="text-sm">
+                          Best: {streakData.longestStreak}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Stats */}
+                  <div className="grid grid-cols-3 gap-2 text-center text-sm">
+                    <div>
+                      <div className="text-gray-400">Win Rate</div>
+                      <div className="font-bold text-green-400">
+                        {streakStats.winRate}%
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-gray-400">Perfect</div>
+                      <div className="font-bold text-purple-400">
+                        {streakStats.perfectRate}%
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-gray-400">Avg Score</div>
+                      <div className="font-bold text-blue-400">
+                        {streakStats.averageScore.toFixed(1)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Listen and action buttons */}
-              <div className="flex flex-col sm:flex-row items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-lg mx-auto">
                 {onListenTarget && (
                   <button
                     onClick={onListenTarget}
-                    className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded flex items-center space-x-2 transition-colors"
-                    title="Play Beat"
+                    className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded flex items-center justify-center space-x-2 transition-colors w-full sm:w-auto"
+                    title="Listen to Beat"
                   >
-                    <Headphones size={22} className="text-white" />
+                    <Headphones size={18} className="text-white" />
                     <span>{isTargetPlaying ? "Stop" : "Listen"}</span>
                   </button>
                 )}
+
+                {/* Export Beat Button for Beatdle */}
+                {mode === "beatdle" && (onExportMidi || onExportWav) && (
+                  <div className="relative w-full sm:w-auto">
+                    <button
+                      onClick={onToggleExportMenu}
+                      className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded flex items-center justify-center space-x-2 transition-colors w-full"
+                    >
+                      <Download size={18} className="text-white" />
+                      <span>Export Beat</span>
+                      <ChevronDown
+                        size={16}
+                        className={`text-white transition-transform ${
+                          showExportMenu ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+
+                    {showExportMenu && (
+                      <div className="absolute top-full left-0 mt-2 w-full sm:w-48 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-50">
+                        <div className="py-2">
+                          {onExportMidi && (
+                            <button
+                              onClick={onExportMidi}
+                              className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
+                            >
+                              <Music size={16} />
+                              Export as MIDI
+                            </button>
+                          )}
+                          {onExportWav && (
+                            <button
+                              onClick={onExportWav}
+                              className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
+                            >
+                              <Download size={16} />
+                              Export as WAV
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Share Results Button for Beatdle */}
                 {mode === "beatdle" && onShare && (
-                  <div className="relative" ref={jamShareMenuRef}>
+                  <div
+                    className="relative w-full sm:w-auto"
+                    ref={jamShareMenuRef}
+                  >
                     <button
                       onClick={onShare}
                       className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded flex items-center space-x-2 transition-colors"
@@ -694,8 +884,6 @@ export const GameLayout = ({
           )}
         </div>
       )}
-
-
     </main>
   );
 };

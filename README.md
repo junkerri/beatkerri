@@ -45,6 +45,25 @@ Manages ambient audio and sound effects:
 - Victory/loss audio
 - Audio context management
 
+### Utility Functions
+
+#### Export Utilities (`utils/exportUtils.ts`)
+
+Handles file export functionality:
+
+- **MIDI Export** - Generate and download MIDI files from beat patterns
+- **WAV Export** - Render beat patterns to high-quality WAV audio files
+- **Reusable Logic** - Shared export functions across game modes
+
+#### Streak Tracking (`utils/streakUtils.ts`)
+
+Manages user progress and statistics:
+
+- **Streak Management** - Track daily consecutive wins
+- **Statistics** - Win rate, perfect solve rate, average score
+- **Persistence** - localStorage-based data storage
+- **Progress Tracking** - Detailed performance analytics
+
 ### Shared Components
 
 #### `GameLayout` (`components/GameLayout.tsx`)
@@ -108,6 +127,9 @@ Daily challenge with:
 - Daily beat generation using seedrandom
 - 3 attempts per day
 - Score tracking with localStorage persistence
+- **Streak tracking** - Track daily streaks, win rates, and statistics
+- **Pattern export** - Export today's beat as WAV or MIDI files
+- **Enhanced sharing** - Multiple social media sharing options
 - Social sharing capabilities
 
 ### Challenge Mode
@@ -170,25 +192,30 @@ npm run dev
 ## Technologies
 
 ### Core Framework
+
 - **Next.js 15.3.5** - React framework with App Router and Turbopack
 - **React 19.0.0** - Latest React with concurrent features
 - **TypeScript 5** - Type-safe JavaScript
 
 ### Audio & Animation
+
 - **Tone.js 15.1.22** - Web Audio API wrapper for audio playback
 - **Lottie React 2.4.1** - Animation library for Lottie files
 - **React Confetti 6.4.0** - Confetti animation effects
 
 ### Styling & UI
+
 - **Tailwind CSS 4** - Utility-first CSS framework
 - **Lucide React 0.525.0** - Beautiful icon library
 
 ### Utilities & State
+
 - **React Hot Toast 2.5.2** - Toast notifications
 - **Seedrandom 3.0.5** - Deterministic random number generation
 - **Vercel Analytics 1.5.0** - Performance and usage analytics
 
 ### Development Tools
+
 - **ESLint 9** - Code linting with Next.js config
 - **PostCSS 4** - CSS processing
 - **Turbopack** - Fast bundler for development
@@ -207,6 +234,10 @@ beatkerri/
 ├── components/            # Reusable React components
 ├── hooks/                 # Custom React hooks
 ├── utils/                 # Shared utilities and helpers
+│   ├── exportUtils.ts     # MIDI/WAV export functionality
+│   ├── streakUtils.ts     # Streak tracking and statistics
+│   ├── gameUtils.ts       # Core game utilities
+│   └── soundscapeManager.ts # Audio management
 ├── public/                # Static assets
 │   ├── samples/           # Audio samples (WAV files)
 │   ├── audio/             # Game audio (MP3 files)
@@ -223,6 +254,7 @@ The game features a sophisticated audio system built with Tone.js:
 - **Performance**: Optimized audio loading and caching
 - **Cross-browser**: Compatible with all modern browsers
 - **Mobile Support**: Handles mobile audio restrictions
+- **Export Capabilities**: High-quality WAV rendering and MIDI file generation
 
 ## Performance Features
 
@@ -231,3 +263,33 @@ The game features a sophisticated audio system built with Tone.js:
 - **Image Optimization**: Next.js built-in image optimization
 - **Audio Optimization**: Efficient audio file loading and caching
 - **TypeScript**: Compile-time error checking
+
+## Latest Features
+
+### 🔥 Streak Tracking
+
+- **Daily Streaks**: Track consecutive Beatdle completions
+- **Statistics Dashboard**: View win rate, perfect solve percentage, and average scores
+- **Progress Persistence**: All stats saved locally with localStorage
+- **Achievement Display**: Visual streak indicators and statistics
+
+### 📥 Pattern Export
+
+- **WAV Export**: Export Beatdle patterns as high-quality 44.1kHz WAV files
+- **MIDI Export**: Generate MIDI files compatible with all major DAWs
+- **Reusable Logic**: Shared export functionality across game modes
+- **Instant Download**: One-click export with proper filename generation
+
+### 📤 Enhanced Sharing
+
+- **Multiple Platforms**: Share to X (Twitter), Facebook, WhatsApp, Messages, Email
+- **Separate Menus**: Clean UI with distinct Export and Share buttons
+- **Native Sharing**: Device-native sharing API support where available
+- **Result Formatting**: Optimized share text with visual grid representation
+
+### 🎯 User Experience Improvements
+
+- **Three-Button Layout**: Listen, Export Beat, and Share Results as separate actions
+- **Responsive Design**: Optimized for desktop, mobile landscape, and portrait modes
+- **Centered Alignment**: Perfect button alignment across all screen sizes
+- **Visual Feedback**: Clear icons and hover states for all interactive elements

@@ -66,8 +66,13 @@ export const useSoundscapes = () => {
   // Play victory soundscape
   const playVictory = useCallback(
     (mode: "beatdle" | "challenge", isPerfect: boolean = false) => {
+      console.log(
+        `🎵 useSoundscapes.playVictory called - mode: ${mode}, isPerfect: ${isPerfect}, isMuted: ${isMuted}`
+      );
       if (!isMuted) {
         playVictorySoundscape(mode, isPerfect);
+      } else {
+        console.log("🔇 Victory music skipped - soundscapes are muted");
       }
     },
     [isMuted]

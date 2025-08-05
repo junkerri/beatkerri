@@ -196,7 +196,15 @@ export default function Home() {
       </div>
 
       <footer className="mt-12 text-gray-500 text-xs font-mono">
-        © {new Date().getFullYear()} Junkerri
+        © {new Date().getFullYear()}{" "}
+        <a
+          href="https://github.com/junkerri"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-gray-500 hover:text-amber-400 transition-colors underline"
+        >
+          Junkerri
+        </a>
       </footer>
     </main>
   );

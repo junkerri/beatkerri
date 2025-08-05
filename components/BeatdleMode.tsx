@@ -17,10 +17,21 @@ import {
   MessageCircle,
   ChevronDown,
   AtSign,
+  Download,
+  Music,
+  Flame,
+  Trophy,
+  Target,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { playToggleClick, playSubmitClick } from "@/utils/clickSounds";
 import { useSoundscapes } from "@/hooks/useSoundscapes";
+import { exportMidiFile, exportWavFile } from "@/utils/exportUtils";
+import {
+  updateStreakData,
+  getStreakStatus,
+  getStreakStats,
+} from "@/utils/streakUtils";
 import * as Tone from "tone";
 
 const getTodayBeatNumber = () => {
@@ -171,6 +182,10 @@ export default function BeatdleMode() {
   const [totalAttempts, setTotalAttempts] = useState(0);
   const [perfectSolves, setPerfectSolves] = useState(0);
 
+  // Streak tracking state
+  const [streakData, setStreakData] = useState(() => getStreakStatus());
+  const [streakStats, setStreakStats] = useState(() => getStreakStats());
+
   // Use shared hooks
   const {
     activeStep,
@@ -217,6 +232,12 @@ export default function BeatdleMode() {
   } = useGameState({
     onGridChange: updatePattern, // Connect the real-time update callback
   });
+
+  // Load streak data when component mounts
+  useEffect(() => {
+    setStreakData(getStreakStatus());
+    setStreakStats(getStreakStats());
+  }, []);
 
   useEffect(() => {
     const progress = localStorage.getItem("beatdle_progress");
@@ -392,6 +413,9 @@ export default function BeatdleMode() {
   const [showShareMenu, setShowShareMenu] = useState(false);
   const shareMenuRef = useRef<HTMLDivElement>(null);
 
+  // Export menu state
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
+
   // Close share menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -514,9 +538,9 @@ export default function BeatdleMode() {
     setShowShareMenu(false);
   };
 
-    const shareToThreads = async () => {
+  const shareToThreads = async () => {
     const text = getShareText();
-    
+
     // Always copy to clipboard first for best emoji compatibility
     try {
       await navigator.clipboard.writeText(text);
@@ -671,6 +695,17 @@ export default function BeatdleMode() {
         setPerfectSolves(perfectSolves + 1);
       }
 
+      // Update streak data
+      const updatedStreakData = updateStreakData(
+        beatNumber,
+        true, // won
+        totalScore,
+        4 - attemptsLeft, // attempts used
+        isPerfect
+      );
+      setStreakData(getStreakStatus());
+      setStreakStats(getStreakStats());
+
       // Play victory soundscape
       playVictory("beatdle", isPerfect);
       saveProgress(
@@ -717,6 +752,17 @@ export default function BeatdleMode() {
       if (remaining <= 0) {
         setGameOver(true);
         stopPlaybackAudio();
+
+        // Update streak data for loss
+        const updatedStreakData = updateStreakData(
+          beatNumber,
+          false, // won
+          totalScore,
+          3, // used all attempts
+          false // not perfect
+        );
+        setStreakData(getStreakStatus());
+        setStreakStats(getStreakStats());
 
         // Play loss soundscape
         playLoss("beatdle");
@@ -789,32 +835,142 @@ export default function BeatdleMode() {
     }
   };
 
+  // Export handlers for already played screen
+  const handleExportMidi = () => {
+    const filename = `beatdle-${beatNumber}-${today}.mid`;
+    exportMidiFile(safeTargetGrid, safeBpm, filename);
+  };
+
+  const handleExportWav = async () => {
+    const filename = `beatdle-${beatNumber}-${today}.wav`;
+    await exportWavFile(safeTargetGrid, safeBpm, filename);
+  };
+
+  // Combined share handler for game over/won overlays
+  const handleCombinedShare = () => {
+    setShowShareMenu(!showShareMenu);
+  };
+
+  // Export menu handler
+  const handleToggleExportMenu = () => {
+    setExportMenuOpen(!exportMenuOpen);
+  };
+
   // If already played, show message and block game UI
   if (alreadyPlayed) {
     return (
       <main className="relative flex flex-col items-center justify-center min-h-screen bg-black text-white p-2 sm:p-4">
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex flex-col items-center justify-start space-y-4 overflow-y-auto p-4 pt-8 pb-8">
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex flex-col items-center justify-start space-y-6 overflow-y-auto p-4 pt-8 pb-8">
           <div className="text-4xl font-extrabold animate-pulse font-mono text-red-500">
             🕐 ALREADY PLAYED TODAY 🕐
           </div>
+
+          {/* Final Score */}
           <p className="text-yellow-400 font-mono text-lg">
             Final Score: {score}
           </p>
-          <div className="flex flex-col sm:flex-row items-center gap-3">
+
+          {/* Streak Display */}
+          <div className="bg-gray-800 rounded-lg p-4 border border-gray-600 max-w-md w-full">
+            <div className="text-center mb-3">
+              <h3 className="text-lg font-bold text-white mb-2">Your Streak</h3>
+              <div className="flex items-center justify-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <Flame
+                    className={`w-5 h-5 ${
+                      streakData.isActive ? "text-orange-500" : "text-gray-500"
+                    }`}
+                  />
+                  <span className="text-xl font-bold">
+                    {streakData.currentStreak}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Trophy className="w-5 h-5 text-yellow-500" />
+                  <span className="text-sm">
+                    Best: {streakData.longestStreak}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-2 text-center text-sm">
+              <div>
+                <div className="text-gray-400">Win Rate</div>
+                <div className="font-bold text-green-400">
+                  {streakStats.winRate}%
+                </div>
+              </div>
+              <div>
+                <div className="text-gray-400">Perfect</div>
+                <div className="font-bold text-purple-400">
+                  {streakStats.perfectRate}%
+                </div>
+              </div>
+              <div>
+                <div className="text-gray-400">Avg Score</div>
+                <div className="font-bold text-blue-400">
+                  {streakStats.averageScore.toFixed(1)}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-lg">
             <button
               onClick={toggleTargetBeat}
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded flex items-center justify-center space-x-2 transition-colors w-full sm:w-auto max-w-xs"
-              title="Play Beat"
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded flex items-center justify-center space-x-2 transition-colors w-full sm:w-auto"
+              title="Listen to Today's Beat"
             >
               <Headphones size={18} className="text-white" />
               <span>Listen</span>
             </button>
 
-            {/* Share Dropdown Menu */}
-            <div className="relative" ref={shareMenuRef}>
+            {/* Export Beat Button */}
+            <div className="relative w-full sm:w-auto">
               <button
-                onClick={handleShare}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded flex items-center justify-center space-x-2 transition-colors w-full sm:w-auto max-w-xs"
+                onClick={handleToggleExportMenu}
+                className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded flex items-center justify-center space-x-2 transition-colors w-full"
+              >
+                <Download size={18} className="text-white" />
+                <span>Export Beat</span>
+                <ChevronDown
+                  size={16}
+                  className={`text-white transition-transform ${
+                    exportMenuOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {exportMenuOpen && (
+                <div className="absolute top-full left-0 mt-2 w-full sm:w-48 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-50">
+                  <div className="py-2">
+                    <button
+                      onClick={handleExportMidi}
+                      className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
+                    >
+                      <Music size={16} />
+                      Export as MIDI
+                    </button>
+                    <button
+                      onClick={handleExportWav}
+                      className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
+                    >
+                      <Download size={16} />
+                      Export as WAV
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Share Results Button */}
+            <div className="relative w-full sm:w-auto">
+              <button
+                onClick={() => setShowShareMenu(!showShareMenu)}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded flex items-center justify-center space-x-2 transition-colors w-full"
               >
                 <Share2 size={18} className="text-white" />
                 <span>Share Results</span>
@@ -827,7 +983,7 @@ export default function BeatdleMode() {
               </button>
 
               {showShareMenu && (
-                <div className="absolute top-full left-0 mt-2 w-48 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-50">
+                <div className="absolute top-full left-0 mt-2 w-full sm:w-48 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-50">
                   <div className="py-2">
                     {typeof navigator !== "undefined" &&
                       typeof navigator.share === "function" && (
@@ -844,7 +1000,7 @@ export default function BeatdleMode() {
                       className="w-full px-4 py-2 text-left hover:bg-gray-700 text-white flex items-center gap-2"
                     >
                       <Copy size={16} />
-                      Copy Link
+                      Copy Results
                     </button>
                     <button
                       onClick={shareToX}
@@ -892,6 +1048,7 @@ export default function BeatdleMode() {
               )}
             </div>
           </div>
+
           <p className="text-gray-400 font-mono text-center mt-4">
             Come back tomorrow for a new beat!
           </p>
@@ -904,10 +1061,17 @@ export default function BeatdleMode() {
     );
   }
 
+  // Create enhanced beat label with streak info
+  const beatLabelWithStreak = `Beatdle #${beatNumber}${
+    streakData.isActive && streakData.currentStreak > 0
+      ? ` • ${streakData.currentStreak}🔥`
+      : ""
+  }`;
+
   return (
     <GameLayout
       mode="beatdle"
-      beatLabel={`Beatdle #${beatNumber}`}
+      beatLabel={beatLabelWithStreak}
       bpm={safeBpm}
       grid={grid}
       targetGrid={safeTargetGrid}
@@ -926,7 +1090,7 @@ export default function BeatdleMode() {
       onSubmitGuess={submitGuess}
       onClearGrid={clearGrid}
       onListenTarget={toggleTargetBeat}
-      onShare={handleShare}
+      onShare={handleCombinedShare}
       isTargetPlaying={isTargetPlaying}
       showShareMenu={showShareMenu}
       alreadyPlayed={alreadyPlayed}
@@ -943,6 +1107,14 @@ export default function BeatdleMode() {
       onShareToMessages={shareToMessages}
       onShareToWhatsApp={shareToWhatsApp}
       onShareToEmail={shareToEmail}
+      // Streak tracking props
+      streakData={streakData}
+      streakStats={streakStats}
+      // Export function props
+      onExportMidi={handleExportMidi}
+      onExportWav={handleExportWav}
+      showExportMenu={exportMenuOpen}
+      onToggleExportMenu={handleToggleExportMenu}
     />
   );
 }

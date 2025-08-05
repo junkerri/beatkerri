@@ -92,13 +92,14 @@ class SoundscapeManager {
       // Fade in if requested
       if (options.fadeIn) {
         audio.volume = 0;
-        audio.play();
+        await audio.play();
         this.fadeInAudio(audio);
       } else {
-        audio.play();
+        await audio.play();
       }
 
       this.currentAudio = audio;
+      console.log(`✅ Audio playing successfully: ${path}`);
     } catch (error) {
       console.warn("Could not play soundscape:", path, error);
     }
@@ -277,10 +278,16 @@ export const playVictorySoundscape = (
   mode: "beatdle" | "challenge",
   isPerfect: boolean = false
 ) => {
-  let path = "/audio/victory/victory1.mp3";
-  if (isPerfect && mode === "beatdle") {
-    path = "/audio/victory/perfect-solve.mp3";
-  }
+  // Always use victory1.mp3 for all victory scenarios
+  const path = "/audio/victory/victory1.mp3";
+
+  console.log(
+    `🎵 Playing victory soundscape: ${path} (mode: ${mode}, isPerfect: ${isPerfect})`
+  );
+  console.log(
+    `🔊 Soundscape manager muted: ${soundscapeManager.getMuteState()}`
+  );
+
   return soundscapeManager.playSoundscape(path, {
     fadeIn: true,
     forceStop: true, // Force stop any existing audio

@@ -11,6 +11,8 @@ import {
   Puzzle,
   Trophy,
   Settings,
+  Flame,
+  Share2,
 } from "lucide-react";
 import { playNavigationClick } from "@/utils/clickSounds";
 import { useSoundscapes } from "@/hooks/useSoundscapes";
@@ -59,22 +61,34 @@ export default function About() {
               What is Beatkerri 303?
             </h2>
             <p className="text-gray-300 leading-relaxed mb-4">
-              Beatkerri 303 is an interactive web-based drum machine that
-              combines the classic TB-303 aesthetic with modern web
+              Beatkerri 303 is an interactive, web-based step sequencer and drum
+              machine that blends the classic TB-303 vibe with modern web
               technologies. It features three distinct game modes that challenge
-              your rhythm skills, creativity, and musical intuition.
+              your rhythm, creativity, and musical intuition, all within a
+              sleek, browser-friendly interface.
             </p>
             <p className="text-gray-300 leading-relaxed mb-4">
-              Built with React, TypeScript, and Tone.js, Beatkerri 303 delivers
-              high-quality audio synthesis and a responsive, professional
-              interface that works seamlessly across all devices.
+              Built using React, TypeScript, and Tone.js, Beatkerri 303 delivers
+              responsive performance and high-quality audio synthesis across all
+              devices.
             </p>
             <p className="text-gray-300 leading-relaxed">
-              Beatkerri 303 was designed and developed by{" "}
+              It was designed and developed by{" "}
               <strong className="text-amber-400">Aastha Kumari Karki</strong>{" "}
-              (aka <strong className="text-amber-400">junkerri</strong>), a
-              musician who wanted to design and build an interactive game based
-              on drum machines to play with friends.
+              (aka{" "}
+              <a
+                href="https://github.com/junkerri"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-amber-400 hover:text-amber-300 underline transition-colors"
+              >
+                <strong>junkerri</strong>
+              </a>
+              ), a musician and web developer who wanted to build a fun,
+              interactive rhythm game that also works as a tool for sketching
+              beat ideas and sharing them with friends. Whether you're playing
+              solo or jamming with others, Beatkerri 303 is your pocket-sized
+              beat lab.
             </p>
           </section>
 
@@ -101,8 +115,9 @@ export default function About() {
                 </p>
                 <ul className="text-gray-400 text-xs space-y-1">
                   <li>• New beat every day</li>
+                  <li>• Streak tracking & statistics</li>
                   <li>• Wordle-style sharing</li>
-                  <li>• Progress tracking</li>
+                  <li>• Export as WAV/MIDI files</li>
                   <li>• Score system</li>
                 </ul>
                 <div className="mt-3 text-purple-300 text-xs font-mono opacity-0 group-hover:opacity-100 transition-opacity">
@@ -216,6 +231,71 @@ export default function About() {
                     <p className="text-gray-400 text-sm">
                       Export beats as WAV or MIDI files for use in DAWs, and
                       share results with friends via social media
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* New Features */}
+          <section className="bg-gray-900 p-6 rounded-lg border border-gray-700">
+            <h2 className="text-2xl font-bold font-mono text-amber-400 mb-6">
+              Latest Features
+            </h2>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <Flame className="w-6 h-6 text-amber-400 mt-1 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-bold text-white mb-1">
+                      Streak Tracking
+                    </h4>
+                    <p className="text-gray-400 text-sm">
+                      Track your daily Beatdle streaks, win rates, and perfect
+                      solve statistics. Compete with yourself and see your
+                      improvement over time!
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Download className="w-6 h-6 text-amber-400 mt-1 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-bold text-white mb-1">
+                      Pattern Export
+                    </h4>
+                    <p className="text-gray-400 text-sm">
+                      Export today's Beatdle pattern as high-quality WAV audio
+                      files or MIDI files for use in your favorite music
+                      production software.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <Share2 className="w-6 h-6 text-amber-400 mt-1 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-bold text-white mb-1">
+                      Enhanced Sharing
+                    </h4>
+                    <p className="text-gray-400 text-sm">
+                      Share your Beatdle results across multiple platforms
+                      including X (Twitter), Facebook, WhatsApp, Messages, and
+                      more with separate sharing options.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Trophy className="w-6 h-6 text-amber-400 mt-1 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-bold text-white mb-1">
+                      Achievement System
+                    </h4>
+                    <p className="text-gray-400 text-sm">
+                      View detailed statistics including current streak, longest
+                      streak, perfect solve percentage, and overall win rate to
+                      track your progress.
                     </p>
                   </div>
                 </div>

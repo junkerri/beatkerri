@@ -5,12 +5,151 @@ import { SequencerGrid } from "@/components/SequencerGrid";
 import { GameControls } from "@/components/GameControls";
 import { useAudioPlayback } from "@/hooks/useAudioPlayback";
 import { useGameState } from "@/hooks/useGameState";
-import { Download, Upload, Save, Music, HelpCircle, Piano } from "lucide-react";
+import {
+  Download,
+  Upload,
+  Save,
+  Music,
+  HelpCircle,
+  Piano,
+  Edit3,
+} from "lucide-react";
 import Link from "next/link";
 import { playSubmitClick } from "@/utils/clickSounds";
 import toast from "react-hot-toast";
 import { useSoundscapes } from "@/hooks/useSoundscapes";
 import * as Tone from "tone";
+
+// Custom BPM Knob Component
+interface BpmKnobProps {
+  value: number;
+  min: number;
+  max: number;
+  onChange: (value: number) => void;
+  size?: number;
+}
+
+const BpmKnob: React.FC<BpmKnobProps> = ({
+  value,
+  min,
+  max,
+  onChange,
+  size = 40,
+}) => {
+  const [isDragging, setIsDragging] = useState(false);
+  const knobRef = useRef<HTMLDivElement>(null);
+  const lastMouseY = useRef<number>(0);
+
+  // Convert value to rotation angle (0 to 270 degrees)
+  const valueToAngle = (val: number) => {
+    const normalized = (val - min) / (max - min);
+    return normalized * 270 - 135; // -135 to +135 degrees
+  };
+
+  const angleToValue = (angle: number) => {
+    const normalized = (angle + 135) / 270;
+    return Math.round(min + normalized * (max - min));
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    lastMouseY.current = e.clientY;
+    e.preventDefault();
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
+
+      const deltaY = lastMouseY.current - e.clientY; // Inverted for intuitive direction
+      const sensitivity = 1.2; // Increased sensitivity for easier turning
+      const angleChange = deltaY * sensitivity;
+
+      const currentAngle = valueToAngle(value);
+      const newAngle = Math.max(
+        -135,
+        Math.min(135, currentAngle + angleChange)
+      );
+      const newValue = angleToValue(newAngle);
+
+      if (newValue !== value && newValue >= min && newValue <= max) {
+        onChange(newValue);
+      }
+
+      lastMouseY.current = e.clientY;
+      e.preventDefault();
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "grabbing";
+      return () => {
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+        document.body.style.cursor = "";
+      };
+    }
+  }, [isDragging, value, min, max, onChange]);
+
+  const rotation = valueToAngle(value);
+
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <div
+        ref={knobRef}
+        className={`relative rounded-full border-2 border-gray-600 bg-gradient-to-b from-gray-700 to-gray-800 shadow-lg cursor-grab active:cursor-grabbing select-none ${
+          isDragging
+            ? "border-amber-500 shadow-amber-500/20"
+            : "hover:border-gray-500"
+        } transition-all duration-150`}
+        style={{ width: size, height: size }}
+        onMouseDown={handleMouseDown}
+        title="Drag to adjust BPM"
+      >
+        {/* Knob indicator */}
+        <div
+          className="absolute w-1 h-3 bg-amber-400 rounded-full shadow-sm transition-transform duration-75"
+          style={{
+            top: "6px",
+            left: "50%",
+            transformOrigin: `0 ${size / 2 - 6}px`,
+            transform: `translateX(-50%) rotate(${rotation}deg)`,
+          }}
+        />
+
+        {/* Center dot */}
+        <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-gray-900 rounded-full transform -translate-x-1/2 -translate-y-1/2" />
+
+        {/* Tick marks */}
+        <div className="absolute inset-0">
+          {[0, 0.25, 0.5, 0.75, 1].map((position, i) => {
+            const tickAngle = position * 270 - 135;
+            const isMainTick = i === 0 || i === 4 || i === 2;
+            return (
+              <div
+                key={i}
+                className={`absolute w-px bg-gray-500 ${
+                  isMainTick ? "h-2" : "h-1"
+                }`}
+                style={{
+                  top: "2px",
+                  left: "50%",
+                  transformOrigin: `0 ${size / 2 - 2}px`,
+                  transform: `translateX(-50%) rotate(${tickAngle}deg)`,
+                }}
+              />
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function JamModeComponent() {
   const { stopAllImmediately } = useSoundscapes();
@@ -844,16 +983,37 @@ export default function JamModeComponent() {
         </h1>
         <p className="text-gray-400 font-mono text-center mb-2">Jam Mode</p>
 
-        {/* Stats with Interactive BPM */}
+        {/* BPM Controls with Knob */}
         <div className="flex justify-end mb-4 w-full">
-          <div className="flex items-center gap-2">
-            <div className="text-xs font-mono text-gray-400">
-              BPM
+          <div className="flex items-center gap-3">
+            {/* BPM Knob */}
+            <BpmKnob
+              value={bpm}
+              min={60}
+              max={200}
+              onChange={(newBpm) => {
+                setBpm(newBpm);
+                setBpmInput(newBpm.toString());
+              }}
+              size={35}
+            />
+
+            {/* BPM Input Field */}
+            <div className="text-xs font-mono text-gray-400 group">
+              <div className="flex items-center gap-1">
+                <span>BPM</span>
+                <Edit3
+                  size={12}
+                  className="text-gray-500 opacity-70 group-hover:opacity-100 transition-opacity"
+                />
+              </div>
               <input
                 type="number"
                 min="60"
                 max="200"
                 value={bpmInput}
+                placeholder="120"
+                title="Click to edit BPM (60-200). Press Enter to apply."
                 onChange={(e) => {
                   const inputValue = e.target.value;
                   setBpmInput(inputValue);
@@ -882,7 +1042,7 @@ export default function JamModeComponent() {
                     handleBpmChange(value);
                   }
                 }}
-                className="ml-1 inline-block px-2 py-0.5 bg-black border border-gray-700 text-red-500 font-mono rounded min-w-[2rem] text-center focus:outline-none focus:border-gray-700"
+                className="ml-1 inline-block px-2 py-0.5 bg-black border border-gray-700 text-red-500 font-mono rounded min-w-[2rem] text-center focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 hover:border-gray-600 cursor-text transition-colors"
               />
             </div>
           </div>
@@ -917,7 +1077,15 @@ export default function JamModeComponent() {
         />
 
         <footer className="mt-6 text-gray-500 text-xs font-mono w-full text-center">
-          © {new Date().getFullYear()} Junkerri
+          © {new Date().getFullYear()}{" "}
+          <a
+            href="https://github.com/junkerri"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-500 hover:text-amber-400 transition-colors underline"
+          >
+            Junkerri
+          </a>
         </footer>
 
         {/* Drum machine lights/knobs for realism */}
