@@ -433,8 +433,6 @@ export default function BeatdleMode() {
     }
   }, [showShareMenu]);
 
-
-
   const copyShareLink = async () => {
     const text = getShareText();
 
