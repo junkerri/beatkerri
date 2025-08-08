@@ -105,18 +105,20 @@ export default function BeatdleMode() {
 
   // Get today's date in YYYY-MM-DD format
   const today = new Date().toISOString().split("T")[0];
+  console.log("📅 Today's date:", today, "Beat number:", beatNumber);
 
   // Get beat for today (custom or generated)
   const beatResult = getBeatForDate(today, generatedGrid, generatedBpm);
   const { grid: targetGrid, bpm, isCustom } = beatResult;
 
   // Debug: Log what we got from getBeatForDate
-  console.log("Beat result from getBeatForDate:", {
+  console.log("🎵 Beat result from getBeatForDate:", {
     date: today,
     isCustom,
     targetGridLength: targetGrid?.flat().filter(Boolean).length,
     bpm,
     targetGridStructure: targetGrid?.map((row) => row.filter(Boolean).length),
+    firstFewColumns: targetGrid?.map((row) => row.slice(0, 4)),
   });
 
   // If we're not getting a custom beat but we should have one, log more details
@@ -124,17 +126,23 @@ export default function BeatdleMode() {
     console.log(
       "Expected custom beat but got generated beat. Checking localStorage..."
     );
-    try {
-      const stored = localStorage.getItem("beatkerri_custom_beats");
-      if (stored) {
-        const storedBeats = JSON.parse(stored);
-        const todayBeat = storedBeats.find(
-          (b: { date: string }) => b.date === today
-        );
-        console.log("Today's beat in localStorage:", todayBeat);
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("beatkerri_custom_beats");
+        if (stored) {
+          const storedBeats = JSON.parse(stored);
+          const todayBeat = storedBeats.find(
+            (b: { date: string }) => b.date === today
+          );
+          console.log("Today's beat in localStorage:", todayBeat);
+        } else {
+          console.log("No custom beats found in localStorage");
+        }
+      } catch (error) {
+        console.error("Error checking localStorage:", error);
       }
-    } catch (error) {
-      console.error("Error checking localStorage:", error);
+    } else {
+      console.log("Running on server-side, localStorage not available");
     }
   }
 
@@ -161,12 +169,15 @@ export default function BeatdleMode() {
     safeBpm = bpm;
 
     // Debug: Log the beat being used
-    console.log("Beat for today:", {
+    console.log("🎯 Beat for today (FINAL):", {
       date: today,
       beatNumber,
       targetGrid: safeTargetGrid.flat().filter(Boolean).length,
       bpm: safeBpm,
       isCustom: isCustom,
+      firstRow: safeTargetGrid[0].slice(0, 8),
+      secondRow: safeTargetGrid[1].slice(0, 8),
+      thirdRow: safeTargetGrid[2].slice(0, 8),
     });
   }
 
@@ -292,7 +303,7 @@ export default function BeatdleMode() {
       setIsPlaying(false);
     } else {
       if (mode === "target") {
-        await playPatternAudio(targetGrid);
+        await playPatternAudio(safeTargetGrid);
       } else {
         await playPatternAudio(grid);
       }
@@ -312,7 +323,7 @@ export default function BeatdleMode() {
     setMode(tab);
     stopPlaybackAudio();
     if (tab === "target") {
-      playPatternAudio(targetGrid);
+      playPatternAudio(safeTargetGrid);
     }
   };
   const saveProgress = (

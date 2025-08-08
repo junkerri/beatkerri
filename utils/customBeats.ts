@@ -1231,24 +1231,6 @@ const weeklyBeats: CustomBeat[] = [
         false,
         false,
       ],
-      [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-      ],
     ],
     bpm: 100,
     title: "Friday Freedom II",
@@ -2365,9 +2347,25 @@ export const getBeatForDate = (
   creator?: string;
   category?: string;
 } => {
-  const customBeat = getCustomBeat(date);
+  // First check the in-memory weeklyBeats array (works during SSR)
+  const weeklyBeat = weeklyBeats.find((beat) => beat.date === date);
+  if (weeklyBeat) {
+    console.log("🎯 Found weekly beat for", date, ":", weeklyBeat.title);
+    return {
+      grid: weeklyBeat.grid,
+      bpm: weeklyBeat.bpm,
+      isCustom: true,
+      title: weeklyBeat.title,
+      description: weeklyBeat.description,
+      creator: weeklyBeat.creator,
+      category: weeklyBeat.category,
+    };
+  }
 
+  // Then check localStorage-based custom beats (client-side only)
+  const customBeat = getCustomBeat(date);
   if (customBeat) {
+    console.log("🎯 Found localStorage custom beat for", date);
     return {
       grid: customBeat.grid,
       bpm: customBeat.bpm,
@@ -2379,6 +2377,7 @@ export const getBeatForDate = (
     };
   }
 
+  console.log("🎯 No custom beat found for", date, "using generated beat");
   return {
     grid: generatedBeat,
     bpm: generatedBpm,
