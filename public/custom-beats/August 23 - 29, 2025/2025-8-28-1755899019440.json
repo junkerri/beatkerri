@@ -1,0 +1,217 @@
+{
+  "formatVersion": "1.0",
+  "name": "2025-8-28",
+  "author": "junkerri",
+  "description": "electro",
+  "createdAt": "2025-08-22T21:43:39.438Z",
+  "createdAtReadable": "8/22/2025, 4:43:39 PM",
+  "bpm": 110,
+  "totalSteps": 16,
+  "totalNotes": 15,
+  "instruments": [
+    {
+      "index": 0,
+      "name": "Kick",
+      "midi": 36,
+      "color": "#ef4444"
+    },
+    {
+      "index": 1,
+      "name": "Snare",
+      "midi": 38,
+      "color": "#f97316"
+    },
+    {
+      "index": 2,
+      "name": "Closed Hi-Hat",
+      "midi": 42,
+      "color": "#eab308"
+    },
+    {
+      "index": 3,
+      "name": "Open Hi-Hat",
+      "midi": 46,
+      "color": "#22c55e"
+    },
+    {
+      "index": 4,
+      "name": "Low Tom",
+      "midi": 45,
+      "color": "#3b82f6"
+    },
+    {
+      "index": 5,
+      "name": "High Tom",
+      "midi": 48,
+      "color": "#a855f7"
+    },
+    {
+      "index": 6,
+      "name": "Clap",
+      "midi": 39,
+      "color": "#ec4899"
+    }
+  ],
+  "activeInstruments": [
+    {
+      "index": 0,
+      "name": "Kick",
+      "notes": 6,
+      "active": true
+    },
+    {
+      "index": 1,
+      "name": "Snare",
+      "notes": 3,
+      "active": true
+    },
+    {
+      "index": 2,
+      "name": "Closed Hi-Hat",
+      "notes": 4,
+      "active": true
+    },
+    {
+      "index": 5,
+      "name": "High Tom",
+      "notes": 2,
+      "active": true
+    }
+  ],
+  "grid": [
+    [
+      true,
+      false,
+      false,
+      true,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false
+    ],
+    [
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    [
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true
+    ],
+    [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false
+    ],
+    [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  ],
+  "timestamp": 1755899019438,
+  "source": "BeatKerri v1.0",
+  "_readme": {
+    "usage": "Import this file into BeatKerri Jam Mode using the Import button",
+    "format": "16-step sequencer pattern with 7 drum instruments",
+    "bpm": "Tempo is set to 110 BPM",
+    "instruments": "Each row represents: Kick, Snare, Closed HH, Open HH, Low Tom, High Tom, Clap"
+  }
+}
