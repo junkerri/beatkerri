@@ -144,6 +144,53 @@ export default function BeatdleMode() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Run once on mount - dependencies are stable
 
+  // Testing helper: Expose function to test future dates
+  // Usage in browser console: window.testBeatDate("2025-11-07")
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      (window as any).testBeatDate = (dateString: string) => {
+        console.log("🧪 Testing beat for date:", dateString);
+
+        // Calculate beat number for the test date
+        const epoch = new Date("2025-07-10");
+        const testDate = new Date(dateString);
+        const diffDays = Math.floor(
+          (testDate.getTime() - epoch.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        const testBeatNumber = diffDays + 1;
+
+        // Generate fallback beat for this date
+        const testGeneratedBpm = getDailyBPM(testBeatNumber);
+        const testGeneratedGrid = createDailyPattern(testBeatNumber);
+
+        // Get the beat (custom or generated)
+        const beat = getBeatForDate(
+          dateString,
+          testGeneratedGrid,
+          testGeneratedBpm
+        );
+
+        console.log("🎯 Beat for", dateString, ":", {
+          beatNumber: testBeatNumber,
+          isCustom: beat.isCustom,
+          bpm: beat.bpm,
+          totalNotes: beat.grid.flat().filter(Boolean).length,
+          gridStructure: beat.grid.map((row) => row.filter(Boolean).length),
+          title: beat.title,
+          description: beat.description,
+          creator: beat.creator,
+          hash: `${beat.grid.flat().filter(Boolean).length}-${beat.bpm}`,
+        });
+
+        return beat;
+      };
+
+      console.log(
+        "🧪 Test helper loaded! Use: window.testBeatDate('2025-11-07') to test future dates"
+      );
+    }
+  }, []);
+
   // Get beat for today (custom or generated)
   const { grid: targetGrid, bpm, isCustom } = beatState;
 

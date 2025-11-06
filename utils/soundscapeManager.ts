@@ -257,8 +257,11 @@ class SoundscapeManager {
     });
     this.listeners = {};
 
-    if (this.audioContext) {
-      this.audioContext.close();
+    if (this.audioContext && this.audioContext.state !== "closed") {
+      this.audioContext.close().catch((err) => {
+        // Ignore errors from closing already closed context
+        console.debug("Audio context close error (safe to ignore):", err);
+      });
     }
   }
 }

@@ -4113,6 +4113,67 @@ export const onCustomBeatsLoaded = (callback: () => void) => {
   }
 };
 
+/**
+ * Validates and normalizes a grid to ensure it's 7x16 with all boolean values
+ * This prevents glitches where user input doesn't register due to:
+ * - Sparse arrays (missing values)
+ * - Wrong dimensions
+ * - Non-boolean values (undefined, null, etc.)
+ */
+const validateAndNormalizeGrid = (
+  grid: any,
+  filename: string
+): boolean[][] | null => {
+  // Check if grid is an array
+  if (!Array.isArray(grid)) {
+    console.error(
+      `❌ Grid validation failed for ${filename}: grid is not an array`
+    );
+    return null;
+  }
+
+  // Check if grid has exactly 7 rows
+  if (grid.length !== 7) {
+    console.error(
+      `❌ Grid validation failed for ${filename}: expected 7 rows, got ${grid.length}`
+    );
+    return null;
+  }
+
+  // Validate and normalize each row
+  const normalizedGrid: boolean[][] = [];
+  for (let rowIndex = 0; rowIndex < 7; rowIndex++) {
+    const row = grid[rowIndex];
+
+    // Check if row is an array
+    if (!Array.isArray(row)) {
+      console.error(
+        `❌ Grid validation failed for ${filename}: row ${rowIndex} is not an array`
+      );
+      return null;
+    }
+
+    // Check if row has exactly 16 columns
+    if (row.length !== 16) {
+      console.warn(
+        `⚠️ Grid validation warning for ${filename}: row ${rowIndex} has ${row.length} columns, expected 16. Normalizing...`
+      );
+    }
+
+    // Normalize row to exactly 16 booleans
+    const normalizedRow: boolean[] = [];
+    for (let colIndex = 0; colIndex < 16; colIndex++) {
+      const value = row[colIndex];
+      // Convert to strict boolean, treat undefined/null/missing as false
+      normalizedRow.push(Boolean(value));
+    }
+    normalizedGrid.push(normalizedRow);
+  }
+
+  console.log(`✅ Grid validation passed for ${filename}`);
+  return normalizedGrid;
+};
+
 // Load custom beats from JSON files in public folder
 const loadCustomBeatsFromFiles = async (): Promise<CustomBeat[]> => {
   if (typeof window === "undefined") return []; // Skip on server-side
@@ -4141,15 +4202,34 @@ const loadCustomBeatsFromFiles = async (): Promise<CustomBeat[]> => {
         const beatData = await response.json();
 
         if (beatData && beatData.grid && beatData.bpm) {
-          beats.push({
-            date: formattedDate,
-            grid: beatData.grid,
-            bpm: beatData.bpm,
-            title: beatData.name || `Custom Beat ${formattedDate}`,
-            description: beatData.description || "",
-            creator: beatData.author || "junkerri",
-            category: "weekly" as const,
-          });
+          // Validate and normalize the grid
+          const validatedGrid = validateAndNormalizeGrid(
+            beatData.grid,
+            filename
+          );
+
+          if (validatedGrid) {
+            beats.push({
+              date: formattedDate,
+              grid: validatedGrid,
+              bpm: beatData.bpm,
+              title: beatData.name || `Custom Beat ${formattedDate}`,
+              description: beatData.description || "",
+              creator: beatData.author || "junkerri",
+              category: "weekly" as const,
+            });
+            console.log(
+              `✓ Successfully loaded custom beat for ${formattedDate} from ${filename}`
+            );
+          } else {
+            console.error(
+              `✗ Skipping ${filename} due to grid validation failure`
+            );
+          }
+        } else {
+          console.warn(
+            `⚠️ Skipping ${filename}: missing required fields (grid or bpm)`
+          );
         }
       }
     } catch (error) {

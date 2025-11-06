@@ -63,18 +63,21 @@ export const useAudioPlayback = ({ bpm, isLooping }: UseAudioPlaybackProps) => {
       seq.loop = loop;
       sequenceRef.current = seq;
 
-      // Start the sequence with a small delay to ensure proper initialization
-      seq.start("+0.1", 0);
-
-      // Start transport with a slightly longer delay to ensure sequence is ready
-      Tone.Transport.start("+0.2");
+      // Start transport and sequence at the same time to prevent first note skip
+      // This ensures the first note (col 0) is properly scheduled and played
+      const startTime = "+0.1";
+      Tone.Transport.start(startTime);
+      seq.start(startTime);
 
       if (!loop) {
-        Tone.Transport.scheduleOnce(() => {
-          setIsPlaying(false);
-          setActiveStep(null);
-          if (onDone) onDone();
-        }, `+${(16 * 60) / bpm}s`);
+        Tone.Transport.scheduleOnce(
+          () => {
+            setIsPlaying(false);
+            setActiveStep(null);
+            if (onDone) onDone();
+          },
+          `+${(16 * 60) / bpm}s`
+        );
       }
     },
     [bpm, isLooping]
