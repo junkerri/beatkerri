@@ -4101,9 +4101,67 @@ const weeklyBeats: CustomBeat[] = [
 
 // In-memory storage for custom beats (in production, this would be a database)
 let customBeats: CustomBeat[] = [];
+let isInitialized = false;
+const initCallbacks: Array<() => void> = [];
+
+// Register a callback to be called when custom beats are loaded
+export const onCustomBeatsLoaded = (callback: () => void) => {
+  if (isInitialized) {
+    callback();
+  } else {
+    initCallbacks.push(callback);
+  }
+};
+
+// Load custom beats from JSON files in public folder
+const loadCustomBeatsFromFiles = async (): Promise<CustomBeat[]> => {
+  if (typeof window === "undefined") return []; // Skip on server-side
+
+  const beats: CustomBeat[] = [];
+  // Map each date to its specific filename
+  const dateToFilename: Record<string, string> = {
+    "2025-11-7": "2025-11-7-1755898790798.json",
+    "2025-11-8": "2025-11-8-1755898822617.json",
+    "2025-11-9": "2025-11-9-1755898868125.json",
+    "2025-11-10": "2025-11-10-1755898950167.json",
+    "2025-11-11": "2025-11-11-1755898980455.json",
+    "2025-11-12": "2025-11-12-1755899019440.json",
+    "2025-11-13": "2025-11-13-1755899061410.json",
+  };
+
+  for (const [fileDate, filename] of Object.entries(dateToFilename)) {
+    try {
+      // Extract date parts and format as YYYY-MM-DD (with zero-padded day)
+      const [year, month, day] = fileDate.split("-");
+      const formattedDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+
+      const response = await fetch(`/custom-beats/Nov 7 - Nov 13/${filename}`);
+
+      if (response.ok) {
+        const beatData = await response.json();
+
+        if (beatData && beatData.grid && beatData.bpm) {
+          beats.push({
+            date: formattedDate,
+            grid: beatData.grid,
+            bpm: beatData.bpm,
+            title: beatData.name || `Custom Beat ${formattedDate}`,
+            description: beatData.description || "",
+            creator: beatData.author || "junkerri",
+            category: "weekly" as const,
+          });
+        }
+      }
+    } catch (error) {
+      console.error(`Failed to load beat for ${fileDate}:`, error);
+    }
+  }
+
+  return beats;
+};
 
 // Initialize custom beats system
-const initializeCustomBeats = () => {
+const initializeCustomBeats = async () => {
   if (typeof window === "undefined") return; // Skip on server-side
 
   try {
@@ -4127,6 +4185,14 @@ const initializeCustomBeats = () => {
       }
     }
 
+    // Load custom beats from JSON files (Nov 7-13, 2025)
+    const fileBeats = await loadCustomBeatsFromFiles();
+    fileBeats.forEach((beat) => {
+      // Remove existing beat for the same date if it exists
+      customBeats = customBeats.filter((b) => b.date !== beat.date);
+      customBeats.push(beat);
+    });
+
     // Add weekly beats if they don't already exist
     weeklyBeats.forEach((weeklyBeat) => {
       if (!customBeats.some((beat) => beat.date === weeklyBeat.date)) {
@@ -4149,7 +4215,13 @@ const initializeCustomBeats = () => {
     console.log("Custom beats initialized:", {
       totalBeats: customBeats.length,
       dates: customBeats.map((b) => b.date),
+      fileBeatsLoaded: fileBeats.length,
     });
+
+    // Mark as initialized and call callbacks
+    isInitialized = true;
+    initCallbacks.forEach((callback) => callback());
+    initCallbacks.length = 0; // Clear callbacks array
   } catch (error) {
     console.error("Failed to load custom beats:", error);
     // Initialize with weekly beats even if localStorage fails
@@ -4158,16 +4230,18 @@ const initializeCustomBeats = () => {
         customBeats.push(weeklyBeat);
       }
     });
+
+    // Mark as initialized even if loading failed
+    isInitialized = true;
+    initCallbacks.forEach((callback) => callback());
+    initCallbacks.length = 0;
   }
 };
 
 // Initialize on client-side only
 if (typeof window !== "undefined") {
   // Initialize immediately to avoid race conditions
-  initializeCustomBeats();
-
-  // Force a small delay to ensure custom beats are loaded before any components try to use them
-  setTimeout(() => {
+  initializeCustomBeats().then(() => {
     console.log("Custom beats loaded:", {
       totalBeats: customBeats.length,
       dates: customBeats.map((b) => b.date),
@@ -4175,7 +4249,7 @@ if (typeof window !== "undefined") {
         (b) => b.date === new Date().toISOString().split("T")[0]
       ),
     });
-  }, 100);
+  });
 }
 
 // Get custom beat for a specific date
@@ -4239,7 +4313,19 @@ export const clearAndReinitializeCustomBeats = (): void => {
   }
 };
 
-// Get beat for a specific date (custom or generated)
+/**
+ * Get beat for a specific date with automatic fallback
+ *
+ * Priority order:
+ * 1. Check hardcoded weeklyBeats array (for past dates)
+ * 2. Check customBeats loaded from JSON files (stored in localStorage)
+ * 3. **Fallback**: Use auto-generated beat if no custom beat exists
+ *
+ * This ensures the game always has a beat to play, even if:
+ * - JSON files fail to load
+ * - No custom beat is defined for the date
+ * - Network or file system errors occur
+ */
 export const getBeatForDate = (
   date: string,
   generatedBeat: boolean[][],
@@ -4268,10 +4354,10 @@ export const getBeatForDate = (
     };
   }
 
-  // Then check localStorage-based custom beats (client-side only)
+  // Then check localStorage-based custom beats (loaded from JSON files)
   const customBeat = getCustomBeat(date);
   if (customBeat) {
-    console.log("🎯 Found localStorage custom beat for", date);
+    console.log("🎯 Found custom beat from JSON for", date);
     return {
       grid: customBeat.grid,
       bpm: customBeat.bpm,
@@ -4283,7 +4369,12 @@ export const getBeatForDate = (
     };
   }
 
-  console.log("🎯 No custom beat found for", date, "using generated beat");
+  // FALLBACK: Use auto-generated beat (always available)
+  console.log(
+    "🎯 No custom beat found for",
+    date,
+    "- using auto-generated beat"
+  );
   return {
     grid: generatedBeat,
     bpm: generatedBpm,

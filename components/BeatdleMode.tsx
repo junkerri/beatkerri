@@ -6,7 +6,7 @@ import { GameLayout } from "@/components/GameLayout";
 import { useAudioPlayback } from "@/hooks/useAudioPlayback";
 import { useGameState } from "@/hooks/useGameState";
 import { createEmptyGrid, PlayMode } from "@/utils/gameUtils";
-import { getBeatForDate } from "../utils/customBeats";
+import { getBeatForDate, onCustomBeatsLoaded } from "../utils/customBeats";
 import {
   Headphones,
   Clock,
@@ -33,6 +33,14 @@ import {
 } from "@/utils/streakUtils";
 import * as Tone from "tone";
 
+/**
+ * Calculate today's Beatdle number
+ *
+ * Epoch: July 10, 2025 (Beatdle #1)
+ * Examples:
+ * - Nov 6, 2025 = Beatdle #120 ✓
+ * - Nov 7, 2025 = Beatdle #121 ✓
+ */
 const getTodayBeatNumber = () => {
   const epoch = new Date("2025-07-10"); // Initial commit date
   const today = new Date();
@@ -107,9 +115,37 @@ export default function BeatdleMode() {
   const today = new Date().toISOString().split("T")[0];
   console.log("📅 Today's date:", today, "Beat number:", beatNumber);
 
+  // State for the beat - will update when custom beats are loaded
+  const [beatState, setBeatState] = useState(() =>
+    getBeatForDate(today, generatedGrid, generatedBpm)
+  );
+
+  // Listen for custom beats to finish loading and update the beat
+  // If custom beats don't load, it falls back to auto-generated beats
+  useEffect(() => {
+    onCustomBeatsLoaded(() => {
+      const updatedBeat = getBeatForDate(today, generatedGrid, generatedBpm);
+      console.log("🔄 Custom beats loaded, updating beat:", {
+        date: today,
+        beatNumber: beatNumber,
+        before: {
+          isCustom: beatState.isCustom,
+          notes: beatState.grid.flat().filter(Boolean).length,
+          bpm: beatState.bpm,
+        },
+        after: {
+          isCustom: updatedBeat.isCustom,
+          notes: updatedBeat.grid.flat().filter(Boolean).length,
+          bpm: updatedBeat.bpm,
+        },
+      });
+      setBeatState(updatedBeat);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once on mount - dependencies are stable
+
   // Get beat for today (custom or generated)
-  const beatResult = getBeatForDate(today, generatedGrid, generatedBpm);
-  const { grid: targetGrid, bpm, isCustom } = beatResult;
+  const { grid: targetGrid, bpm, isCustom } = beatState;
 
   // Debug: Log what we got from getBeatForDate
   console.log("🎵 Beat result from getBeatForDate:", {
@@ -180,6 +216,17 @@ export default function BeatdleMode() {
       thirdRow: safeTargetGrid[2].slice(0, 8),
     });
   }
+
+  // Log the beat hash to verify consistency
+  const beatHash = safeTargetGrid.flat().filter(Boolean).length + "-" + safeBpm;
+  console.log(
+    "🔑 Beat Hash (for verification):",
+    beatHash,
+    "| Beat #",
+    beatNumber,
+    "| Date:",
+    today
+  );
 
   const [mode, setMode] = useState<PlayMode>("recreate");
   const [isLooping, setIsLooping] = useState(true);
@@ -617,6 +664,18 @@ export default function BeatdleMode() {
       return;
     }
 
+    // Verify we're checking against the correct beat
+    const verificationHash =
+      safeTargetGrid.flat().filter(Boolean).length + "-" + safeBpm;
+    console.log("✅ Submitting guess against beat:", {
+      beatNumber,
+      date: today,
+      hash: verificationHash,
+      isCustom,
+      totalTargetNotes: safeTargetGrid.flat().filter(Boolean).length,
+      bpm: safeBpm,
+    });
+
     playSubmitClick();
     const newFeedback = grid.map((row, rowIndex) =>
       row.map((step, colIndex) => {
@@ -824,6 +883,18 @@ export default function BeatdleMode() {
         }
       }, 100);
     } else {
+      // Verify we're playing the correct beat
+      const playHash =
+        safeTargetGrid.flat().filter(Boolean).length + "-" + safeBpm;
+      console.log("🎧 Playing target beat:", {
+        beatNumber,
+        date: today,
+        hash: playHash,
+        isCustom,
+        totalNotes: safeTargetGrid.flat().filter(Boolean).length,
+        bpm: safeBpm,
+      });
+
       // Stop any playing soundscape before playing target
       stopAllImmediately();
       setIsTargetPlaying(true);
