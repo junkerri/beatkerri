@@ -148,6 +148,7 @@ export default function BeatdleMode() {
   // Usage in browser console: window.testBeatDate("2025-11-07")
   useEffect(() => {
     if (typeof window !== "undefined") {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).testBeatDate = (dateString: string) => {
         console.log("🧪 Testing beat for date:", dateString);
 

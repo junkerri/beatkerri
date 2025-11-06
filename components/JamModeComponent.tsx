@@ -94,6 +94,8 @@ const BpmKnob: React.FC<BpmKnobProps> = ({
         document.body.style.cursor = "";
       };
     }
+    // angleToValue and valueToAngle are stable functions defined in component scope
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDragging, value, min, max, onChange]);
 
   const rotation = valueToAngle(value);
