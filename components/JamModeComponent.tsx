@@ -94,6 +94,8 @@ const BpmKnob: React.FC<BpmKnobProps> = ({
         document.body.style.cursor = "";
       };
     }
+    // angleToValue and valueToAngle are stable functions defined in component scope
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDragging, value, min, max, onChange]);
 
   const rotation = valueToAngle(value);
@@ -1079,7 +1081,7 @@ export default function JamModeComponent() {
         <footer className="mt-6 text-gray-500 text-xs font-mono w-full text-center">
           © {new Date().getFullYear()}{" "}
           <a
-            href="https://github.com/junkerri"
+            href="https://junkerri.com"
             target="_blank"
             rel="noopener noreferrer"
             className="text-gray-500 hover:text-amber-400 transition-colors underline"
